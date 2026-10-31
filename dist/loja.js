@@ -500,13 +500,51 @@ const CATALOG_FALLBACK_PRODUCTS = [
 
 function money(v) { return v.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }); }
 
-function normalizeLojaPhoto(url, fallback = '/images/categorias/filtros.jpg') {
+function extractLojaPhotos(product) {
+  if (!product) return [];
+  if (product.photos && Array.isArray(product.photos) && product.photos.length) {
+    return product.photos.map(p => normalizeLojaPhoto(p)).filter(Boolean);
+  }
+  const raw = product.photoUrl || product.photo_url || '';
+  if (!raw) return [];
+  const s = String(raw).trim();
+  if (s.startsWith('[')) {
+    try {
+      const arr = JSON.parse(s);
+      if (Array.isArray(arr) && arr.length) return arr.map(p => normalizeLojaPhoto(p)).filter(Boolean);
+    } catch {}
+  }
+  if (s.includes(',')) {
+    return s.split(',').map(p => normalizeLojaPhoto(p.trim())).filter(Boolean);
+  }
+  return [normalizeLojaPhoto(s)];
+}
+
+function normalizeLojaPhoto(url, fallback = 'images/categorias/filtros.jpg') {
   if (!url) return fallback;
   url = String(url).trim();
+  if (url.startsWith('[')) {
+    try {
+      const arr = JSON.parse(url);
+      if (Array.isArray(arr) && arr.length) url = arr[0];
+    } catch {}
+  } else if (url.includes(',')) {
+    url = url.split(',')[0].trim();
+  }
+  if (!url) return fallback;
   if (url.startsWith('http://') || url.startsWith('https://') || url.startsWith('data:')) return url;
-  if (url.startsWith('/loja/')) url = url.replace(/^\/loja\//, '/');
-  else if (url.startsWith('loja/')) url = url.replace(/^loja\//, '/');
-  if (!url.startsWith('/')) url = '/' + url;
+
+  // Garante que imagens locais da loja fiquem relativas ("images/...") para funcionar tanto via http:// quanto via file://
+  if (url.startsWith('/loja/images/')) url = url.replace(/^\/loja\//, '');
+  else if (url.startsWith('loja/images/')) url = url.replace(/^loja\//, '');
+  else if (url.startsWith('/images/')) url = url.replace(/^\//, '');
+
+  // Ajusta uploads quando o usuário abre direto o arquivo via file://
+  if (typeof window !== 'undefined' && window.location && window.location.protocol === 'file:') {
+    if (url.startsWith('/uploads/')) url = '../uploads/' + url.replace(/^\/uploads\//, '');
+    else if (url.startsWith('uploads/')) url = '../' + url;
+  }
+
   return url;
 }
 
@@ -564,13 +602,13 @@ async function loadCategoryCarousel() {
     if (wrap) wrap.style.display = '';
 
     const cardHtml = (c, hidden) => {
-      const photo = normalizeLojaPhoto(c.photoUrl || CATEGORY_IMAGES[c.category] || '/images/categorias/filtros.jpg');
+      const photo = normalizeLojaPhoto(c.photoUrl || CATEGORY_IMAGES[c.category] || 'images/categorias/filtros.jpg');
       const priceVal = typeof c.price === 'number' ? c.price : (c.price_cents ? c.price_cents / 100 : 0);
       const pixVal = priceVal > 0 ? (priceVal * (1 - (PIX_DISCOUNT_RATE || 0.04))) : 0;
       const installmentVal = priceVal > 0 ? priceVal / 6 : 0;
       return `<div class="card cat-card" data-product-id="${c.id || ''}" data-category="${c.category || ''}"${hidden ? ' aria-hidden="true"' : ''}>
         <div class="cat-card-img-wrap">
-          <img alt="${hidden ? '' : c.name}" loading="lazy" src="${photo}" onerror="this.onerror=null; this.src='/images/categorias/filtros.jpg';">
+          <img alt="${hidden ? '' : c.name}" loading="lazy" src="${photo}" onerror="this.onerror=null; this.src='images/categorias/filtros.jpg';">
           ${priceVal > 0 ? `<span class="cat-card-pix-badge">-4% PIX</span>` : ''}
         </div>
         <small class="cat-card-category">${c.category || 'Peça'}</small>
@@ -691,13 +729,13 @@ async function loadRecommendedProducts(product) {
 
     section.style.display = 'block';
     grid.innerHTML = recommended.map(p => {
-      const photo = normalizeLojaPhoto(p.photoUrl || CATEGORY_IMAGES[p.category] || '/images/categorias/filtros.jpg');
+      const photo = normalizeLojaPhoto(p.photoUrl || CATEGORY_IMAGES[p.category] || 'images/categorias/filtros.jpg');
       const priceVal = typeof p.price === 'number' ? p.price : (p.price_cents ? p.price_cents / 100 : 0);
       const pixVal = priceVal > 0 ? (priceVal * (1 - (PIX_DISCOUNT_RATE || 0.04))) : 0;
       return `
         <div class="fp-rec-card" data-rec-id="${p.id}" role="button" tabindex="0">
           <div class="fp-rec-card-img-wrap">
-            <img src="${photo}" alt="${p.name}" loading="lazy" onerror="this.onerror=null; this.src='/images/categorias/filtros.jpg';" />
+            <img src="${photo}" alt="${p.name}" loading="lazy" onerror="this.onerror=null; this.src='images/categorias/filtros.jpg';" />
           </div>
           <div class="fp-rec-card-body">
             <span class="fp-rec-card-cat">${p.category || 'Peça'}</span>
@@ -757,7 +795,7 @@ function renderProducts(container, products) {
     const pixVal = priceVal > 0 ? (priceVal * (1 - (PIX_DISCOUNT_RATE || 0.04))) : 0;
     return `
     <div class="product" data-product-id="${p.id}">
-      <div class="part-photo">${img ? `<img src="${img}" alt="${p.name}" loading="lazy" onerror="this.onerror=null; this.src='/images/categorias/filtros.jpg';">` : '🔩'}</div>
+      <div class="part-photo">${img ? `<img src="${img}" alt="${p.name}" loading="lazy" onerror="this.onerror=null; this.src='images/categorias/filtros.jpg';">` : '🔩'}</div>
       <div class="product-info-wrap">
         <b class="product-name" title="${p.name}">${p.name}</b>
         <small class="product-meta">${p.description || p.category || 'Aplicação compatível'}</small>
@@ -881,15 +919,47 @@ async function openProductDetails(productId, cachedProduct = null, push = true) 
   if (titleEl) titleEl.textContent = product.name;
   if (subtitleEl) subtitleEl.textContent = product.description || 'Aplicação compatível e procedência certificada com garantia.';
 
-  // Imagem e Lightbox
+  // Imagens e Galeria de Fotos
+  const allPhotos = extractLojaPhotos(product);
+  const photosToRender = allPhotos.length ? allPhotos : [normalizeLojaPhoto(img)];
+  
+  const track = document.getElementById('gallerySlidesTrack');
+  if (track) {
+    track.innerHTML = photosToRender.map((pUrl, idx) => `
+      <div class="gallery-slide" data-slide-index="${idx}">
+        <div class="slide-img-wrap">
+          <img ${idx === 0 ? 'id="detailMainImg"' : ''} src="${pUrl}" alt="${product.name} - Foto ${idx + 1}" loading="${idx === 0 ? 'eager' : 'lazy'}" draggable="false" />
+        </div>
+      </div>
+    `).join('');
+  }
+
+  const dotsRow = document.getElementById('galleryDotsRow');
+  if (dotsRow) {
+    if (photosToRender.length > 1) {
+      dotsRow.innerHTML = photosToRender.map((_, i) => `<span class="g-dot ${i === 0 ? 'active' : ''}" data-index="${i}"></span>`).join('');
+      dotsRow.style.display = 'flex';
+    } else {
+      dotsRow.innerHTML = '';
+      dotsRow.style.display = 'none';
+    }
+  }
+
+  const prevBtn = document.getElementById('galleryPrevBtn');
+  const nextBtn = document.getElementById('galleryNextBtn');
+  if (prevBtn && nextBtn) {
+    prevBtn.style.display = photosToRender.length > 1 ? 'flex' : 'none';
+    nextBtn.style.display = photosToRender.length > 1 ? 'flex' : 'none';
+  }
+
   const mainImg = document.getElementById('detailMainImg');
   const lbImg = document.getElementById('lightboxImg');
   const lbTitle = document.getElementById('lightboxTitle');
   if (mainImg) {
-    mainImg.src = img;
+    mainImg.src = photosToRender[0];
     mainImg.alt = product.name;
   }
-  if (lbImg) lbImg.src = img;
+  if (lbImg) lbImg.src = photosToRender[0];
   if (lbTitle) lbTitle.textContent = `${product.name} - Inspeção em Alta Resolução`;
 
   // Ações de Botões e Estoque
@@ -1096,11 +1166,19 @@ function initProductViewer() {
   let isDragging = false;
 
   function updateGallery(index) {
-    currentSlide = Math.max(0, Math.min(totalSlides - 1, index));
+    const slides = track.querySelectorAll('.gallery-slide');
+    const total = Math.max(1, slides.length);
+    currentSlide = Math.max(0, Math.min(total - 1, index));
     track.style.transition = 'transform 0.35s cubic-bezier(0.2, 0.8, 0.25, 1)';
     track.style.transform = `translateX(-${currentSlide * 100}%)`;
 
-    if (counter) counter.textContent = `${currentSlide + 1} / ${totalSlides}`;
+    const lbImg = document.getElementById('lightboxImg');
+    const activeSlideImg = slides[currentSlide]?.querySelector('img');
+    if (lbImg && activeSlideImg) {
+      lbImg.src = activeSlideImg.src;
+    }
+
+    if (counter) counter.textContent = `${currentSlide + 1} / ${total}`;
     if (dotsRow) {
       dotsRow.querySelectorAll('.g-dot').forEach((d, i) => {
         d.classList.toggle('active', i === currentSlide);
@@ -1108,9 +1186,11 @@ function initProductViewer() {
     }
 
     if (badgeText) {
-      if (currentSlide === 0) badgeText.textContent = 'Arraste para o lado para ver mais';
-      else if (currentSlide === 1) badgeText.textContent = 'Compatibilidade & Aplicação';
-      else badgeText.textContent = 'Garantia & Procedência';
+      if (total > 1) {
+        badgeText.textContent = `Foto ${currentSlide + 1} de ${total} • Arraste para navegar`;
+      } else {
+        badgeText.textContent = 'Inspeção técnica em alta resolução';
+      }
     }
   }
 
@@ -1120,15 +1200,20 @@ function initProductViewer() {
   window.resetViewer = window.resetProductGallery;
 
   prevBtn?.addEventListener('click', () => {
+    const total = Math.max(1, track.querySelectorAll('.gallery-slide').length);
     if (currentSlide > 0) updateGallery(currentSlide - 1);
   });
 
   nextBtn?.addEventListener('click', () => {
-    if (currentSlide < totalSlides - 1) updateGallery(currentSlide + 1);
+    const total = Math.max(1, track.querySelectorAll('.gallery-slide').length);
+    if (currentSlide < total - 1) updateGallery(currentSlide + 1);
   });
 
-  dotsRow?.querySelectorAll('.g-dot').forEach((dot, idx) => {
-    dot.addEventListener('click', () => updateGallery(idx));
+  dotsRow?.addEventListener('click', (e) => {
+    const dot = e.target.closest('.g-dot');
+    if (dot && dot.dataset.index != null) {
+      updateGallery(parseInt(dot.dataset.index, 10));
+    }
   });
 
   // Touch & Mouse Dragging manual e suave
@@ -2176,7 +2261,7 @@ init();
       }
 
       list.innerHTML = items.map(p => {
-        const photo = normalizeLojaPhoto(p.photoUrl || CATEGORY_IMAGES[p.category] || '/images/categorias/filtros.jpg');
+        const photo = normalizeLojaPhoto(p.photoUrl || CATEGORY_IMAGES[p.category] || 'images/categorias/filtros.jpg');
         const priceVal = typeof p.price === 'number' ? p.price : parseFloat(p.price) || 0;
         const pixVal = priceVal * (1 - (PIX_DISCOUNT_RATE || 0.04));
         const pixStr = money(pixVal).replace('R$', '').trim();
@@ -2202,7 +2287,7 @@ init();
             <div class="offer-card-note">ou ${money(priceVal)} em até 12x no cartão</div>
           </div>
           <div class="offer-card-img">
-            <img src="${photo}" alt="${p.name}" loading="lazy" onerror="this.onerror=null; this.src='/images/categorias/filtros.jpg';">
+            <img src="${photo}" alt="${p.name}" loading="lazy" onerror="this.onerror=null; this.src='images/categorias/filtros.jpg';">
             <span class="offer-img-badge">OFERTA</span>
           </div>
         </button>`;
@@ -2385,12 +2470,12 @@ init();
     let timer = null;
 
     function cardHtml(p) {
-      const photo = normalizeLojaPhoto(p.photoUrl || (typeof CATEGORY_IMAGES !== 'undefined' && CATEGORY_IMAGES[p.category]) || '/images/categorias/filtros.jpg');
+      const photo = normalizeLojaPhoto(p.photoUrl || (typeof CATEGORY_IMAGES !== 'undefined' && CATEGORY_IMAGES[p.category]) || 'images/categorias/filtros.jpg');
       const priceVal = typeof p.price === 'number' ? p.price : parseFloat(p.price) || 0;
       const pixVal = priceVal * (1 - (typeof PIX_DISCOUNT_RATE !== 'undefined' ? PIX_DISCOUNT_RATE : 0.04));
       return `
         <button type="button" class="hero-side-card" data-product-id="${p.id}" title="${p.name}">
-          <span class="hsc-img"><img src="${photo}" alt="${p.name}" loading="lazy" onerror="this.onerror=null; this.src='/images/categorias/filtros.jpg';"></span>
+          <span class="hsc-img"><img src="${photo}" alt="${p.name}" loading="lazy" onerror="this.onerror=null; this.src='images/categorias/filtros.jpg';"></span>
           <span class="hsc-text">
             <span class="hsc-cat">${p.category || 'Peça'}</span>
             <span class="hsc-name">${p.name}</span>
