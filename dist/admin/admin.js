@@ -1587,6 +1587,43 @@ window.cancelPieceEdit = cancelPieceEdit;
 document.getElementById('cancelEditBtn')?.addEventListener('click', cancelPieceEdit);
 
 // Upload e Anexo de Foto do Produto (Upload de Arquivos Únicos ou Múltiplos)
+// Reduz a foto no navegador antes de enviar (máx. 1600px, JPEG ~85%).
+// A Vercel recusa envios acima de ~4,5MB e fotos menores carregam mais rápido na loja.
+async function comprimirImagem(file, maxLado = 1600, qualidade = 0.85) {
+  if (!file || !/^image\/(jpe?g|png|webp)$/i.test(file.type)) return file;
+  try {
+    const bitmap = await createImageBitmap(file);
+    const escala = Math.min(1, maxLado / Math.max(bitmap.width, bitmap.height));
+    const w = Math.round(bitmap.width * escala);
+    const h = Math.round(bitmap.height * escala);
+    const canvas = document.createElement('canvas');
+    canvas.width = w;
+    canvas.height = h;
+    const ctx = canvas.getContext('2d');
+    ctx.fillStyle = '#ffffff'; // PNG transparente vira fundo branco
+    ctx.fillRect(0, 0, w, h);
+    ctx.drawImage(bitmap, 0, 0, w, h);
+    const blob = await new Promise((ok) => canvas.toBlob(ok, 'image/jpeg', qualidade));
+    if (!blob || (blob.size >= file.size && escala === 1)) return file;
+    const nome = (file.name || 'foto').replace(/\.[^.]+$/, '') + '.jpg';
+    return new File([blob], nome, { type: 'image/jpeg' });
+  } catch (_e) {
+    return file;
+  }
+}
+
+async function enviarUmaImagem(file, campo = 'photos') {
+  const formData = new FormData();
+  formData.append(campo, await comprimirImagem(file));
+  const res = await fetch('/api/uploads', { method: 'POST', body: formData });
+  let data = {};
+  try { data = await res.json(); } catch (_e) { /* resposta não-JSON */ }
+  if (!res.ok) {
+    throw new Error(data.error || (res.status === 413 ? 'Imagem grande demais para enviar.' : 'Falha no envio da imagem'));
+  }
+  return data.urls || (data.url ? [data.url] : []);
+}
+
 document.getElementById('pPhotoFile')?.addEventListener('change', async (e) => {
   const files = Array.from(e.target.files || []);
   if (!files.length) return;
@@ -1610,22 +1647,11 @@ document.getElementById('pPhotoFile')?.addEventListener('change', async (e) => {
     if (btnText) btnText.textContent = validFiles.length === 1 ? 'Enviando...' : `Enviando (${validFiles.length})...`;
     if (btnLabel) btnLabel.classList.add('is-uploading');
 
-    const formData = new FormData();
-    validFiles.forEach((file) => {
-      formData.append('photos', file);
-    });
-
-    const res = await fetch('/api/uploads', {
-      method: 'POST',
-      body: formData,
-    });
-
-    const data = await res.json();
-    if (!res.ok) {
-      throw new Error(data.error || 'Falha no envio das imagens');
+    const newUrls = [];
+    for (let i = 0; i < validFiles.length; i++) {
+      if (btnText && validFiles.length > 1) btnText.textContent = `Enviando ${i + 1}/${validFiles.length}...`;
+      newUrls.push(...(await enviarUmaImagem(validFiles[i], 'photos')));
     }
-
-    const newUrls = data.urls || (data.url ? [data.url] : []);
     if (newUrls.length > 0) {
       newUrls.forEach(url => {
         if (!currentProductImages.includes(url)) {
@@ -5329,16 +5355,8 @@ document.getElementById('cpPhotoFile')?.addEventListener('change', async (e) => 
   }
 
   try {
-    const formData = new FormData();
-    formData.append('photo', file);
-
-    const res = await fetch('/api/uploads', {
-      method: 'POST',
-      body: formData,
-    });
-
-    const data = await res.json();
-    if (!res.ok) throw new Error(data.error || 'Falha no envio da imagem');
+    const urls = await enviarUmaImagem(file, 'photo');
+    const data = { url: urls[0] };
 
     const photoInput = document.getElementById('cpPhoto');
     if (photoInput) photoInput.value = data.url;

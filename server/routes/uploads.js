@@ -8,6 +8,7 @@ const fs = require('fs');
 const express = require('express');
 const multer = require('multer');
 const { requireRole } = require('../middleware/auth');
+const db = require('../db');
 
 const router = express.Router();
 
@@ -105,28 +106,78 @@ async function enviarParaSupabase(file) {
   return `${SUPABASE_URL}/storage/v1/object/public/${SUPABASE_BUCKET}/${nome}`;
 }
 
+// Sem Supabase, as fotos ficam guardadas no próprio banco Postgres (Neon) que o
+// sistema já usa — funciona na Vercel sem nenhuma configuração extra.
+let tabelaPronta = null;
+function garantirTabela() {
+  if (!tabelaPronta) {
+    tabelaPronta = db
+      .query(
+        `CREATE TABLE IF NOT EXISTS product_images (
+           id         SERIAL PRIMARY KEY,
+           mime       TEXT NOT NULL,
+           data       BYTEA NOT NULL,
+           created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+         )`
+      )
+      .catch((erro) => {
+        tabelaPronta = null; // tenta de novo na próxima vez
+        throw erro;
+      });
+  }
+  return tabelaPronta;
+}
+
+async function gravarNoBanco(file) {
+  await garantirTabela();
+  const ext = (path.extname(file.originalname || '').toLowerCase() || '.jpg').replace(/[^.a-z0-9]/g, '');
+  const { rows } = await db.query(
+    'INSERT INTO product_images (mime, data) VALUES ($1, $2) RETURNING id',
+    [file.mimetype, file.buffer]
+  );
+  return `/api/uploads/img/${rows[0].id}${ext}`;
+}
+
 function gravarNoDisco(file) {
   const pasta = path.join(__dirname, '..', '..', 'public', 'uploads', 'products');
   const nome = nomeDeArquivo(file.originalname);
-  try {
-    fs.mkdirSync(pasta, { recursive: true });
-    fs.writeFileSync(path.join(pasta, nome), file.buffer);
-  } catch (erro) {
-    // Acontece em hospedagem serverless (disco somente leitura).
-    const faltando = [
-      !SUPABASE_URL && 'SUPABASE_URL',
-      !SUPABASE_SERVICE_KEY && 'SUPABASE_SERVICE_KEY',
-    ].filter(Boolean).join(' e ');
-    throw new Error(
-      'Não foi possível salvar a imagem: este servidor não tem disco para gravar. ' +
-        `O servidor não encontrou: ${faltando}. Cadastre na Vercel (Settings > Environment Variables, ` +
-        'ambiente Production) e faça Redeploy.'
-    );
-  }
+  fs.mkdirSync(pasta, { recursive: true });
+  fs.writeFileSync(path.join(pasta, nome), file.buffer);
   return `/uploads/products/${nome}`;
 }
 
-router.get('/status', (_req, res) => res.json(statusStorage()));
+// Ordem: Supabase (se configurado) → banco de dados na Vercel → disco local (com banco como reserva).
+async function salvarImagem(file) {
+  if (usarSupabase) return { url: await enviarParaSupabase(file), storage: 'supabase' };
+  if (process.env.VERCEL) return { url: await gravarNoBanco(file), storage: 'banco' };
+  try {
+    return { url: gravarNoDisco(file), storage: 'disco-local' };
+  } catch (_erro) {
+    return { url: await gravarNoBanco(file), storage: 'banco' };
+  }
+}
+
+router.get('/status', (_req, res) =>
+  res.json({ ...statusStorage(), storage: usarSupabase ? 'supabase' : process.env.VERCEL ? 'banco' : 'disco-local' })
+);
+
+// Entrega a foto guardada no banco. Público (a loja precisa exibir) e com cache longo,
+// já que cada foto tem um id único e nunca muda.
+router.get('/img/:arquivo', async (req, res) => {
+  const id = parseInt(req.params.arquivo, 10);
+  if (!Number.isInteger(id) || id <= 0) return res.status(404).end();
+  try {
+    await garantirTabela();
+    const { rows } = await db.query('SELECT mime, data FROM product_images WHERE id = $1', [id]);
+    if (!rows.length) return res.status(404).end();
+    res.setHeader('Content-Type', rows[0].mime);
+    res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
+    return res.end(rows[0].data);
+  } catch (erro) {
+    console.error('[Uploads] erro ao ler imagem', erro.message);
+    return res.status(500).end();
+  }
+});
 
 router.post('/', requireRole('admin'), (req, res) => {
   upload.any()(req, res, async (err) => {
@@ -137,7 +188,7 @@ router.post('/', requireRole('admin'), (req, res) => {
       return res.status(400).json({ error: `Erro no upload: ${err.message}` });
     }
     if (err) return res.status(400).json({ error: err.message });
-    
+
     const files = req.files || (req.file ? [req.file] : []);
     if (!files || files.length === 0) {
       return res.status(400).json({ error: 'Nenhum arquivo enviado.' });
@@ -146,17 +197,17 @@ router.post('/', requireRole('admin'), (req, res) => {
     try {
       const results = [];
       for (const file of files) {
-        const url = usarSupabase ? await enviarParaSupabase(file) : gravarNoDisco(file);
+        const { url, storage } = await salvarImagem(file);
         results.push({
           url,
           filename: path.basename(url),
           originalName: file.originalname,
           size: file.size,
-          storage: usarSupabase ? 'supabase' : 'disco-local',
+          storage,
         });
       }
-      
-      const urls = results.map(r => r.url);
+
+      const urls = results.map((r) => r.url);
       return res.json({
         ok: true,
         url: urls[0],
@@ -168,7 +219,7 @@ router.post('/', requireRole('admin'), (req, res) => {
       });
     } catch (erro) {
       console.error('[Uploads]', erro.message);
-      return res.status(502).json({ error: erro.message });
+      return res.status(502).json({ error: 'Não foi possível salvar a imagem: ' + erro.message });
     }
   });
 });
