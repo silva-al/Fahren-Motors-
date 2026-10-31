@@ -7926,9 +7926,9 @@ body.tema-claro .label-preview-wrapper {
 }
 
 /* Modo Escuro (Dark Mode padrão): PARTS em BRANCO (#ffffff) */
-.brand-parts,
-.brand-title .brand-parts,
-.brand-info strong .brand-parts {
+.brand-parts, .brand-motors,
+.brand-title .brand-parts, .brand-title .brand-motors, .brand-motors,
+.brand-info strong .brand-parts, .brand-info strong .brand-motors {
   color: #ffffff !important;
   font-weight: 900 !important;
   letter-spacing: 0.3px !important;
@@ -7937,10 +7937,10 @@ body.tema-claro .label-preview-wrapper {
 }
 
 /* Modo Claro (Light Mode): PARTS em PRETO (#000000) */
-body.tema-claro .brand-parts,
-.tema-claro .brand-parts,
-body.tema-claro .brand-title .brand-parts,
-body.tema-claro .brand-info strong .brand-parts {
+body.tema-claro .brand-parts, .brand-motors,
+.tema-claro .brand-parts, .brand-motors,
+body.tema-claro .brand-title .brand-parts, .brand-title .brand-motors, .brand-motors,
+body.tema-claro .brand-info strong .brand-parts, .brand-info strong .brand-motors {
   color: #000000 !important;
   -webkit-text-fill-color: #000000 !important;
 }
