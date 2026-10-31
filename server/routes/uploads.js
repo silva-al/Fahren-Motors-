@@ -11,10 +11,45 @@ const { requireRole } = require('../middleware/auth');
 
 const router = express.Router();
 
-const SUPABASE_URL = (process.env.SUPABASE_URL || '').replace(/\/+$/, '');
-const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_KEY || '';
-const SUPABASE_BUCKET = process.env.SUPABASE_BUCKET || 'produtos';
+// Aceita também os nomes criados pela integração oficial Vercel + Supabase
+// (SUPABASE_SERVICE_ROLE_KEY, NEXT_PUBLIC_SUPABASE_URL) e remove espaços/aspas
+// que costumam vir junto ao colar o valor no painel.
+function lerEnv(...nomes) {
+  for (const nome of nomes) {
+    const v = (process.env[nome] || '').trim().replace(/^["']|["']$/g, '');
+    if (v) return v;
+  }
+  return '';
+}
+
+// Se a URL do projeto não foi informada, tenta descobrir pelo DATABASE_URL do Supabase
+// (formatos db.<ref>.supabase.co ou postgres.<ref>@...pooler.supabase.com).
+function urlPeloDatabaseUrl() {
+  const db = process.env.DATABASE_URL || '';
+  const m = db.match(/db\.([a-z0-9]{15,})\.supabase\.co/i) || db.match(/postgres\.([a-z0-9]{15,})[:@]/i);
+  return m ? `https://${m[1]}.supabase.co` : '';
+}
+
+const SUPABASE_URL = (
+  lerEnv('SUPABASE_URL', 'NEXT_PUBLIC_SUPABASE_URL', 'SUPABASE_PROJECT_URL') || urlPeloDatabaseUrl()
+).replace(/\/+$/, '');
+const SUPABASE_SERVICE_KEY = lerEnv(
+  'SUPABASE_SERVICE_KEY',
+  'SUPABASE_SERVICE_ROLE_KEY',
+  'SUPABASE_SECRET_KEY'
+);
+const SUPABASE_BUCKET = lerEnv('SUPABASE_BUCKET') || 'produtos';
 const usarSupabase = Boolean(SUPABASE_URL && SUPABASE_SERVICE_KEY);
+
+// Diagnóstico sem expor segredos: diz só o que foi encontrado.
+function statusStorage() {
+  return {
+    storage: usarSupabase ? 'supabase' : 'disco-local',
+    supabaseUrl: Boolean(SUPABASE_URL),
+    supabaseServiceKey: Boolean(SUPABASE_SERVICE_KEY),
+    bucket: SUPABASE_BUCKET,
+  };
+}
 
 const TIPOS_PERMITIDOS = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp', 'image/gif'];
 const TAMANHO_MAXIMO = 5 * 1024 * 1024; // 5 MB
@@ -78,13 +113,20 @@ function gravarNoDisco(file) {
     fs.writeFileSync(path.join(pasta, nome), file.buffer);
   } catch (erro) {
     // Acontece em hospedagem serverless (disco somente leitura).
+    const faltando = [
+      !SUPABASE_URL && 'SUPABASE_URL',
+      !SUPABASE_SERVICE_KEY && 'SUPABASE_SERVICE_KEY',
+    ].filter(Boolean).join(' e ');
     throw new Error(
       'Não foi possível salvar a imagem: este servidor não tem disco para gravar. ' +
-        'Configure SUPABASE_URL e SUPABASE_SERVICE_KEY para guardar as fotos no Supabase Storage.'
+        `O servidor não encontrou: ${faltando}. Cadastre na Vercel (Settings > Environment Variables, ` +
+        'ambiente Production) e faça Redeploy.'
     );
   }
   return `/uploads/products/${nome}`;
 }
+
+router.get('/status', (_req, res) => res.json(statusStorage()));
 
 router.post('/', requireRole('admin'), (req, res) => {
   upload.any()(req, res, async (err) => {
