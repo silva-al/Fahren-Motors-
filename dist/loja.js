@@ -1039,7 +1039,7 @@ async function openProductDetails(productId, cachedProduct = null, push = true) 
   const waLink = document.getElementById('detailWhatsAppLink');
   if (waLink) {
     const msg = `Olá! Gostaria de tirar uma dúvida sobre a peça ${product.name} (Código: ${product.code || product.id}).`;
-    waLink.href = `https://wa.me/5519989932064?text=${encodeURIComponent(msg)}`;
+    waLink.href = `https://wa.me/5519994755798?text=${encodeURIComponent(msg)}`;
   }
 
   // Descrição Técnica Completa
@@ -1114,7 +1114,7 @@ async function openProductDetails(productId, cachedProduct = null, push = true) 
           <strong style="color:var(--fp-fff);font-size:14px;display:block">Dúvida sobre o chassi, motor ou ano do seu carro?</strong>
           <span style="color:var(--fp-9da2aa);font-size:12.5px">Nossa equipe confirma na hora pelo catálogo técnico da montadora.</span>
         </div>
-        <a href="https://wa.me/5519989932064?text=${encodeURIComponent('Olá! Gostaria de confirmar a compatibilidade da peça ' + product.name + ' (Código: ' + (product.code || product.id) + ') com o modelo do meu carro.')}" target="_blank" rel="noopener" style="background:#238636;color:var(--fp-fff);padding:8px 16px;border-radius:6px;font-size:13px;font-weight:700;text-decoration:none;display:inline-flex;align-items:center;gap:6px;transition:background .15s">
+        <a href="https://wa.me/5519994755798?text=${encodeURIComponent('Olá! Gostaria de confirmar a compatibilidade da peça ' + product.name + ' (Código: ' + (product.code || product.id) + ') com o modelo do meu carro.')}" target="_blank" rel="noopener" style="background:#238636;color:var(--fp-fff);padding:8px 16px;border-radius:6px;font-size:13px;font-weight:700;text-decoration:none;display:inline-flex;align-items:center;gap:6px;transition:background .15s">
           <span>💬</span> Confirmar no WhatsApp
         </a>
       </div>
