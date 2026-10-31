@@ -38,6 +38,15 @@ const daLoja = copiarPasta(path.join(raiz, 'public', 'loja'), dist);
 const doAdmin = copiarPasta(path.join(raiz, 'public', 'admin'), path.join(dist, 'admin'));
 const deUploads = copiarPasta(path.join(raiz, 'public', 'uploads'), path.join(dist, 'uploads'));
 
+// Troca o ?v=... dos CSS/JS por um número novo a cada deploy, para o navegador
+// baixar sempre a versão mais recente (sem precisar de Ctrl+F5).
+const versao = Date.now().toString(36);
+for (const html of [path.join(dist, 'index.html'), path.join(dist, 'admin', 'index.html')]) {
+  if (!fs.existsSync(html)) continue;
+  const conteudo = fs.readFileSync(html, 'utf8').replace(/(\.(?:css|js))\?v=[\w.-]+/g, `$1?v=${versao}`);
+  fs.writeFileSync(html, conteudo, 'utf8');
+}
+
 console.log(`Build pronto: ${daLoja} arquivos da loja + ${doAdmin} do painel + ${deUploads} uploads em dist/`);
 
 if (daLoja === 0) {
