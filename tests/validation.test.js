@@ -1,4 +1,8 @@
 import { describe, it, expect } from 'vitest';
+import fs from 'fs';
+import path from 'path';
+import { Window } from 'happy-dom';
+
 const { registerSchema, loginSchema } = require('../server/validators/auth-schema');
 const { createOrderSchema } = require('../server/validators/order-schema');
 
@@ -93,3 +97,88 @@ describe('Zod Schemas - Order Validation', () => {
   });
 });
 
+describe('DOM & Button Validation - Fahren Motors UI', () => {
+  const htmlPath = path.join(__dirname, '..', 'public', 'loja', 'index.html');
+  const htmlContent = fs.readFileSync(htmlPath, 'utf8');
+  const window = new Window();
+  const document = window.document;
+  document.body.innerHTML = htmlContent;
+
+  it('deve conter o botão .btn-offers-all (VER TODAS AS PEÇAS NO CATÁLOGO) com destino para pecas', () => {
+    const btnOffersAll = document.querySelector('.btn-offers-all');
+    expect(btnOffersAll).not.toBeNull();
+    expect(btnOffersAll.dataset.go).toBe('pecas');
+    expect(btnOffersAll.textContent).toContain('VER TODAS AS PEÇAS NO CATÁLOGO');
+  });
+
+  it('deve conter os botões .ver-todas com destino e texto válidos', () => {
+    const verTodasButtons = [...document.querySelectorAll('.ver-todas')];
+    expect(verTodasButtons.length).toBeGreaterThanOrEqual(1);
+    const homeVerTodas = verTodasButtons[0];
+    expect(homeVerTodas.textContent).toContain('VER TODAS');
+    expect(homeVerTodas.dataset.go).toBe('pecas');
+  });
+
+  it('todos os botões com [data-go] devem apontar para telas reais existentes no HTML', () => {
+    const screens = [...document.querySelectorAll('.screen')].map(s => s.id);
+    const dataGoButtons = [...document.querySelectorAll('[data-go]')];
+    expect(dataGoButtons.length).toBeGreaterThan(0);
+    dataGoButtons.forEach(btn => {
+      const targetScreen = btn.dataset.go;
+      expect(screens).toContain(targetScreen);
+    });
+  });
+
+  it('deve conter todos os 4 seletores de veículos sem bordas e com opções', () => {
+    const montadora = document.getElementById('vfMontadora');
+    const modelo = document.getElementById('vfModelo');
+    const ano = document.getElementById('vfAno');
+    const motor = document.getElementById('vfMotor');
+
+    expect(montadora).not.toBeNull();
+    expect(modelo).not.toBeNull();
+    expect(ano).not.toBeNull();
+    expect(motor).not.toBeNull();
+  });
+
+  it('deve conter as abas do buscador de veículos (placa e modelo) com IDs corretos', () => {
+    const tabPlaca = document.getElementById('vfTabPlate');
+    const tabModelo = document.getElementById('vfTabModel');
+    expect(tabPlaca).not.toBeNull();
+    expect(tabModelo).not.toBeNull();
+    expect(tabPlaca.textContent).toContain('Por Placa');
+    expect(tabModelo.textContent).toContain('Por Modelo');
+  });
+
+  it('deve conter os botões de trocar de veículo / limpar garagem', () => {
+    const clearHome = document.getElementById('activeGarageClearBtn');
+    const clearCatalog = document.getElementById('activeGarageClearBtnCatalog');
+    expect(clearHome).not.toBeNull();
+    expect(clearCatalog).not.toBeNull();
+    expect(clearHome.textContent).toContain('Trocar Veículo');
+  });
+
+  it('deve conter o botão de alternar tema dark/light (#themeToggle)', () => {
+    const toggle = document.getElementById('themeToggle');
+    expect(toggle).not.toBeNull();
+    expect(toggle.getAttribute('aria-label')).toContain('Alternar entre tema claro e escuro');
+  });
+
+  it('deve conter o rodapé legal oficial em todas as telas com CNPJ da Fahren Motors', () => {
+    const legal = document.querySelector('.fp-footer-legal');
+    expect(legal).not.toBeNull();
+    expect(legal.textContent).toContain('47.784.317/0001-20');
+    expect(legal.textContent).toContain('FAHREN MOTORS LTDA');
+  });
+
+  it('deve conter os 5 botões da barra de navegação móvel (mobile tabbar)', () => {
+    const tabbar = document.getElementById('mobileTabbar');
+    expect(tabbar).not.toBeNull();
+    const tabs = [...tabbar.querySelectorAll('button')].map(b => b.dataset.tab);
+    expect(tabs).toContain('inicio');
+    expect(tabs).toContain('categorias');
+    expect(tabs).toContain('buscar');
+    expect(tabs).toContain('perfil');
+    expect(tabs).toContain('carrinho');
+  });
+});

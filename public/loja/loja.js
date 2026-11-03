@@ -167,8 +167,35 @@ function show(id, opts = {}) {
   updateBackBtn(id);
 }
 
-nav.forEach(b => b.onclick = () => show(b.dataset.screen));
-document.querySelectorAll('[data-go]').forEach(b => b.onclick = () => show(b.dataset.go));
+nav.forEach(b => {
+  b.onclick = () => show(b.dataset.screen);
+});
+
+// Listener global de clique e toque com suporte a mobile para todos os botões de catálogo, ofertas e seções
+document.addEventListener('click', (e) => {
+  const btn = e.target.closest('[data-go], .ver-todas, .btn-offers-all, [data-go-all]');
+  if (btn) {
+    e.preventDefault();
+    e.stopPropagation();
+    const dest = btn.dataset.go || 'pecas';
+    show(dest);
+    if (dest === 'pecas') {
+      const catInput = document.getElementById('catalogSearch');
+      if (catInput && !catInput.value) {
+        if (typeof loadCatalog === 'function') loadCatalog();
+      }
+    }
+  }
+});
+
+// Vinculação direta em todos os botões .ver-todas e .btn-offers-all
+document.querySelectorAll('.ver-todas, .btn-offers-all, [data-go]').forEach(b => {
+  b.onclick = (e) => {
+    e.preventDefault();
+    const dest = b.dataset.go || 'pecas';
+    show(dest);
+  };
+});
 document.querySelectorAll('[data-screen="cadastro"]').forEach(b => b.addEventListener('click', () => { show('cadastro'); openRegister(); }));
 document.getElementById('quickLogin')?.addEventListener('click', () => { show('cadastro'); openLogin(); });
 document.querySelectorAll('[data-auth]').forEach(b => b.onclick = () => {
