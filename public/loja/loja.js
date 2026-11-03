@@ -1751,15 +1751,8 @@ async function loadCatalog() {
   if (!container) return;
 
   const catBar = document.getElementById('activeCategoryBarCatalog');
-  const catTitle = document.getElementById('activeCategoryTitleCatalog');
-  if (catBar && catTitle) {
-    if (activeCatalogCategory) {
-      catTitle.textContent = activeCatalogCategory;
-      catBar.style.display = 'flex';
-    } else {
-      catBar.style.display = 'none';
-      catTitle.textContent = '';
-    }
+  if (catBar) {
+    catBar.style.display = 'flex';
   }
 
   const params = new URLSearchParams();
@@ -2514,12 +2507,19 @@ init();
 
   // Grade de categorias na home
   // Limpar filtro de categoria selecionada
-  document.getElementById('activeCategoryClearBtnCatalog')?.addEventListener('click', () => {
+  const handleExitAllParts = (e) => {
+    e?.preventDefault?.();
+    e?.stopPropagation?.();
     activeCatalogCategory = '';
-    const catBar = document.getElementById('activeCategoryBarCatalog');
-    if (catBar) catBar.style.display = 'none';
-    loadCatalog();
-  });
+    const catInput = document.getElementById('catalogSearch');
+    if (catInput) catInput.value = '';
+    const catSelect = document.getElementById('filterCategory');
+    if (catSelect) catSelect.value = '';
+    show('inicio');
+  };
+
+  document.getElementById('activeCategoryClearBtnCatalog')?.addEventListener('click', handleExitAllParts);
+  document.getElementById('activeCategoryBarCatalog')?.addEventListener('click', handleExitAllParts);
 
   // Grade de categorias na home (clique no card, imagem ou setinha busca imediatamente)
   document.querySelectorAll('.cat-grid-item[data-cat]').forEach((item) => {

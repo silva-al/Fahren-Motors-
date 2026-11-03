@@ -236,6 +236,8 @@ it('deve conter o modal de tela cheia (lightbox) com controles de zoom e fechar'
     const html = fs.readFileSync(htmlPath, 'utf8');
     expect(html).toContain('id="activeCategoryBarCatalog"');
     expect(html).toContain('id="activeCategoryClearBtnCatalog"');
+    expect(html).toContain('Sair de todas as peças');
+    expect(html).not.toContain('📂');
 
     const cssPath = path.join(__dirname, '../public/loja/styles.css');
     const css = fs.readFileSync(cssPath, 'utf8');
