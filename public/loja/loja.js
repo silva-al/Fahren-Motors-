@@ -138,15 +138,12 @@ window.addEventListener('keydown', (e) => {
 
 function show(id, opts = {}) {
   const { push = true } = opts;
-  // O rodapé da loja só é visível na tela inicial ('inicio')
+  // Na tela inicial ('inicio'), exibe os cards informativos da loja + o rodapé legal.
+  // Em outras telas, os cards informativos ficam ocultos e o rodapé legal permanece visível.
   if (id === 'inicio') {
     document.body.classList.add('screen-is-inicio');
   } else {
     document.body.classList.remove('screen-is-inicio');
-  }
-  const footer = document.querySelector('.fp-footer');
-  if (footer) {
-    footer.style.display = (id === 'inicio') ? 'block' : 'none';
   }
   if (!authenticated && !['welcome', 'inicio', 'pecas', 'cadastro', 'carrinho', 'produto'].includes(id)) {
     alert('Faça seu cadastro ou entre na sua conta para acessar esta área.');
