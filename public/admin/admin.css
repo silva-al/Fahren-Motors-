@@ -10079,3 +10079,313 @@ body:not(.tema-claro) .stock-modal-footer {
   max-height: 140px !important;
   overflow-y: auto !important;
 }
+
+
+/* ===================================================================
+   ALTO CONTRASTE ABSOLUTO NO TEMA CLARO (MODO BRANCO) EM TODAS AS ABAS
+   Garante tipografia escura (#0f172a / #1e293b), nítida e 100% legível em:
+   - Relatórios (Código SKU, Total, Peça, Quantidades, Preços)
+   - Produtos / Catálogo de Estoque
+   - Pedidos & Expedição
+   - Operações de Estoque & Movimentações
+   - Inventário & Auditoria
+   - Notas Fiscais & Financeiro
+   =================================================================== */
+
+/* Variáveis do Tema Claro com Máximo Contraste */
+html.tema-claro,
+body.tema-claro {
+  --text-primary: #0f172a !important;
+  --text-secondary: #1e293b !important;
+  --text-muted: #334155 !important;
+}
+
+/* 1. Cabeçalhos e Células de TODAS as Tabelas do Painel no Modo Claro */
+body.tema-claro table thead th,
+body.tema-claro .wms-table th,
+body.tema-claro .orders-table th,
+body.tema-claro .wms-mini-table th {
+  background: #f8fafc !important;
+  color: #0f172a !important;
+  font-weight: 800 !important;
+  font-size: 11.5px !important;
+  letter-spacing: 0.6px !important;
+  border-bottom: 2px solid #cbd5e1 !important;
+}
+
+body.tema-claro table tbody td,
+body.tema-claro .wms-table td,
+body.tema-claro .orders-table td,
+body.tema-claro .wms-mini-table td {
+  color: #1e293b !important;
+  border-bottom: 1px solid #e2e8f0 !important;
+  font-size: 12.5px !important;
+}
+
+body.tema-claro table tbody tr:hover td,
+body.tema-claro .wms-table tbody tr:hover td {
+  background: #f1f5f9 !important;
+}
+
+/* 2. Textos em Negrito (strong) e Rótulos Pequenos (small) nas Tabelas */
+body.tema-claro table tbody td strong,
+body.tema-claro .wms-table td strong {
+  color: #0f172a !important;
+}
+
+body.tema-claro table tbody td small,
+body.tema-claro .wms-table td small {
+  color: #334155 !important;
+  font-weight: 600 !important;
+}
+
+/* 3. ABA RELATÓRIOS (#pane-relatorios) - Alto Contraste */
+body.tema-claro .rep-code-val,
+body.tema-claro #pane-relatorios td strong[style*="monospace"],
+body.tema-claro #pane-relatorios .rep-code-val {
+  color: #0f172a !important;
+  font-weight: 800 !important;
+  font-family: var(--font-mono), monospace !important;
+}
+
+body.tema-claro .rep-total-val,
+body.tema-claro #pane-relatorios .rep-total-val {
+  color: #0f172a !important;
+  font-weight: 800 !important;
+  font-size: 13px !important;
+}
+
+body:not(.tema-claro) .rep-code-val {
+  color: #cbd5e1 !important;
+  font-weight: 700 !important;
+}
+
+body:not(.tema-claro) .rep-total-val {
+  color: #4ade80 !important;
+  font-weight: 800 !important;
+}
+
+body.tema-claro #pane-relatorios .wms-table td strong {
+  color: #0f172a !important;
+}
+
+body.tema-claro #pane-relatorios .wms-table td small {
+  color: #334155 !important;
+}
+
+/* 4. ABA PRODUTOS & ESTOQUE (#pane-produtos) - Alto Contraste */
+body.tema-claro .prod-sku-code {
+  color: #0f172a !important;
+  font-weight: 800 !important;
+  font-family: var(--font-mono), monospace !important;
+}
+
+body.tema-claro .prod-name-strong {
+  color: #0f172a !important;
+  font-weight: 800 !important;
+}
+
+body.tema-claro .prod-pix-price {
+  color: #15803d !important;
+  font-weight: 800 !important;
+}
+
+body.tema-claro .prod-reg-price {
+  color: #334155 !important;
+  font-weight: 600 !important;
+}
+
+body.tema-claro .stock-num-input {
+  color: #0f172a !important;
+  font-weight: 800 !important;
+  background: #ffffff !important;
+  border-color: #cbd5e1 !important;
+}
+
+/* 5. ABA PEDIDOS (#pane-pedidos) - Alto Contraste */
+body.tema-claro .order-cust-name {
+  color: #0f172a !important;
+  font-weight: 800 !important;
+}
+
+body.tema-claro .order-cust-phone {
+  color: #334155 !important;
+  font-weight: 600 !important;
+}
+
+body.tema-claro .order-item-title {
+  color: #0f172a !important;
+  font-weight: 600 !important;
+}
+
+body.tema-claro .order-total-price {
+  color: #15803d !important;
+  font-weight: 900 !important;
+}
+
+body.tema-claro .order-date-text {
+  color: #1e293b !important;
+  font-weight: 600 !important;
+}
+
+/* 6. ABA OPERAÇÕES DE ESTOQUE & MOVIMENTAÇÕES */
+body.tema-claro #pane-operacoes-estoque td,
+body.tema-claro #pane-movimentacoes td {
+  color: #1e293b !important;
+}
+
+body.tema-claro #pane-operacoes-estoque td strong,
+body.tema-claro #pane-movimentacoes td strong {
+  color: #0f172a !important;
+}
+
+body.tema-claro #pane-operacoes-estoque td small,
+body.tema-claro #pane-movimentacoes td small {
+  color: #334155 !important;
+  font-weight: 600 !important;
+}
+
+/* 7. ABA INVENTÁRIO & AUDITORIA */
+body.tema-claro #pane-inventario td,
+body.tema-claro #pane-inventario td strong {
+  color: #0f172a !important;
+}
+
+body.tema-claro #pane-inventario td small {
+  color: #334155 !important;
+  font-weight: 600 !important;
+}
+
+/* 8. ABA ALERTAS */
+body.tema-claro #pane-alertas td strong {
+  color: #0f172a !important;
+}
+
+body.tema-claro #pane-alertas td small,
+body.tema-claro #pane-alertas td span {
+  color: #334155 !important;
+  font-weight: 600 !important;
+}
+
+/* 9. ABA FINANCEIRO & NOTAS FISCAIS */
+body.tema-claro .fin-cust-name,
+body.tema-claro .fiscal-cust-name {
+  color: #0f172a !important;
+  font-weight: 700 !important;
+}
+
+body.tema-claro .fin-bruto-text,
+body.tema-claro .fiscal-nf-num {
+  color: #0f172a !important;
+  font-weight: 800 !important;
+}
+
+body.tema-claro .fiscal-key-text {
+  color: #1e293b !important;
+  font-weight: 700 !important;
+}
+
+body.tema-claro .fin-date-text,
+body.tema-claro .fiscal-date-text {
+  color: #334155 !important;
+  font-weight: 600 !important;
+}
+
+body.tema-claro .fin-disc-text {
+  color: #c2410c !important;
+  font-weight: 700 !important;
+}
+
+body.tema-claro .fiscal-total-price {
+  color: #15803d !important;
+  font-weight: 800 !important;
+}
+
+/* 10. ABA EXPEDIÇÃO */
+body.tema-claro .exp-cust-name {
+  color: #0f172a !important;
+  font-weight: 800 !important;
+}
+
+body.tema-claro .exp-address-text {
+  color: #334155 !important;
+  font-weight: 600 !important;
+}
+
+body.tema-claro .exp-item-line .order-item-title {
+  color: #0f172a !important;
+  font-weight: 700 !important;
+}
+
+body.tema-claro .exp-total-price {
+  color: #15803d !important;
+  font-weight: 800 !important;
+}
+
+/* 11. Badges de Localização e Categoria em Modo Claro */
+body.tema-claro .location-badge {
+  background: #eff6ff !important;
+  border: 1px solid #bfdbfe !important;
+  color: #1d4ed8 !important;
+  font-weight: 700 !important;
+}
+
+body.tema-claro .cat-pill-badge {
+  background: #f1f5f9 !important;
+  border: 1px solid #cbd5e1 !important;
+  color: #0f172a !important;
+  font-weight: 700 !important;
+}
+
+/* 12. Modais em Modo Claro */
+body.tema-claro .modal-card,
+body.tema-claro .modal-stock-card {
+  background: #ffffff !important;
+  color: #0f172a !important;
+}
+
+body.tema-claro .modal-header h3,
+body.tema-claro .modal-title-box h3 {
+  color: #0f172a !important;
+}
+
+body.tema-claro .stock-field-label,
+body.tema-claro .pv-section-label {
+  color: #334155 !important;
+  font-weight: 700 !important;
+}
+
+body.tema-claro .pv-name,
+body.tema-claro .pv-code {
+  color: #0f172a !important;
+}
+
+body.tema-claro .pv-compat-box,
+body.tema-claro .pv-desc-box {
+  background: #f8fafc !important;
+  border-color: #cbd5e1 !important;
+  color: #1e293b !important;
+}
+
+body.tema-claro .stock-modal-dark-input,
+body.tema-claro .stock-modal-dark-textarea {
+  background: #ffffff !important;
+  border-color: #cbd5e1 !important;
+  color: #0f172a !important;
+}
+
+/* 13. Configurações em Modo Claro */
+body.tema-claro #pane-configuracoes .wms-panel {
+  background: #ffffff !important;
+  border: 1px solid #e2e8f0 !important;
+  color: #0f172a !important;
+}
+
+body.tema-claro #pane-configuracoes strong {
+  color: #0f172a !important;
+}
+
+body.tema-claro #pane-configuracoes small {
+  color: #475569 !important;
+  font-weight: 600 !important;
+}

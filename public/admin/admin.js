@@ -1157,7 +1157,7 @@ function renderRelatorios() {
 
     return `
       <tr>
-        <td><strong style="font-family:monospace;font-size:12px;color:#cbd5e1">${p.code || 'S/CÓD'}</strong></td>
+        <td><strong class="rep-code-val" style="font-family:monospace;font-size:12px;">${p.code || 'S/CÓD'}</strong></td>
         <td>
           <div style="display:flex;align-items:center;gap:10px;cursor:pointer" onclick="openProductViewModal(${p.id})">
             <img src="${getProductPhoto(p)}" style="width:34px;height:34px;min-width:34px;min-height:34px;border-radius:6px;object-fit:cover;border:1px solid var(--panel-border);aspect-ratio:1;flex-shrink:0" onerror="this.onerror=null; this.src='/images/categorias/freios.jpg';"/>
@@ -1176,7 +1176,7 @@ function renderRelatorios() {
         </td>
         <td style="text-align:center">${stockBadge}</td>
         <td><strong style="font-size:12.5px">${money(price)}</strong></td>
-        <td><strong style="font-size:12.5px;color:#cbd5e1">${money(totalItemValue)}</strong></td>
+        <td><strong class="rep-total-val" style="font-size:12.5px;">${money(totalItemValue)}</strong></td>
         <td>${statusBadge}</td>
         <td style="text-align:right;white-space:nowrap;vertical-align:middle">
           <div style="display:inline-flex;flex-direction:column;gap:3px;align-items:stretch;width:58px">
