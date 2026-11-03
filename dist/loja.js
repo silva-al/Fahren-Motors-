@@ -111,55 +111,65 @@ function loadCartFromStorage() {
 
 
 // ==========================================================================
-// SINCRONIZAÇÃO EM NUVEM DO CARRINHO (DESKTOP <-> CELULAR PARA CONTA LOGADA)
+// SINCRONIZAÇÃO EM NUVEM DO CARRINHO COM CONTROLE DE TIMESTAMP (SEM VOLTAR PRODUTO)
 // ==========================================================================
+let localCartUpdatedAt = 0;
+try {
+  localCartUpdatedAt = Number(localStorage.getItem('fahren-cart-updated-at')) || 0;
+} catch {}
+
+function setLocalCartUpdatedAt(ts) {
+  localCartUpdatedAt = ts || Date.now();
+  try {
+    localStorage.setItem('fahren-cart-updated-at', String(localCartUpdatedAt));
+  } catch {}
+}
+
 let isSyncingCart = false;
-let syncTimeout = null;
+let isPushingCart = false;
 
 function pushCartToServer() {
   if (!currentUser) return;
-  clearTimeout(syncTimeout);
-  syncTimeout = setTimeout(() => {
-    api('/api/auth/cart', {
-      method: 'PUT',
-      body: JSON.stringify({ cart })
-    }).catch(err => console.warn('Erro ao enviar carrinho para a nuvem:', err));
-  }, 200);
+  isPushingCart = true;
+  const ts = localCartUpdatedAt || Date.now();
+  api('/api/auth/cart', {
+    method: 'PUT',
+    body: JSON.stringify({ cart, updatedAt: ts })
+  })
+  .then(res => {
+    if (res && res.updatedAt) {
+      setLocalCartUpdatedAt(res.updatedAt);
+    }
+  })
+  .catch(err => console.warn('Erro ao enviar carrinho:', err))
+  .finally(() => {
+    setTimeout(() => { isPushingCart = false; }, 1000);
+  });
 }
 
 async function syncCartWithServer() {
-  if (!currentUser || isSyncingCart) return;
+  // Se está enviando alterações locais no momento, não sobrepõe
+  if (!currentUser || isSyncingCart || isPushingCart) return;
   isSyncingCart = true;
   try {
     const res = await api('/api/auth/cart');
     if (res && Array.isArray(res.cart)) {
       const serverItems = res.cart;
-      let hasChanged = false;
+      const serverUpdatedAt = Number(res.updatedAt) || 0;
 
-      if (serverItems.length === 0 && cart.length > 0) {
-        // Se o celular já tem produtos e o servidor está vazio, envia os do celular para a nuvem!
-        pushCartToServer();
-      } else if (serverItems.length > 0 && cart.length === 0) {
-        // Se a nuvem tem produtos e este aparelho está vazio, baixa os produtos da nuvem!
+      // Só atualiza se a nuvem tiver uma versão ESTRITAMENTE mais recente que a local
+      if (serverUpdatedAt > localCartUpdatedAt) {
         cart = serverItems;
-        hasChanged = true;
-      } else if (serverItems.length > 0 && cart.length > 0) {
-        // Se ambos têm produtos, sincroniza pela versão da nuvem
-        const serverJson = JSON.stringify(serverItems);
-        const localJson = JSON.stringify(cart);
-        if (serverJson !== localJson) {
-          cart = serverItems;
-          hasChanged = true;
-        }
-      }
-
-      if (hasChanged) {
-        saveCart(true); // salva no localStorage sem loop de envio
+        setLocalCartUpdatedAt(serverUpdatedAt);
+        saveCart(true); // salva localmente sem re-enviar
         updateCartBadge();
         const cartScreen = document.getElementById('carrinho');
         if (cartScreen && cartScreen.classList.contains('active')) {
           renderCart();
         }
+      } else if (localCartUpdatedAt > serverUpdatedAt && localCartUpdatedAt > 0) {
+        // Local tem alterações mais novas que ainda não subiram
+        pushCartToServer();
       }
     }
   } catch (err) {
@@ -179,8 +189,12 @@ function saveCart(skipServerSync = false) {
     console.warn('Falha ao gravar carrinho no storage:', e);
   }
   updateCartBadge();
-  if (!skipServerSync && currentUser) {
-    pushCartToServer();
+  if (!skipServerSync) {
+    // Qualquer ação do usuário (adicionar, alterar quantidade, excluir) gera novo timestamp
+    setLocalCartUpdatedAt(Date.now());
+    if (currentUser) {
+      pushCartToServer();
+    }
   }
 }
 

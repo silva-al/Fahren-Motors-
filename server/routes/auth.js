@@ -162,10 +162,19 @@ router.get('/cart', requireRole('customer'), async (req, res) => {
     const result = await db.query('SELECT cart_json FROM customers WHERE id = $1', [req.user.sub]);
     const raw = result.rows[0]?.cart_json;
     let items = [];
+    let updatedAt = 0;
     if (raw) {
-      try { items = JSON.parse(raw); } catch {}
+      try {
+        const parsed = JSON.parse(raw);
+        if (Array.isArray(parsed)) {
+          items = parsed;
+        } else if (parsed && typeof parsed === 'object') {
+          items = Array.isArray(parsed.items) ? parsed.items : [];
+          updatedAt = Number(parsed.updatedAt) || 0;
+        }
+      } catch {}
     }
-    res.json({ cart: Array.isArray(items) ? items : [] });
+    res.json({ cart: items, updatedAt });
   } catch (err) {
     console.error('[Auth:getCart]', err);
     res.status(500).json({ error: 'Erro ao carregar carrinho.' });
@@ -175,10 +184,32 @@ router.get('/cart', requireRole('customer'), async (req, res) => {
 router.put('/cart', requireRole('customer'), async (req, res) => {
   try {
     await ensureCustomerCartColumn();
-    const { cart } = req.body || {};
+    const { cart, updatedAt } = req.body || {};
     const safeCart = Array.isArray(cart) ? cart : [];
-    await db.query('UPDATE customers SET cart_json = $1 WHERE id = $2', [JSON.stringify(safeCart), req.user.sub]);
-    res.json({ ok: true, cart: safeCart });
+    const clientTimestamp = Number(updatedAt) || Date.now();
+
+    // Consulta versão atual salva no banco
+    const result = await db.query('SELECT cart_json FROM customers WHERE id = $1', [req.user.sub]);
+    const raw = result.rows[0]?.cart_json;
+    let serverTimestamp = 0;
+    if (raw) {
+      try {
+        const parsed = JSON.parse(raw);
+        if (parsed && typeof parsed.updatedAt === 'number') {
+          serverTimestamp = parsed.updatedAt;
+        }
+      } catch {}
+    }
+
+    // Se a alteração do cliente é mais nova ou igual, grava com sucesso
+    if (clientTimestamp >= serverTimestamp) {
+      const payload = { items: safeCart, updatedAt: clientTimestamp };
+      await db.query('UPDATE customers SET cart_json = $1 WHERE id = $2', [JSON.stringify(payload), req.user.sub]);
+      res.json({ ok: true, cart: safeCart, updatedAt: clientTimestamp });
+    } else {
+      // Conflito: o servidor já tem uma versão mais nova
+      res.json({ ok: false, conflict: true, cart: safeCart, updatedAt: serverTimestamp });
+    }
   } catch (err) {
     console.error('[Auth:putCart]', err);
     res.status(500).json({ error: 'Erro ao salvar carrinho.' });
