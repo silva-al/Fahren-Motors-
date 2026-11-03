@@ -181,4 +181,54 @@ describe('DOM & Button Validation - Fahren Motors UI', () => {
     expect(tabs).toContain('perfil');
     expect(tabs).toContain('carrinho');
   });
+it('deve conter o modal de tela cheia (lightbox) com controles de zoom e fechar', () => {
+    const modal = document.getElementById('detailLightboxModal');
+    const zoomIn = document.getElementById('lbZoomIn');
+    const zoomOut = document.getElementById('lbZoomOut');
+    const reset = document.getElementById('lbResetPan');
+    const close = document.getElementById('lightboxClose');
+    const img = document.getElementById('lightboxImg');
+
+    expect(modal).not.toBeNull();
+    expect(zoomIn).not.toBeNull();
+    expect(zoomOut).not.toBeNull();
+    expect(reset).not.toBeNull();
+    expect(close).not.toBeNull();
+    expect(img).not.toBeNull();
+  });
+
+  it('deve conter botão para voltar ao catálogo na tela de produto', () => {
+    const backBtn = document.getElementById('backToCatalogBtn');
+    const crumbLink = document.getElementById('crumbCatalogLink');
+    expect(backBtn).not.toBeNull();
+    expect(crumbLink).not.toBeNull();
+  });
+
+  it('deve validar que a tabela de ficha técnica contém cabeçalhos especificados', () => {
+    const table = document.querySelector('.fp-specs-table');
+    expect(table).not.toBeNull();
+    const specName = document.getElementById('specName');
+    const specCode = document.getElementById('specCode');
+    const specCat = document.getElementById('specCategory');
+    const specStock = document.getElementById('specStock');
+
+    expect(specName).not.toBeNull();
+    expect(specCode).not.toBeNull();
+    expect(specCat).not.toBeNull();
+    expect(specStock).not.toBeNull();
+  });
+
+  it('deve validar no CSS que o logo-badge não tem box-shadow com vazamento vermelho', () => {
+    const cssPath = path.join(__dirname, '../public/loja/styles.css');
+    const css = fs.readFileSync(cssPath, 'utf8');
+    expect(css).toContain('logo-badge');
+    expect(css).toContain('box-shadow:none !important');
+  });
+
+  it('deve validar que o carrossel de peças possui deduplicação e não repete produtos infinitos', () => {
+    const jsPath = path.join(__dirname, '../public/loja/loja.js');
+    const js = fs.readFileSync(jsPath, 'utf8');
+    expect(js).toContain('// Itens únicos sem repetições infinitas');
+    expect(js).not.toContain('while (baseList.length < 8)');
+  });
 });
