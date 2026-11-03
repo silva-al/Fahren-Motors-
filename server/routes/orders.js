@@ -3,9 +3,25 @@ const express = require('express');
 const db = require('../db');
 const { requireRole } = require('../middleware/auth');
 const { validateBody } = require('../middleware/validate');
-const { createOrderSchema } = require('../validators/order-schema');
+const { createOrderSchema, updateOrderStatusSchema, manualOrderSchema } = require('../validators/order-schema');
 
 const router = express.Router();
+
+let indexesEnsured = false;
+async function ensureWarehouseAndOrderIndexes() {
+  if (indexesEnsured) return;
+  try {
+    await db.query(`
+      CREATE INDEX IF NOT EXISTS idx_orders_status_created_at ON orders (status, created_at DESC);
+      CREATE INDEX IF NOT EXISTS idx_products_location ON products (location);
+      CREATE INDEX IF NOT EXISTS idx_products_stock_alerts ON products (active, stock_qty);
+    `);
+    indexesEnsured = true;
+  } catch (err) {
+    console.warn('[DB:Indexes] Aviso ao criar índices de armazém/pedidos:', err.message);
+  }
+}
+
 
 const PAYMENT_METHODS = ['pix', 'cartao', 'retirada'];
 const PAYMENT_LABELS = { pix: 'Pix', cartao: 'Cartão de Crédito', retirada: 'Retirada/Entrega' };
@@ -116,62 +132,93 @@ router.post('/', requireRole('customer'), validateBody(createOrderSchema), async
 });
 
 router.get('/mine', requireRole('customer'), async (req, res) => {
-  const orders = await db.query('SELECT * FROM orders WHERE customer_id = $1 ORDER BY created_at DESC', [
-    req.user.sub,
-  ]);
-  const results = [];
-  for (const order of orders.rows) {
-    const items = await db.query(
-      `SELECT oi.*, p.name FROM order_items oi JOIN products p ON p.id = oi.product_id WHERE order_id = $1`,
-      [order.id]
-    );
-    results.push(serializeOrder(order, items.rows));
+  try {
+    const orders = await db.query('SELECT * FROM orders WHERE customer_id = $1 ORDER BY created_at DESC', [
+      req.user.sub,
+    ]);
+    const orderIds = orders.rows.map(o => o.id);
+
+    let itemsByOrderId = {};
+    if (orderIds.length > 0) {
+      const itemsRes = await db.query(
+        `SELECT oi.*, p.name FROM order_items oi
+         JOIN products p ON p.id = oi.product_id
+         WHERE oi.order_id = ANY($1::int[])`,
+        [orderIds]
+      );
+      for (const item of itemsRes.rows) {
+        if (!itemsByOrderId[item.order_id]) itemsByOrderId[item.order_id] = [];
+        itemsByOrderId[item.order_id].push(item);
+      }
+    }
+
+    const results = orders.rows.map(order => serializeOrder(order, itemsByOrderId[order.id] || []));
+    res.json({ orders: results });
+  } catch (err) {
+    console.error('Erro ao buscar pedidos do cliente:', err);
+    res.status(500).json({ error: 'Erro ao carregar histórico de pedidos.' });
   }
-  res.json({ orders: results });
 });
 
 // ---- Admin: ver todos os pedidos e mudar status ----
 
 router.get('/', requireRole('admin'), async (req, res) => {
-  const { status } = req.query;
-  const params = [];
-  let sql = `SELECT o.*, c.name AS customer_name, c.phone AS customer_phone FROM orders o
-             JOIN customers c ON c.id = o.customer_id`;
-  if (status) {
-    params.push(status);
-    sql += ` WHERE o.status = $1`;
-  }
-  sql += ' ORDER BY o.created_at DESC';
-  const orders = await db.query(sql, params);
+  try {
+    await ensureWarehouseAndOrderIndexes();
+    const { status } = req.query;
+    const params = [];
+    let sql = `SELECT o.*, c.name AS customer_name, c.phone AS customer_phone FROM orders o
+               JOIN customers c ON c.id = o.customer_id`;
+    if (status) {
+      params.push(status);
+      sql += ` WHERE o.status = $1`;
+    }
+    sql += ' ORDER BY o.created_at DESC';
+    const orders = await db.query(sql, params);
+    const orderIds = orders.rows.map(o => o.id);
 
-  const results = [];
-  for (const order of orders.rows) {
-    const items = await db.query(
-      `SELECT oi.*, p.name FROM order_items oi JOIN products p ON p.id = oi.product_id WHERE order_id = $1`,
-      [order.id]
-    );
-    results.push({
-      ...serializeOrder(order, items.rows),
+    let itemsByOrderId = {};
+    if (orderIds.length > 0) {
+      const itemsRes = await db.query(
+        `SELECT oi.*, p.name FROM order_items oi
+         JOIN products p ON p.id = oi.product_id
+         WHERE oi.order_id = ANY($1::int[])`,
+        [orderIds]
+      );
+      for (const item of itemsRes.rows) {
+        if (!itemsByOrderId[item.order_id]) itemsByOrderId[item.order_id] = [];
+        itemsByOrderId[item.order_id].push(item);
+      }
+    }
+
+    const results = orders.rows.map(order => ({
+      ...serializeOrder(order, itemsByOrderId[order.id] || []),
       customerName: order.customer_name,
       customerPhone: order.customer_phone,
-    });
+    }));
+
+    res.json({ orders: results });
+  } catch (err) {
+    console.error('Erro ao buscar pedidos do admin:', err);
+    res.status(500).json({ error: 'Erro ao carregar lista de pedidos.' });
   }
-  res.json({ orders: results });
 });
 
 const VALID_STATUSES = ['novo', 'em_preparacao', 'pronto', 'entregue', 'cancelado'];
 
-router.put('/:id/status', requireRole('admin'), async (req, res) => {
-  const { status } = req.body || {};
-  if (!VALID_STATUSES.includes(status)) {
-    return res.status(400).json({ error: 'Status inválido.' });
+router.put('/:id/status', requireRole('admin'), validateBody(updateOrderStatusSchema), async (req, res) => {
+  try {
+    const { status } = req.body;
+    const result = await db.query(
+      'UPDATE orders SET status = $1, updated_at = now() WHERE id = $2 RETURNING *',
+      [status, req.params.id]
+    );
+    if (!result.rows.length) return res.status(404).json({ error: 'Pedido não encontrado.' });
+    res.json({ order: serializeOrder(result.rows[0], []) });
+  } catch (err) {
+    console.error('Erro ao atualizar status do pedido:', err);
+    res.status(500).json({ error: 'Erro ao atualizar status.' });
   }
-  const result = await db.query(
-    'UPDATE orders SET status = $1, updated_at = now() WHERE id = $2 RETURNING *',
-    [status, req.params.id]
-  );
-  if (!result.rows.length) return res.status(404).json({ error: 'Pedido não encontrado.' });
-  res.json({ order: serializeOrder(result.rows[0], []) });
 });
 
 router.delete('/:id', requireRole('admin'), async (req, res) => {
@@ -226,7 +273,7 @@ router.delete('/:id', requireRole('admin'), async (req, res) => {
 });
 
 // Admin: Criar pedido manual / venda balcão
-router.post('/manual', requireRole('admin'), async (req, res) => {
+router.post('/manual', requireRole('admin'), validateBody(manualOrderSchema), async (req, res) => {
   const client = await db.pool.connect();
   try {
     const { customerName, customerPhone, items, paymentMethod: rawPaymentMethod, status: rawStatus } = req.body || {};

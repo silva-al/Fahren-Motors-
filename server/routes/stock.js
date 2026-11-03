@@ -3,6 +3,8 @@ const express = require('express');
 const db = require('../db');
 const QRCode = require('qrcode');
 const { requireRole } = require('../middleware/auth');
+const { validateBody } = require('../middleware/validate');
+const { stockOperationSchema, inventoryCountSchema, inventoryReconcileSchema } = require('../validators/stock-schema');
 
 const router = express.Router();
 
@@ -111,7 +113,7 @@ router.get('/movements', requireRole('admin'), async (req, res) => {
 // -------------------------------------------------------------------
 // 2. OPERAÇÃO RÁPIDA (Entrada, Saída, Transferência, Ajuste)
 // -------------------------------------------------------------------
-router.post('/operations', requireRole('admin'), async (req, res) => {
+router.post('/operations', requireRole('admin'), validateBody(stockOperationSchema), async (req, res) => {
   const client = await db.pool.connect();
   try {
     const {
@@ -333,7 +335,7 @@ router.get('/inventory', requireRole('admin'), async (_req, res) => {
   }
 });
 
-router.post('/inventory/count', requireRole('admin'), async (req, res) => {
+router.post('/inventory/count', requireRole('admin'), validateBody(inventoryCountSchema), async (req, res) => {
   try {
     const { productId, countedStock, auditorName } = req.body || {};
     if (!productId || countedStock === undefined || countedStock === null) {
@@ -372,7 +374,7 @@ router.post('/inventory/count', requireRole('admin'), async (req, res) => {
   }
 });
 
-router.post('/inventory/reconcile', requireRole('admin'), async (req, res) => {
+router.post('/inventory/reconcile', requireRole('admin'), validateBody(inventoryReconcileSchema), async (req, res) => {
   const client = await db.pool.connect();
   try {
     const { productId, countedStock, inventoryId, notes } = req.body || {};

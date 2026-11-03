@@ -31,4 +31,24 @@ describe('Segurança de Cabeçalhos e Rotas da API', () => {
     expect(res.status).toBe(400);
     expect(res.body).toHaveProperty('error');
   });
+
+  it('deve bloquear acesso a listagem de pedidos admin sem permissão (401/403)', async () => {
+    const res = await request(app).get('/api/orders');
+    expect([401, 403]).toContain(res.status);
+  });
+
+  it('deve bloquear alteração de status de pedido sem token de admin (401/403)', async () => {
+    const res = await request(app).put('/api/orders/1/status').send({ status: 'pronto' });
+    expect([401, 403]).toContain(res.status);
+  });
+
+  it('deve bloquear operações de estoque/armazém sem token de admin (401/403)', async () => {
+    const res = await request(app).post('/api/stock/operations').send({
+      productId: 1,
+      type: 'entrada',
+      quantity: 5
+    });
+    expect([401, 403]).toContain(res.status);
+  });
+
 });

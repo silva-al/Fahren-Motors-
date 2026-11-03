@@ -7950,4 +7950,109 @@ body.tema-claro .brand-fahren,
   color: #ed1c24 !important;
   -webkit-text-fill-color: #ed1c24 !important;
 }
-
+
+
+/* ===================================================================
+   MELHORIAS DE ALTO CONTRASTE WMS: PAINEL DE PEDIDOS & ARMAZÉM
+   =================================================================== */
+
+/* Badges de Status de Pedidos no Tema Escuro (Alto Contraste) */
+body:not(.tema-claro) .order-status-badge-select.novo {
+  background-color: rgba(245, 158, 11, 0.22) !important;
+  color: #fbbf24 !important;
+  border-color: rgba(245, 158, 11, 0.45) !important;
+}
+
+body:not(.tema-claro) .order-status-badge-select.em_preparacao {
+  background-color: rgba(59, 130, 246, 0.22) !important;
+  color: #60a5fa !important;
+  border-color: rgba(59, 130, 246, 0.45) !important;
+}
+
+body:not(.tema-claro) .order-status-badge-select.pronto {
+  background-color: rgba(168, 85, 247, 0.22) !important;
+  color: #c084fc !important;
+  border-color: rgba(168, 85, 247, 0.45) !important;
+}
+
+body:not(.tema-claro) .order-status-badge-select.entregue {
+  background-color: rgba(34, 197, 94, 0.22) !important;
+  color: #4ade80 !important;
+  border-color: rgba(34, 197, 94, 0.45) !important;
+}
+
+body:not(.tema-claro) .order-status-badge-select.cancelado {
+  background-color: rgba(239, 68, 68, 0.22) !important;
+  color: #f87171 !important;
+  border-color: rgba(239, 68, 68, 0.45) !important;
+}
+
+body:not(.tema-claro) .order-status-badge-select option {
+  background-color: #11141c;
+  color: #f8fafc;
+}
+
+/* Badges de Forma de Pagamento no Tema Escuro */
+body:not(.tema-claro) .order-pay-badge.pay-pix {
+  background: rgba(16, 185, 129, 0.15) !important;
+  color: #34d399 !important;
+  border-color: rgba(16, 185, 129, 0.35) !important;
+}
+
+body:not(.tema-claro) .order-pay-badge.pay-card {
+  background: rgba(59, 130, 246, 0.15) !important;
+  color: #60a5fa !important;
+  border-color: rgba(59, 130, 246, 0.35) !important;
+}
+
+body:not(.tema-claro) .order-pay-badge.pay-cash {
+  background: rgba(245, 158, 11, 0.15) !important;
+  color: #fbbf24 !important;
+  border-color: rgba(245, 158, 11, 0.35) !important;
+}
+
+/* Responsividade e SVG no Armazém */
+.warehouse-rack-svg-wrap svg {
+  max-width: 100% !important;
+  height: auto !important;
+}
+
+body:not(.tema-claro) .loc-stat-pill {
+  background: rgba(255, 255, 255, 0.05) !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  color: #cbd5e1 !important;
+}
+
+body:not(.tema-claro) .loc-stat-pill strong {
+  color: #f8fafc !important;
+}
+
+body:not(.tema-claro) .rack-svg-caption {
+  color: #94a3b8 !important;
+}
+
+@media (max-width: 768px) {
+  .pedidos-toolbar {
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 10px !important;
+  }
+  .pedidos-toolbar select,
+  .pedidos-toolbar .ped-date-range,
+  .pedidos-toolbar .ped-search-wrap,
+  .pedidos-toolbar button {
+    width: 100% !important;
+  }
+  .warehouse-nav-col .wms-panel {
+    padding: 14px !important;
+  }
+  .warehouse-aisle-chips,
+  .warehouse-module-chips,
+  .warehouse-shelf-chips {
+    gap: 6px !important;
+  }
+  .aisle-chip, .module-chip, .shelf-chip {
+    padding: 6px 10px !important;
+    font-size: 12px !important;
+  }
+}

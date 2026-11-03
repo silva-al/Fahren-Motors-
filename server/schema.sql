@@ -195,3 +195,7 @@ CREATE TABLE IF NOT EXISTS stock_inventories (
 CREATE INDEX IF NOT EXISTS idx_stock_inventories_product_id ON stock_inventories(product_id);
 CREATE INDEX IF NOT EXISTS idx_stock_inventories_status ON stock_inventories(status);
 
+
+CREATE INDEX IF NOT EXISTS idx_orders_status_created_at ON orders (status, created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_products_location ON products (location);
+CREATE INDEX IF NOT EXISTS idx_products_stock_alerts ON products (active, stock_qty);

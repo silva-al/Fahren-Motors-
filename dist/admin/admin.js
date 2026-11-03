@@ -1955,6 +1955,12 @@ function renderOrdersTable(orders) {
         }
 
         await refreshAllData();
+        // Notifica a loja virtual e outros dispositivos em tempo real
+        try {
+          const ch = new BroadcastChannel('fahren_wms_sync');
+          ch.postMessage({ type: 'ORDER_STATUS_CHANGED', orderId, newStatus, timestamp: Date.now() });
+          localStorage.setItem('fahren_sync_event', JSON.stringify({ type: 'ORDER_STATUS_CHANGED', orderId, newStatus, timestamp: Date.now() }));
+        } catch (e) {}
       } catch (err) {
         alert('Erro ao atualizar status: ' + err.message);
       }
@@ -4409,6 +4415,10 @@ function renderWarehouseLocation() {
 
   const breadShelf = document.getElementById('locBreadShelf');
   if (breadShelf) breadShelf.textContent = `Prateleira ${currentWarehouseShelf}`;
+
+  // Atualiza o texto dinâmico no visualizador 3D do rack WMS
+  const svgText = document.getElementById('rackSvgActiveCode');
+  if (svgText) svgText.textContent = code;
 
   // Filtra produtos nesta localização
   const matchingProducts = allProducts.filter(p => {

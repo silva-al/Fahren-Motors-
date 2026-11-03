@@ -4,7 +4,8 @@ import path from 'path';
 import { Window } from 'happy-dom';
 
 const { registerSchema, loginSchema, cartSyncSchema } = require('../server/validators/auth-schema');
-const { createOrderSchema } = require('../server/validators/order-schema');
+const { createOrderSchema, updateOrderStatusSchema, manualOrderSchema } = require('../server/validators/order-schema');
+const { stockOperationSchema, inventoryCountSchema, inventoryReconcileSchema } = require('../server/validators/stock-schema');
 
 describe('Zod Schemas - Auth Validation', () => {
   it('deve aceitar um cadastro válido de cliente', () => {
@@ -287,6 +288,96 @@ it('deve conter o modal de tela cheia (lightbox) com controles de zoom e fechar'
         cart: [{ productId: 1, price: -50, quantity: 1 }]
       });
       expect(res.success).toBe(false);
+    });
+  });
+
+
+  describe('WMS & Pedidos Schemas', () => {
+    describe('updateOrderStatusSchema', () => {
+      it('aceita todos os status operacionais válidos', () => {
+        const validStatuses = ['novo', 'em_preparacao', 'pronto', 'entregue', 'cancelado'];
+        for (const status of validStatuses) {
+          const res = updateOrderStatusSchema.safeParse({ status });
+          expect(res.success).toBe(true);
+        }
+      });
+
+      it('rejeita status não reconhecido', () => {
+        const res = updateOrderStatusSchema.safeParse({ status: 'em_transito' });
+        expect(res.success).toBe(false);
+      });
+    });
+
+    describe('manualOrderSchema', () => {
+      it('aceita pedido manual válido com cliente e itens', () => {
+        const res = manualOrderSchema.safeParse({
+          customerName: 'Oficina Central',
+          customerPhone: '19999998888',
+          paymentMethod: 'pix',
+          status: 'novo',
+          items: [{ productId: 10, quantity: 2, unitPrice: 85.5 }]
+        });
+        expect(res.success).toBe(true);
+        expect(res.data.customerName).toBe('Oficina Central');
+      });
+
+      it('rejeita pedido manual sem itens', () => {
+        const res = manualOrderSchema.safeParse({
+          customerName: 'Cliente Balcão',
+          items: []
+        });
+        expect(res.success).toBe(false);
+      });
+
+      it('rejeita pedido manual sem nome de cliente', () => {
+        const res = manualOrderSchema.safeParse({
+          customerName: '   ',
+          items: [{ productId: 1, quantity: 1 }]
+        });
+        expect(res.success).toBe(false);
+      });
+    });
+
+    describe('stockOperationSchema & Armazém', () => {
+      it('aceita movimentações de estoque válidas (entrada, saida, transferencia, ajuste)', () => {
+        const ops = ['entrada', 'saida', 'transferencia', 'ajuste', 'inventario'];
+        for (const type of ops) {
+          const res = stockOperationSchema.safeParse({
+            productId: 5,
+            type,
+            quantity: 3,
+            toLocation: 'H-04-02',
+            reference: 'NF-1234'
+          });
+          expect(res.success).toBe(true);
+        }
+      });
+
+      it('rejeita operação de estoque inválida', () => {
+        const res = stockOperationSchema.safeParse({
+          productId: 5,
+          type: 'descarte_invalido',
+          quantity: 1
+        });
+        expect(res.success).toBe(false);
+      });
+
+      it('aceita contagem física de inventário', () => {
+        const res = inventoryCountSchema.safeParse({
+          productId: 1,
+          countedStock: 15,
+          auditorName: 'Carlos WMS'
+        });
+        expect(res.success).toBe(true);
+      });
+
+      it('rejeita contagem física negativa', () => {
+        const res = inventoryCountSchema.safeParse({
+          productId: 1,
+          countedStock: -5
+        });
+        expect(res.success).toBe(false);
+      });
     });
   });
 
