@@ -95,6 +95,11 @@ UPDATE orders SET discount_cents = 0          WHERE discount_cents IS NULL;
 
 -- Consultas por pagamento (usadas pelo webhook do Mercado Pago).
 CREATE INDEX IF NOT EXISTS idx_orders_payment_id ON orders (payment_id);
+CREATE INDEX IF NOT EXISTS idx_customer_addresses_customer_id ON customer_addresses(customer_id);
+CREATE INDEX IF NOT EXISTS idx_orders_customer_id ON orders(customer_id);
+CREATE INDEX IF NOT EXISTS idx_orders_customer_status ON orders(customer_id, status);
+CREATE INDEX IF NOT EXISTS idx_order_items_order_id ON order_items(order_id);
+CREATE INDEX IF NOT EXISTS idx_order_items_product_id ON order_items(product_id);
 
 CREATE TABLE IF NOT EXISTS order_items (
   id            SERIAL PRIMARY KEY,

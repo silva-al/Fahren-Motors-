@@ -2,6 +2,8 @@
 const express = require('express');
 const db = require('../db');
 const { requireRole } = require('../middleware/auth');
+const { validateBody } = require('../middleware/validate');
+const { createOrderSchema } = require('../validators/order-schema');
 
 const router = express.Router();
 
@@ -30,7 +32,7 @@ function serializeOrder(row, items) {
 
 // Cliente cria um pedido a partir dos itens do carrinho.
 // body: { items: [{ productId, quantity }], paymentMethod: 'pix'|'cartao'|'retirada' }
-router.post('/', requireRole('customer'), async (req, res) => {
+router.post('/', requireRole('customer'), validateBody(createOrderSchema), async (req, res) => {
   const client = await db.pool.connect();
   try {
     const { items, paymentMethod: rawPaymentMethod } = req.body || {};

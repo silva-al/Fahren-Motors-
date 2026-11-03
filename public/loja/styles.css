@@ -1,3 +1,15 @@
+:root {
+  --bg-dark: #090a0c;
+  --bg-main: #0b0c0f;
+  --text-primary: #ffffff;
+  --text-secondary: #aeb2b8;
+  --text-muted: #6f747c;
+  --accent-red: #ed1c24;
+  --accent-red-hover: #ff2a33;
+  --accent-red-glow: rgba(237, 28, 36, 0.35);
+  --accent-green: #39c979;
+  --border-subtle: #23272f;
+}
 
 *{box-sizing:border-box}html,body{margin:0;background:#090a0c;color:#fff;color-scheme:dark;font-family:Arial,Helvetica,sans-serif}
 body{min-height:100vh}.app{max-width:1100px;margin:auto;min-height:100vh;background:#0b0c0f}

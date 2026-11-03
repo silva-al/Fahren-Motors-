@@ -4,6 +4,8 @@ const bcrypt = require('bcryptjs');
 const db = require('../db');
 const { setAuthCookie, clearAuthCookie, requireRole } = require('../middleware/auth');
 const { rateLimit } = require('../middleware/rate-limit');
+const { validateBody } = require('../middleware/validate');
+const { registerSchema, loginSchema } = require('../validators/auth-schema');
 
 const router = express.Router();
 
@@ -25,7 +27,7 @@ const registerLimiter = rateLimit({
   message: 'Muitos cadastros a partir desta conexão. Tente novamente mais tarde.',
 });
 
-router.post('/register', registerLimiter, async (req, res) => {
+router.post('/register', registerLimiter, validateBody(registerSchema), async (req, res) => {
   try {
     const { name, phone, email, password, cpfCnpj } = req.body || {};
     if (!name || !phone || !email || !password) {
@@ -58,7 +60,7 @@ router.post('/register', registerLimiter, async (req, res) => {
   }
 });
 
-router.post('/login', loginLimiter, async (req, res) => {
+router.post('/login', loginLimiter, validateBody(loginSchema), async (req, res) => {
   try {
     const { email, password } = req.body || {};
     if (!email || !password) {
