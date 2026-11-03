@@ -3050,10 +3050,10 @@ body.tema-claro .cat-card-count-box{background:#f8fafc !important;border:1px sol
   .vehicle-finder-row{display:grid;grid-template-columns:1fr 1fr;gap:8px}
   .vehicle-finder-row select{
     font-size: 13px !important;
-    padding: 10px 8px !important;
+    padding: 11px 26px 11px 10px !important;
     text-align: center !important;
     text-align-last: center !important;
-    font-weight: 700 !important;
+    font-weight: 800 !important;
   }
   .vehicle-finder-btn{grid-column:1/-1}
 
@@ -5901,36 +5901,54 @@ body.tema-claro .fp-footer-copy-line {
   justify-content: center !important;
 }
 
-/* Abas: Quando NÃO clicada -> Branco forte, texto escuro, SEM bordas brancas */
+/* Abas: Alto contraste, nítidas e vívidas (nada de apagado) */
 .vf-tab-btn {
-  background: #ffffff !important;
-  border: none !important;
-  color: #111418 !important;
+  background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%) !important;
+  border: 2px solid #cbd5e1 !important;
+  color: #0f172a !important;
   font-size: 14px !important;
   font-weight: 800 !important;
-  padding: 10px 22px !important;
+  padding: 11px 22px !important;
   border-radius: 25px !important;
   cursor: pointer !important;
-  transition: all 0.2s ease !important;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1) !important;
   letter-spacing: 0.3px !important;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.16) !important;
+  box-shadow: 0 3px 8px rgba(15, 23, 42, 0.08), 0 1px 2px rgba(15, 23, 42, 0.04) !important;
   opacity: 1 !important;
   outline: none !important;
 }
 .vf-tab-btn:hover {
-  background: #f1f3f6 !important;
-  color: #000000 !important;
-  border: none !important;
-  transform: translateY(-1px) !important;
-  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.22) !important;
+  background: #ffffff !important;
+  color: #ed1c24 !important;
+  border-color: #ed1c24 !important;
+  transform: translateY(-2px) !important;
+  box-shadow: 0 6px 18px rgba(237, 28, 36, 0.22) !important;
 }
 
-/* Aba quando CLICADA -> Vermelha vibrante, texto branco */
+/* Aba quando CLICADA -> Vermelha vibrante, texto branco com glow */
 .vf-tab-btn.active {
-  background: #ed1c24 !important;
-  border: none !important;
+  background: linear-gradient(135deg, #ed1c24 0%, #c8151c 100%) !important;
+  border: 2px solid #c8151c !important;
   color: #ffffff !important;
-  box-shadow: 0 4px 16px rgba(237, 28, 36, 0.45) !important;
+  box-shadow: 0 4px 18px rgba(237, 28, 36, 0.45) !important;
+}
+.vf-tab-btn.active:hover {
+  background: linear-gradient(135deg, #ff2a32 0%, #d61820 100%) !important;
+  border-color: #b91c1c !important;
+  color: #ffffff !important;
+  box-shadow: 0 6px 22px rgba(237, 28, 36, 0.55) !important;
+}
+
+body:not(.tema-claro) .vf-tab-btn:not(.active) {
+  background: linear-gradient(180deg, #1e2430 0%, #141720 100%) !important;
+  border: 2px solid #334155 !important;
+  color: #f1f5f9 !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4) !important;
+}
+body:not(.tema-claro) .vf-tab-btn:not(.active):hover {
+  border-color: #ed1c24 !important;
+  color: #ed1c24 !important;
+  box-shadow: 0 4px 14px rgba(237, 28, 36, 0.3) !important;
 }
 
 .vf-plate-row {
@@ -6154,42 +6172,54 @@ body.tema-claro .fp-footer-copy-line {
    ========================================================================== */
 body.tema-claro .vehicle-finder {
   background: #ffffff !important;
-  border: 1px solid #dfe3ea !important;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06) !important;
+  border: 1.5px solid #e2e8f0 !important;
+  box-shadow: 0 8px 30px rgba(15, 23, 42, 0.08), 0 2px 8px rgba(15, 23, 42, 0.04) !important;
+  border-radius: 16px !important;
 }
 body.tema-claro .vehicle-finder-title {
-  color: #111418 !important;
+  color: #0f172a !important;
+  font-weight: 900 !important;
 }
 body.tema-claro .vehicle-finder-row select {
-  background: #f8f9fa !important;
-  border: 1.5px solid #ced4da !important;
-  color: #111418 !important;
+  background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%) !important;
+  border: 2px solid #cbd5e1 !important;
+  color: #0f172a !important;
 }
 body.tema-claro .vf-plate-input-wrap {
   background: #ffffff !important;
-  border: 2px solid #ced4da !important;
+  border: 2px solid #cbd5e1 !important;
+  border-radius: 12px !important;
   box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.05);
 }
+body.tema-claro .vf-plate-input-wrap:focus-within {
+  border-color: #ed1c24 !important;
+  box-shadow: 0 0 0 3px rgba(237, 28, 36, 0.25) !important;
+}
 body.tema-claro #vfPlacaInput {
-  color: #111418 !important;
+  color: #0f172a !important;
+  font-weight: 900 !important;
 }
 body.tema-claro .vf-plate-samples {
-  border-top: 1px solid #e1e4e8 !important;
+  border-top: 1px solid #e2e8f0 !important;
 }
 body.tema-claro .vf-samples-label {
-  color: #1a1e24 !important;
+  color: #0f172a !important;
   font-weight: 800 !important;
 }
 body.tema-claro .vf-chip {
-  background: #f1f3f7 !important;
-  border: 1px solid #ced4da !important;
-  color: #1a1e24 !important;
+  background: #ffffff !important;
+  border: 1.5px solid #cbd5e1 !important;
+  color: #0f172a !important;
   font-weight: 800 !important;
+  border-radius: 20px !important;
+  box-shadow: 0 2px 6px rgba(15, 23, 42, 0.05) !important;
 }
 body.tema-claro .vf-chip:hover {
   background: #ed1c24 !important;
   border-color: #ed1c24 !important;
   color: #ffffff !important;
+  box-shadow: 0 4px 14px rgba(237, 28, 36, 0.3) !important;
+  transform: translateY(-1px) !important;
 }
 body.tema-claro .active-garage-bar {
   background: #f0fdf4 !important;
@@ -6256,66 +6286,103 @@ body:not(.screen-is-inicio) .fp-footer-legal {
 }
 
 /* ==========================================================================
-   BOTÕES MODERNOS E SEM BORDAS PARA O SELETOR DE VEÍCULOS
+   BOTÕES E SELETORES DO BUSCADOR DE VEÍCULOS - VÍVIDOS, NÍTIDOS E DESTACADOS
    ========================================================================== */
-/* Seletor de Veículos: Modo Escuro elegante e intacto */
+/* Seletor de Veículos: Modo Escuro moderno, com borda nítida e alto contraste */
 .vehicle-finder-row select {
-  background: #181c24 !important;
-  border: none !important;
+  background: linear-gradient(180deg, #1e2430 0%, #12151c 100%) !important;
+  border: 2px solid #334155 !important;
   outline: none !important;
-  color: #f1f3f7 !important;
-  font-size: 13.5px !important;
+  color: #f8fafc !important;
+  font-size: 14px !important;
   font-weight: 800 !important;
-  padding: 13px 16px !important;
+  padding: 13px 36px 13px 18px !important;
   border-radius: 14px !important;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.35) !important;
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.35) !important;
   text-align: center !important;
   text-align-last: center !important;
   cursor: pointer !important;
   transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1) !important;
   appearance: none !important;
   -webkit-appearance: none !important;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2394a3b8' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E") !important;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%23ed1c24' stroke-width='2.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E") !important;
   background-repeat: no-repeat !important;
   background-position: right 14px center !important;
 }
 .vehicle-finder-row select:hover {
-  background-color: #222834 !important;
-  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.45) !important;
-  transform: translateY(-1px) !important;
+  border-color: #ed1c24 !important;
+  color: #ffffff !important;
+  box-shadow: 0 6px 18px rgba(237, 28, 36, 0.3) !important;
+  transform: translateY(-2px) !important;
 }
 .vehicle-finder-row select:focus {
-  box-shadow: 0 0 0 2px #ed1c24, 0 4px 14px rgba(237, 28, 36, 0.2) !important;
+  border-color: #ed1c24 !important;
+  box-shadow: 0 0 0 3px rgba(237, 28, 36, 0.35), 0 4px 14px rgba(237, 28, 36, 0.2) !important;
 }
 
-/* Seletor de Veículos no Modo Claro: BRANCO RADIANTE E DESTACADO (nada de apagado) */
+/* Seletor de Veículos no Modo Claro: CONTRASTE VÍVIDO, BORDA DEFINIDA E DESTAQUE TOTAL (NADA DE APAGADO) */
 body.tema-claro .vehicle-finder-row select {
-  background: #ffffff !important;
-  border: none !important;
+  background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%) !important;
+  border: 2px solid #cbd5e1 !important;
   outline: none !important;
   color: #0f172a !important;
-  font-size: 13.5px !important;
+  font-size: 14px !important;
   font-weight: 800 !important;
-  padding: 13px 16px !important;
+  padding: 13px 36px 13px 18px !important;
   border-radius: 14px !important;
-  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.08), 0 1px 3px rgba(0, 0, 0, 0.04) !important;
+  box-shadow: 0 3px 10px rgba(15, 23, 42, 0.08), 0 1px 3px rgba(15, 23, 42, 0.04) !important;
   text-align: center !important;
   text-align-last: center !important;
   cursor: pointer !important;
   transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1) !important;
   appearance: none !important;
   -webkit-appearance: none !important;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%230f172a' stroke-width='2.6' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E") !important;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%23ed1c24' stroke-width='2.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E") !important;
   background-repeat: no-repeat !important;
   background-position: right 14px center !important;
 }
 body.tema-claro .vehicle-finder-row select:hover {
   background: #ffffff !important;
-  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.12) !important;
-  transform: translateY(-1px) !important;
+  border-color: #ed1c24 !important;
+  color: #ed1c24 !important;
+  box-shadow: 0 6px 20px rgba(237, 28, 36, 0.22) !important;
+  transform: translateY(-2px) !important;
 }
 body.tema-claro .vehicle-finder-row select:focus {
-  box-shadow: 0 0 0 2px #ed1c24, 0 4px 14px rgba(237, 28, 36, 0.25) !important;
+  border-color: #ed1c24 !important;
+  box-shadow: 0 0 0 3px rgba(237, 28, 36, 0.25), 0 4px 14px rgba(237, 28, 36, 0.15) !important;
+}
+
+/* Botão ENCONTRAR PEÇAS / BUSCAR PELA PLACA: Super vibrante, com relevo, sombra rica e destaque total */
+.vehicle-finder-btn,
+body.tema-claro .vehicle-finder-btn {
+  background: linear-gradient(135deg, #ed1c24 0%, #c8151c 100%) !important;
+  border: 2px solid #b91c1c !important;
+  color: #ffffff !important;
+  font-size: 13.5px !important;
+  font-weight: 900 !important;
+  letter-spacing: 0.8px !important;
+  text-transform: uppercase !important;
+  padding: 13px 26px !important;
+  border-radius: 14px !important;
+  cursor: pointer !important;
+  box-shadow: 0 4px 16px rgba(237, 28, 36, 0.45) !important;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1) !important;
+  outline: none !important;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3) !important;
+}
+.vehicle-finder-btn:hover,
+body.tema-claro .vehicle-finder-btn:hover {
+  background: linear-gradient(135deg, #ff2a32 0%, #d61820 100%) !important;
+  border-color: #b91c1c !important;
+  color: #ffffff !important;
+  box-shadow: 0 8px 24px rgba(237, 28, 36, 0.6) !important;
+  transform: translateY(-2px) !important;
+}
+.vehicle-finder-btn:active,
+body.tema-claro .vehicle-finder-btn:active {
+  transform: translateY(0) !important;
+  box-shadow: 0 3px 10px rgba(237, 28, 36, 0.4) !important;
 }
 
 /* Aviso de Veículo Selecionado: Cor forte, vibrante e botão maior moderno */
