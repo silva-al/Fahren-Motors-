@@ -1754,6 +1754,10 @@ async function loadCatalog() {
   if (catBar) {
     catBar.style.display = 'flex';
   }
+  const catBarBottom = document.getElementById('activeCategoryBarCatalogBottom');
+  if (catBarBottom) {
+    catBarBottom.style.display = 'flex';
+  }
 
   const params = new URLSearchParams();
   const q = document.getElementById('catalogSearch')?.value.trim();
@@ -2520,6 +2524,8 @@ init();
 
   document.getElementById('activeCategoryClearBtnCatalog')?.addEventListener('click', handleExitAllParts);
   document.getElementById('activeCategoryBarCatalog')?.addEventListener('click', handleExitAllParts);
+  document.getElementById('activeCategoryClearBtnCatalogBottom')?.addEventListener('click', handleExitAllParts);
+  document.getElementById('activeCategoryBarCatalogBottom')?.addEventListener('click', handleExitAllParts);
 
   // Grade de categorias na home (clique no card, imagem ou setinha busca imediatamente)
   document.querySelectorAll('.cat-grid-item[data-cat]').forEach((item) => {
@@ -3152,15 +3158,25 @@ init();
 
 /* ==========================================================================
    TEMA CLARO / ESCURO
-   O site abre no escuro. O botão do cabeçalho troca para o claro e a
-   escolha fica guardada no navegador para a próxima visita.
+   O site abre por padrão SEMPRE no MODO BRANCO (CLARO). O botão do cabeçalho
+   permite alternar para o escuro e a escolha fica guardada para visitas futuras.
    ========================================================================== */
 (function alternadorDeTema() {
-  const CHAVE = 'fahren-tema';
+  const CHAVE_V2 = 'fahren-tema-v2';
+  const CHAVE_LEGADA = 'fahren-tema';
   const CORES_BARRA = { escuro: '#090a0c', claro: '#f4f6f9' };
   let temaAtual = 'claro';
 
-  try { temaAtual = localStorage.getItem(CHAVE) === 'escuro' ? 'escuro' : 'claro'; } catch (e) {}
+  try {
+    const salvoV2 = localStorage.getItem(CHAVE_V2);
+    if (salvoV2 === 'escuro') {
+      temaAtual = 'escuro';
+    } else {
+      temaAtual = 'claro';
+      localStorage.setItem(CHAVE_V2, 'claro');
+      localStorage.setItem(CHAVE_LEGADA, 'claro');
+    }
+  } catch (e) {}
 
   function aplicar(tema) {
     temaAtual = tema;
@@ -3178,7 +3194,10 @@ init();
     aplicar(temaAtual);
     document.getElementById('themeToggle')?.addEventListener('click', () => {
       const novo = temaAtual === 'claro' ? 'escuro' : 'claro';
-      try { localStorage.setItem(CHAVE, novo); } catch (e) {}
+      try {
+        localStorage.setItem(CHAVE_V2, novo);
+        localStorage.setItem(CHAVE_LEGADA, novo);
+      } catch (e) {}
       aplicar(novo);
     });
   }

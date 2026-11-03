@@ -236,6 +236,8 @@ it('deve conter o modal de tela cheia (lightbox) com controles de zoom e fechar'
     const html = fs.readFileSync(htmlPath, 'utf8');
     expect(html).toContain('id="activeCategoryBarCatalog"');
     expect(html).toContain('id="activeCategoryClearBtnCatalog"');
+    expect(html).toContain('id="activeCategoryBarCatalogBottom"');
+    expect(html).toContain('body class="tema-claro"');
     expect(html).toContain('Sair de todas as peças');
     expect(html).not.toContain('📂');
 
@@ -251,5 +253,6 @@ it('deve conter o modal de tela cheia (lightbox) com controles de zoom e fechar'
     const js = fs.readFileSync(jsPath, 'utf8');
     expect(js).toContain('if (slides.length <= 1) return;');
     expect(js).toContain('activeCatalogCategory = normalizeCatalogCategory');
+    expect(js).toContain('fahren-tema-v2');
   });
 });

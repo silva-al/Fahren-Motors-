@@ -42,7 +42,7 @@
 <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet"/>
 
-<link href="styles.css?v=mw0oqdng" rel="stylesheet"/>
+<link href="styles.css?v=mw0p8vek" rel="stylesheet"/>
 
   <style>
     .fp-whatsapp-float {
@@ -59,15 +59,19 @@
 </head>
 <body class="tema-claro">
 <script>
-  /* Aplica o tema salvo antes da pagina pintar, para nao piscar. Padrao: claro */
+  /* Aplica o tema padrão SEMPRE MODO BRANCO (CLARO). Garante que novos e antigos visitantes abram em modo branco */
   (function(){try{
-    var t = localStorage.getItem('fahren-tema');
-    if (t === 'escuro') {
+    var v2 = localStorage.getItem('fahren-tema-v2');
+    if (v2 === 'escuro') {
       document.body.classList.remove('tema-claro');
     } else {
       document.body.classList.add('tema-claro');
+      localStorage.setItem('fahren-tema-v2', 'claro');
+      localStorage.setItem('fahren-tema', 'claro');
     }
-  }catch(e){}})();
+  }catch(e){
+    document.body.classList.add('tema-claro');
+  }})();
 </script>
 <!-- Splash Screen / Tela de Carregamento Oficial com Nome da Empresa -->
 <div id="splashScreen" class="splash-screen" aria-hidden="false">
@@ -568,6 +572,13 @@
 <div class="products" id="catalogResults" style="margin-top:18px">
       <p style="color:var(--fp-9da2aa)">Carregando peças...</p>
     </div>
+    <!-- Botão/Barra inferior para Sair de Todas as Peças no final da página -->
+    <div class="active-category-bar active-category-bar-bottom" id="activeCategoryBarCatalogBottom" style="margin-top:24px;margin-bottom:34px;cursor:pointer;">
+      <div class="active-category-info">
+        <strong class="active-category-label">Sair de todas as peças</strong>
+      </div>
+      <button type="button" id="activeCategoryClearBtnCatalogBottom" class="btn-clear-cat" title="Sair de todas as peças">Sair ✕</button>
+    </div>
   </div>
 </section>
 
@@ -920,4 +931,4 @@
 <div id="toastContainer"></div>
 <script defer="True" src="vendor/qrcode.js"></script>
 <script defer="True" src="https://sdk.mercadopago.com/js/v2"></script>
-<script defer="True" src="loja.js?v=mw0oqdng"></script></body></html>
+<script defer="True" src="loja.js?v=mw0p8vek"></script></body></html>
