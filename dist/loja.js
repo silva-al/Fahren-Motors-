@@ -782,6 +782,112 @@ async function goToCategory(category) {
   await loadCatalog();
 }
 
+
+// ==========================================
+// CATÁLOGO DE VEÍCULOS & SISTEMA DE GARAGEM
+// ==========================================
+const VEHICLE_CATALOG = {
+  'Volkswagen': {
+    models: ['Gol', 'Polo', 'Fox', 'Voyage', 'Saveiro', 'Virtus', 'T-Cross', 'Nivus', 'Jetta', 'Golf', 'Tiguan', 'Amarok'],
+    engines: ['1.0 8V Total Flex', '1.0 12V MPI', '1.0 200 TSI', '1.4 250 TSI', '1.6 8V Total Flex', '1.6 16V MSI', '2.0 TSI']
+  },
+  'Chevrolet': {
+    models: ['Onix', 'Prisma', 'Tracker', 'Spin', 'Cruze', 'Celta', 'Corsa', 'Montana', 'S10', 'Astra', 'Vectra'],
+    engines: ['1.0 8V VHC / SPE/4', '1.0 Turbo ECOTEC', '1.2 Turbo', '1.4 8V Econoflex', '1.4 Turbo', '1.8 8V Econoflex', '2.8 CTDI Turbo Diesel']
+  },
+  'Fiat': {
+    models: ['Strada', 'Palio', 'Uno', 'Mobi', 'Argo', 'Cronos', 'Toro', 'Siena', 'Punto', 'Fiorino', 'Fastback', 'Pulse'],
+    engines: ['1.0 Fire 8V', '1.0 Firefly', '1.0 Turbo T200', '1.3 Firefly', '1.3 Turbo T270', '1.4 Fire', '1.8 E.torQ 16V', '2.0 MultiJet Diesel']
+  },
+  'Toyota': {
+    models: ['Corolla', 'Hilux', 'Etios', 'Yaris', 'Corolla Cross', 'SW4', 'RAV4'],
+    engines: ['1.3 16V Dual VVT-i', '1.5 16V Dual VVT-i', '1.8 16V Dual VVT-i / Hybrid', '2.0 16V Dynamic Force', '2.8 Turbo Diesel 1GD']
+  },
+  'Honda': {
+    models: ['Civic', 'Fit', 'City', 'HR-V', 'WR-V', 'CR-V'],
+    engines: ['1.4 8V / 16V i-DSI / i-VTEC', '1.5 16V i-VTEC', '1.5 Turbo VTEC', '1.8 16V i-VTEC', '2.0 16V i-VTEC']
+  },
+  'Hyundai': {
+    models: ['HB20', 'HB20S', 'HB20X', 'Creta', 'Tucson', 'i30', 'Santa Fe'],
+    engines: ['1.0 12V Kappa', '1.0 Turbo TGDI', '1.6 16V Gamma', '2.0 16V Nu']
+  },
+  'Ford': {
+    models: ['Ka', 'Fiesta', 'EcoSport', 'Focus', 'Ranger', 'Fusion'],
+    engines: ['1.0 12V TiVCT 3 Cilindros', '1.5 12V Dragon', '1.5 16V Sigma', '1.6 16V Sigma', '2.0 Duratec', '3.2 Duratorq Diesel']
+  },
+  'Renault': {
+    models: ['Kwid', 'Sandero', 'Logan', 'Duster', 'Captur', 'Oroch', 'Clio', 'Megane'],
+    engines: ['1.0 12V SCe 3 Cilindros', '1.6 8V Hi-Flex', '1.6 16V SCe', '2.0 16V F4R', '1.3 TCe Turbo Flex']
+  }
+};
+
+function getActiveVehicle() {
+  try {
+    const raw = localStorage.getItem('fahren_selected_vehicle');
+    return raw ? JSON.parse(raw) : null;
+  } catch {
+    return null;
+  }
+}
+
+function setActiveVehicle(vehicle) {
+  try {
+    localStorage.setItem('fahren_selected_vehicle', JSON.stringify(vehicle));
+  } catch {}
+  updateGarageUI();
+  if (typeof loadCatalog === 'function') loadCatalog();
+}
+
+function clearActiveVehicle() {
+  try {
+    localStorage.removeItem('fahren_selected_vehicle');
+  } catch {}
+  updateGarageUI();
+  if (typeof loadCatalog === 'function') loadCatalog();
+  showToast('Filtro de veículo removido.');
+}
+
+function updateGarageUI() {
+  const v = getActiveVehicle();
+  const bars = [
+    { bar: document.getElementById('activeGarageBar'), title: document.getElementById('activeGarageTitle') },
+    { bar: document.getElementById('activeGarageBarCatalog'), title: document.getElementById('activeGarageTitleCatalog') }
+  ];
+
+  bars.forEach(({ bar, title }) => {
+    if (!bar) return;
+    if (v && v.model) {
+      bar.style.display = 'flex';
+      const text = [v.brand, v.model, v.year, v.engine].filter(Boolean).join(' • ');
+      if (title) title.textContent = text;
+    } else {
+      bar.style.display = 'none';
+    }
+  });
+}
+
+function checkProductCompatibility(product) {
+  const v = getActiveVehicle();
+  if (!v || !v.model) return null;
+  const comp = (product.compatibility || '').toLowerCase();
+  const desc = (product.description || '').toLowerCase();
+  const name = (product.name || '').toLowerCase();
+  const full = comp + ' ' + desc + ' ' + name;
+  const model = v.model.toLowerCase();
+  const brand = (v.brand || '').toLowerCase();
+
+  if (full.includes('universal') || comp.includes('universal')) {
+    return { ok: true, label: 'Aplicação Universal Compatível' };
+  }
+  if (full.includes(model)) {
+    return { ok: true, label: '100% Compatível com seu ' + v.model };
+  }
+  if (brand && full.includes(brand)) {
+    return { ok: true, label: 'Compatível com linha ' + v.brand };
+  }
+  return { ok: false, label: 'Verificar compatibilidade' };
+}
+
 function renderProducts(container, products) {
   if (!products.length) {
     container.innerHTML = '<p style="color:var(--fp-9da2aa)">Nenhuma peça encontrada com esses filtros.</p>';

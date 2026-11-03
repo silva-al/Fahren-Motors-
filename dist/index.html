@@ -42,7 +42,7 @@
 <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet"/>
 
-<link href="styles.css?v=mw045epf" rel="stylesheet"/>
+<link href="styles.css?v=mw052unn" rel="stylesheet"/>
 
   <style>
     .fp-whatsapp-float {
@@ -190,15 +190,50 @@
     </div>
   </div>
 
-  <!-- Encontre a peça pelo seu veículo -->
-  <div class="vehicle-finder">
+    <!-- Encontre a peça pelo seu veículo -->
+  <div class="vehicle-finder" id="vehicleFinderWidget">
     <div class="vehicle-finder-title">Encontre a peça ideal para seu veículo</div>
-    <div class="vehicle-finder-row">
-      <select id="vfMontadora"><option value="">Selecione a Montadora</option><option>Volkswagen</option><option>Chevrolet</option><option>Fiat</option><option>Ford</option><option>Toyota</option><option>Honda</option><option>Hyundai</option></select>
+    
+    <div class="vf-tabs">
+      <button type="button" class="vf-tab-btn active" id="vfTabModel">🚗 Por Modelo e Ano</button>
+      <button type="button" class="vf-tab-btn" id="vfTabPlate">🚘 Por Placa do Veículo</button>
+    </div>
+
+    <div class="vehicle-finder-row" id="vfModelRow">
+      <select id="vfMontadora">
+        <option value="">Selecione a Montadora</option>
+        <option value="Volkswagen">Volkswagen</option>
+        <option value="Chevrolet">Chevrolet</option>
+        <option value="Fiat">Fiat</option>
+        <option value="Toyota">Toyota</option>
+        <option value="Honda">Honda</option>
+        <option value="Hyundai">Hyundai</option>
+        <option value="Ford">Ford</option>
+        <option value="Renault">Renault</option>
+      </select>
       <select id="vfModelo"><option value="">Selecione o Modelo</option></select>
       <select id="vfAno"><option value="">Selecione o Ano</option></select>
       <select id="vfMotor"><option value="">Selecione o Motor</option></select>
       <button type="button" id="vfBuscarBtn" class="vehicle-finder-btn">ENCONTRAR PEÇAS</button>
+    </div>
+
+    <div class="vf-plate-row" id="vfPlateRow" style="display:none;margin-top:10px;">
+      <div class="vf-plate-input-wrap">
+        <span class="vf-plate-flag">🇧🇷 BRASIL</span>
+        <input type="text" id="vfPlacaInput" placeholder="Ex: BRA2E19" maxlength="8" autocomplete="off" />
+      </div>
+      <button type="button" id="vfBuscarPlacaBtn" class="vehicle-finder-btn">BUSCAR PELA PLACA</button>
+    </div>
+
+    <div class="active-garage-bar" id="activeGarageBar" style="display:none;">
+      <div class="active-garage-info">
+        <span class="active-garage-icon">✔</span>
+        <div>
+          <strong id="activeGarageTitle">Honda Civic 2020</strong>
+          <small>Mostrando peças compatíveis com seu carro</small>
+        </div>
+      </div>
+      <button type="button" id="activeGarageClearBtn" class="btn-clear-garage" title="Trocar veículo">Trocar Veículo ✕</button>
     </div>
   </div>
 
@@ -830,4 +865,4 @@
 <div id="toastContainer"></div>
 <script defer="True" src="vendor/qrcode.js"></script>
 <script defer="True" src="https://sdk.mercadopago.com/js/v2"></script>
-<script defer="True" src="loja.js?v=mw045epf"></script></body></html>
+<script defer="True" src="loja.js?v=mw052unn"></script></body></html>
