@@ -1967,8 +1967,8 @@ function render7DaysSalesChart() {
         <title>${day.dayLabel}: R$ ${day.totalRev.toFixed(2)} (${day.count} pedidos)</title>
         <rect x="${x}" y="25" width="${barW}" height="${chartH}" rx="6" fill="#f1f5f9" class="chart-track"></rect>
         <rect x="${x}" y="${y}" width="${barW}" height="${h}" rx="6" fill="${fill}" class="chart-bar ${isToday ? 'is-today' : ''}"></rect>
-        <text x="${x + barW / 2}" y="${Math.max(18, y - 4)}" text-anchor="middle" font-size="10.5" font-weight="700" fill="${isToday ? '#ed1c24' : '#475569'}">${textVal}</text>
-        <text x="${x + barW / 2}" y="134" text-anchor="middle" font-size="11" font-weight="${isToday ? '800' : '600'}" fill="${isToday ? '#0f172a' : '#64748b'}">${day.dayLabel}</text>
+        <text x="${x + barW / 2}" y="${Math.max(18, y - 4)}" text-anchor="middle" font-size="10.5" font-weight="700" fill="${isToday ? '#ed1c24' : 'currentColor'}">${textVal}</text>
+        <text x="${x + barW / 2}" y="134" text-anchor="middle" font-size="11" font-weight="${isToday ? '800' : '600'}" fill="${isToday ? '#ed1c24' : 'currentColor'}">${day.dayLabel}</text>
       </g>
     `;
   });
@@ -1994,7 +1994,7 @@ function renderOrdersTable(orders) {
   updateOrdersKpisAndSummary();
 
   if (!orders.length) {
-    tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;padding:36px;color:#64748b;font-weight:600">Nenhum pedido encontrado para o filtro selecionado.</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;padding:36px;color:var(--text-muted);font-weight:600">Nenhum pedido encontrado para o filtro selecionado.</td></tr>';
     return;
   }
 
@@ -2002,7 +2002,7 @@ function renderOrdersTable(orders) {
     const items = o.items || [];
     const itemsHtml = items.length
       ? items.map(i => `<div class="order-item-row"><span class="order-item-qty">${i.quantity}x</span> <span class="order-item-title">${i.name}</span></div>`).join('')
-      : '<span style="color:#94a3b8;font-size:12px">Nenhum item informado</span>';
+      : '<span style="color:var(--text-muted);font-size:12px">Nenhum item informado</span>';
 
     const payBadge = getPaymentBadgeHtml(o.paymentMethodLabel);
 
@@ -4133,7 +4133,7 @@ function renderInventoryTable(items) {
     } else if (item.audit_status === 'divergente') {
       statusBadge = '<span class="status-badge cancelado" style="background:#fef2f2;color:#dc2626;border:1px solid #fecaca;">Divergente</span>';
     } else {
-      statusBadge = '<span class="status-badge" style="background:#f8fafc;color:#64748b;border:1px solid #e2e8f0;">Pendente</span>';
+      statusBadge = '<span class="status-badge pendente">Pendente</span>';
     }
 
     const countedDisplay = item.physical_qty !== null && item.physical_qty !== undefined ? `${item.physical_qty} un.` : '<span style="color:var(--text-muted);">&mdash;</span>';
@@ -5319,7 +5319,7 @@ function renderCommercialProductsTable(products = allProducts) {
 
     let statusBadge = '';
     if (!isActive) {
-      statusBadge = '<span class="status-badge cancelado" style="background:#f1f5f9;color:#64748b;border:1px solid #cbd5e1">Pausado</span>';
+      statusBadge = '<span class="status-badge pausado">Pausado</span>';
     } else if (stockNum > 0) {
       statusBadge = '<span class="status-badge pronto" style="background:#ecfdf5;color:#059669;border:1px solid #a7f3d0">Ativo na Loja</span>';
     } else {

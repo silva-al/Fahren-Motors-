@@ -10,8 +10,8 @@
   --panel-border: #23272f;
   --panel-hover: #171a20;
   --text-primary: #ffffff;
-  --text-secondary: #aeb2b8;
-  --text-muted: #6f747c;
+  --text-secondary: #ffffff;
+  --text-muted: #f8fafc;
 
   --accent-red: #ed1c24;
   --accent-red-hover: #ff2a33;
@@ -3502,7 +3502,7 @@ body.tema-claro {
   --panel-hover: #f1f5f9;
   --text-primary: #0f172a;
   --text-secondary: #475569;
-  --text-muted: #94a3b8;
+  --text-muted: #334155;
   background: var(--bg-main) !important;
   color: var(--text-primary);
 }
@@ -9453,478 +9453,101 @@ body.tema-claro .op-pill-btn[data-type="ajuste"].active {
 
 
 /* ===================================================================
-   ATUALIZAÇÃO DE DESIGN DEFINITIVA: WMS EXECUTIVE SAAS
-   1. DASHBOARDS E RELATÓRIOS IDÊNTICOS À IMAGEM 2 (CARDS BRANCOS LUMINOSOS)
-      EM AMBOS OS MODOS (DARK E CLARO)
-   2. ELIMINAÇÃO TOTAL DE SCROLLBAR / OVERFLOW NA TABELA DE PEDIDOS
-   3. PADRONIZAÇÃO COMPACTA DE TODOS OS MODAIS (SEM CORTES / ALTURA 85VH)
+   SISTEMA DE TEMAS DEFINITIVO: MODO DARK 100% ESCURO & MODO CLARO 100% BRANCO
+   1. MODO DARK: Todas as 15 abas 100% escuras com BRANCO FORTE (#ffffff)
+      em todas as letras, palavras, títulos, códigos e totais (eliminação do tom "prata").
+   2. MODO CLARO: Todas as abas 100% brancas com tipografia escura (#0f172a / #1e293b)
+      de alto contraste e total nitidez (sem textos sumindo em cinza fraco).
+   3. TABELA DE PEDIDOS: 100% contida, larguras fixas, sem overflow ou scrollbar horizontal.
+   4. MODAIS PADRONIZADOS: Altura e largura padrão (max-height: 86vh), sem passar da tela.
    =================================================================== */
-
-/* 1. CARDS DO DASHBOARD E RELATÓRIOS: ESTILO IMAGEM 2 (CLEAN WHITE CARDS) */
-/* Aplica o estilo de cards brancos modernos em AMBOS os modos (dark e claro) para máximo contraste e legibilidade */
-.stats-grid .stat-card,
-.stat-card {
-  background: #ffffff !important;
-  border: 1px solid #e2e8f0 !important;
-  border-radius: 14px !important;
-  padding: 16px 18px !important;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08) !important;
-  transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
-}
-
-.stat-card:hover {
-  transform: translateY(-2px) !important;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12) !important;
-}
-
-.stat-card .stat-number,
-#dashTotalProducts,
-#dashTodayOrders,
-#dashStockAlerts,
-#dashTotalRevenue,
-#dashTotalPixDiscount {
-  color: #0f172a !important;
-  font-size: 22px !important;
-  font-weight: 800 !important;
-  line-height: 1.2 !important;
-  margin: 6px 0 2px !important;
-}
-
-.stat-card .stat-label {
-  color: #64748b !important;
-  font-size: 12px !important;
-  font-weight: 600 !important;
-}
-
-.stat-card .stat-sub {
-  color: #64748b !important;
-  font-size: 11.5px !important;
-  font-weight: 500 !important;
-}
-
-/* Ícones dos Stat Cards em Círculos Suaves e Cores Vivas */
-.stat-icon-box {
-  width: 40px !important;
-  height: 40px !important;
-  border-radius: 10px !important;
-  display: flex !important;
-  align-items: center !important;
-  justify-content: center !important;
-  flex-shrink: 0 !important;
-}
-
-.stat-icon-box.cyan {
-  background: #ecfeff !important;
-  color: #0891b2 !important;
-}
-
-.stat-icon-box.green {
-  background: #dcfce7 !important;
-  color: #16a34a !important;
-}
-
-.stat-icon-box.red {
-  background: #fee2e2 !important;
-  color: #dc2626 !important;
-}
-
-.stat-icon-box.purple {
-  background: #f3e8ff !important;
-  color: #7c3aed !important;
-}
-
-.stat-icon-box.orange {
-  background: #ffedd5 !important;
-  color: #ea580c !important;
-}
-
-/* Painel de Atenção / Alertas */
-.dash-alerts-box {
-  background: #ffffff !important;
-  border: 1px solid #e2e8f0 !important;
-  border-radius: 14px !important;
-  padding: 16px 20px !important;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08) !important;
-}
-
-.dash-alerts-header h3 {
-  color: #0f172a !important;
-  font-weight: 800 !important;
-}
-
-.dash-alert-chip {
-  border-radius: 10px !important;
-  padding: 10px 14px !important;
-  font-weight: 600 !important;
-  font-size: 12.5px !important;
-  transition: all 0.15s ease !important;
-}
-
-.dash-alert-chip.red {
-  background: #fef2f2 !important;
-  border: 1px solid #fecaca !important;
-  color: #991b1b !important;
-}
-
-.dash-alert-chip.orange {
-  background: #fffbeb !important;
-  border: 1px solid #fde68a !important;
-  color: #92400e !important;
-}
-
-.dash-alert-chip.blue {
-  background: #eff6ff !important;
-  border: 1px solid #bfdbfe !important;
-  color: #1e40af !important;
-}
-
-.dash-alert-chip.purple {
-  background: #faf5ff !important;
-  border: 1px solid #e9d5ff !important;
-  color: #6b21a8 !important;
-}
-
-/* Painéis de Gráficos e Mix do Dashboard (Fluxo de Vendas, Mix, Últimos Pedidos) */
-.modern-dash-panel {
-  background: #ffffff !important;
-  border: 1px solid #e2e8f0 !important;
-  border-radius: 14px !important;
-  padding: 18px 20px !important;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08) !important;
-}
-
-.dash-panel-title {
-  color: #0f172a !important;
-  font-size: 15px !important;
-  font-weight: 800 !important;
-}
-
-.modern-dash-panel .panel-sub {
-  color: #64748b !important;
-  font-size: 12px !important;
-}
-
-.modern-dash-panel .panel-badge-live {
-  background: #dcfce7 !important;
-  color: #16a34a !important;
-  border: 1px solid #bbf7d0 !important;
-}
-
-.modern-dash-panel button.btn-link,
-.modern-dash-panel a.btn-link {
-  color: #2563eb !important;
-  font-weight: 600 !important;
-}
-
-/* Barras do Gráfico de 7 Dias */
-.bar-track {
-  background: #f1f5f9 !important;
-}
-
-.bar-day {
-  color: #64748b !important;
-}
-
-.bar-col.today .bar-day {
-  color: #ed1c24 !important;
-  font-weight: 800 !important;
-}
-
-/* Mix de Peças */
-.cat-mix-track {
-  background: #f1f5f9 !important;
-}
-
-.cat-mix-name {
-  color: #0f172a !important;
-}
-
-.cat-mix-vals strong {
-  color: #0f172a !important;
-}
-
-.cat-mix-vals small {
-  color: #64748b !important;
-}
-
-/* Lista de Pedidos Recentes */
-.dash-recent-item {
-  background: #f8fafc !important;
-  border: 1px solid #e2e8f0 !important;
-  border-radius: 10px !important;
-}
-
-.dash-recent-item:hover {
-  background: #f1f5f9 !important;
-  border-color: #cbd5e1 !important;
-}
-
-.recent-cust-avatar {
-  background: #e2e8f0 !important;
-  color: #0f172a !important;
-  border: 1px solid #cbd5e1 !important;
-}
-
-.recent-order-headline .dash-cust-name {
-  color: #0f172a !important;
-}
-
-.recent-item-left .dash-order-meta {
-  color: #64748b !important;
-}
-
-.recent-item-right .dash-order-val {
-  color: #16a34a !important;
-}
-
-/* Relatórios WMS e Financeiro */
-#pane-relatorios .wms-panel,
-#pane-relatorios .report-card,
-#pane-financeiro .finance-card,
-#pane-financeiro .dre-panel {
-  background: #ffffff !important;
-  border: 1px solid #e2e8f0 !important;
-  border-radius: 14px !important;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08) !important;
-  color: #0f172a !important;
-}
-
-/* Botões de Ação do Dashboard */
-.btn-quick-action {
-  background: #ffffff !important;
-  border: 1px solid #cbd5e1 !important;
-  color: #0f172a !important;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05) !important;
-}
-
-.btn-quick-action:hover {
-  background: #f8fafc !important;
-  border-color: #94a3b8 !important;
-  color: #0f172a !important;
-}
-
-.btn-quick-action.primary {
-  background: #ed1c24 !important;
-  border-color: #dc2626 !important;
-  color: #ffffff !important;
-  box-shadow: 0 4px 12px rgba(237, 28, 36, 0.3) !important;
-}
-
-.btn-quick-action.primary:hover {
-  background: #c8131a !important;
-}
 
 /* ===================================================================
-   2. ELIMINAÇÃO TOTAL DE SCROLLBAR / OVERFLOW NA TABELA DE PEDIDOS
-      IGUAL EM AMBOS OS TEMAS (DARK E CLARO)
+   1. TABELA DE PEDIDOS: CONTENÇÃO 100% SEM OVERFLOW OU SCROLL HORIZONTAL
    =================================================================== */
-.wms-panel.ped-table-card {
+#pane-pedidos .table-panel,
+#pane-pedidos .ped-table-card {
   width: 100% !important;
   max-width: 100% !important;
-  min-width: 0 !important;
   box-sizing: border-box !important;
-  padding: 12px 14px !important;
-  border-radius: 14px !important;
   overflow: hidden !important;
+  padding: 16px 20px !important;
+  border-radius: 14px !important;
 }
 
-@media (min-width: 900px) {
-  .table-responsive {
-    width: 100% !important;
-    max-width: 100% !important;
-    min-width: 0 !important;
-    overflow-x: hidden !important; /* Sem barra de rolagem horizontal no desktop */
-    overflow-y: visible !important;
-  }
-}
-
-@media (max-width: 899px) {
-  .table-responsive {
-    overflow-x: auto !important;
-    -webkit-overflow-scrolling: touch !important;
-  }
-}
-
-.orders-table {
+#pane-pedidos .table-responsive,
+.orders-table-wrapper {
   width: 100% !important;
   max-width: 100% !important;
-  min-width: 0 !important;
-  table-layout: fixed !important; /* Fixa proporções milimétricas */
-  border-collapse: collapse !important;
+  overflow-x: hidden !important;
+  overflow-y: visible !important;
+  box-sizing: border-box !important;
 }
 
-.orders-table th,
-.orders-table td {
-  padding: 8px 6px !important;
+#pane-pedidos table,
+#pane-pedidos .orders-table {
+  width: 100% !important;
+  max-width: 100% !important;
+  table-layout: fixed !important;
+  border-collapse: collapse !important;
+  box-sizing: border-box !important;
+}
+
+#pane-pedidos table th,
+#pane-pedidos table td {
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  white-space: nowrap !important;
+  padding: 12px 10px !important;
   vertical-align: middle !important;
   box-sizing: border-box !important;
-  overflow: hidden !important;
-  text-overflow: ellipsis !important;
 }
 
-/* Proporção exata das 7 colunas (total 100%) */
-.col-th-id, .order-col-id {
-  width: 50px !important;
-  text-align: left !important;
-}
+#pane-pedidos table th:nth-child(1),
+#pane-pedidos table td:nth-child(1) { width: 9%; }   /* Nº PEDIDO */
 
-.col-th-customer, .order-col-customer {
-  width: 20% !important;
-}
+#pane-pedidos table th:nth-child(2),
+#pane-pedidos table td:nth-child(2) { width: 17%; }  /* CLIENTE */
 
-.col-th-items, .order-col-items {
-  width: 28% !important;
-}
+#pane-pedidos table th:nth-child(3),
+#pane-pedidos table td:nth-child(3) { width: 28%; }  /* ITENS */
 
-.col-th-total, .order-col-total {
-  width: 10% !important;
-}
+#pane-pedidos table th:nth-child(4),
+#pane-pedidos table td:nth-child(4) { width: 10%; text-align: right; } /* TOTAL */
 
-.col-th-pay, .order-col-pay {
-  width: 13% !important;
-}
+#pane-pedidos table th:nth-child(5),
+#pane-pedidos table td:nth-child(5) { width: 13%; }  /* PAGAMENTO */
 
-.col-th-date, .order-col-date {
-  width: 12% !important;
-}
+#pane-pedidos table th:nth-child(6),
+#pane-pedidos table td:nth-child(6) { width: 11%; }  /* DATA/HORA */
 
-.col-th-status-actions, .order-col-status-actions {
-  width: 17% !important;
-  text-align: right !important;
-}
-
-/* Tipografia Identificada e Harmoniosa nos 2 modos (Dark e Light) */
-.order-id-badge {
-  font-size: 12.5px !important;
-  font-weight: 800 !important;
-}
-
-.order-cust-name,
-body:not(.tema-claro) .order-cust-name {
-  font-size: 12.5px !important;
-  font-weight: 700 !important;
-  line-height: 1.25 !important;
-  max-width: 100% !important;
-  overflow: hidden !important;
-  text-overflow: ellipsis !important;
-  white-space: nowrap !important;
-}
-
-.order-cust-phone,
-body:not(.tema-claro) .order-cust-phone {
-  font-size: 11px !important;
-  white-space: nowrap !important;
-  overflow: hidden !important;
-  text-overflow: ellipsis !important;
-}
-
-.order-item-row {
-  font-size: 11.5px !important;
-  gap: 4px !important;
-  white-space: nowrap !important;
-  overflow: hidden !important;
-  text-overflow: ellipsis !important;
-}
-
-.order-item-qty,
-body:not(.tema-claro) .order-item-qty {
-  font-size: 10px !important;
-  padding: 1px 3px !important;
-}
-
-.order-item-title,
-body:not(.tema-claro) .order-item-title {
-  font-size: 11.5px !important;
-  white-space: nowrap !important;
-  overflow: hidden !important;
-  text-overflow: ellipsis !important;
-  max-width: calc(100% - 24px) !important;
-  display: inline-block !important;
-}
-
-.order-total-price,
-body:not(.tema-claro) .order-total-price {
-  font-size: 13.5px !important;
-  font-weight: 800 !important;
-  white-space: nowrap !important;
-}
-
-.order-date-text,
-body:not(.tema-claro) .order-date-text {
-  font-size: 11px !important;
-  white-space: nowrap !important;
-}
-
-.order-pay-badge {
-  font-size: 10px !important;
-  padding: 2px 6px !important;
-  white-space: nowrap !important;
-}
-
-.status-actions-cell-stack {
-  display: flex !important;
-  flex-direction: column !important;
-  align-items: flex-end !important;
-  gap: 4px !important;
-}
-
-.actions-top-row {
-  display: inline-flex !important;
-  align-items: center !important;
-  gap: 4px !important;
-}
-
-.btn-danfe-action {
-  padding: 3px 6px !important;
-  font-size: 10px !important;
-  font-weight: 700 !important;
-}
-
-.btn-delete-action {
-  padding: 3px 5px !important;
-  font-size: 10px !important;
-}
-
-.order-status-badge-select {
-  padding: 2px 14px 2px 14px !important;
-  font-size: 10px !important;
-  height: 22px !important;
-}
+#pane-pedidos table th:nth-child(7),
+#pane-pedidos table td:nth-child(7) { width: 12%; text-align: center; } /* STATUS & AÇÕES */
 
 /* ===================================================================
-   3. PADRONIZAÇÃO COMPACTA DE TODOS OS MODAIS (SEM CORTES / ALTURA 85VH)
+   2. PADRONIZAÇÃO UNIVERSAL DOS MODAIS (NÃO ULTRAPASSA A TELA / 86VH)
    =================================================================== */
-/* Modais Ocultos - Regra Absoluta */
-.modal-overlay.hidden,
-div.modal-overlay.hidden,
-div.hidden,
-.hidden {
-  display: none !important;
-  visibility: hidden !important;
-  pointer-events: none !important;
-  opacity: 0 !important;
-  z-index: -9999 !important;
-}
-
-/* Modais Abertos (somente quando não tiverem a classe .hidden) */
-.modal-overlay:not(.hidden) {
+.modal-overlay {
   position: fixed !important;
   top: 0 !important;
   left: 0 !important;
+  right: 0 !important;
+  bottom: 0 !important;
   width: 100vw !important;
   height: 100vh !important;
   display: flex !important;
   align-items: center !important;
   justify-content: center !important;
-  padding: 12px !important;
+  padding: 20px !important;
   box-sizing: border-box !important;
-  z-index: 9999 !important;
-  overflow: hidden !important;
-  visibility: visible !important;
-  pointer-events: auto !important;
-  opacity: 1 !important;
-  background: rgba(0, 0, 0, 0.75) !important;
+  background: rgba(0, 0, 0, 0.78) !important;
   backdrop-filter: blur(4px) !important;
+  -webkit-backdrop-filter: blur(4px) !important;
+  z-index: 999999 !important;
+}
+
+.modal-overlay.hidden {
+  display: none !important;
 }
 
 .modal-card,
@@ -9932,184 +9555,500 @@ div.hidden,
 #productViewModal .modal-card,
 #stockModal .modal-card,
 #stockOperationModal .modal-card,
-#inventoryCountModal .modal-card,
 #newOrderModal .modal-card,
+#inventoryCountModal .modal-card,
 #editNfModal .modal-card,
 #danfeModal .modal-card,
 #cceModal .modal-card,
 #dacceModal .modal-card,
 #stockLabelModal .modal-card {
+  max-width: 640px !important;
   width: 100% !important;
-  max-width: 530px !important;
-  max-height: 85vh !important;
-  margin: auto !important;
+  max-height: 86vh !important;
+  margin: 0 auto !important;
   display: flex !important;
   flex-direction: column !important;
   border-radius: 16px !important;
   overflow: hidden !important;
   box-sizing: border-box !important;
-  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.4) !important;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5) !important;
 }
 
 .modal-card.modal-lg,
-#productViewModal .modal-card {
-  max-width: 560px !important;
+#productViewModal .modal-card,
+#newOrderModal .modal-card {
+  max-width: 760px !important;
 }
 
 .modal-header {
   flex-shrink: 0 !important;
-  padding: 12px 18px !important;
-  border-bottom: 1px solid rgba(226, 232, 240, 0.8) !important;
-}
-
-body:not(.tema-claro) .modal-header {
-  border-bottom-color: rgba(255, 255, 255, 0.1) !important;
-}
-
-.modal-title-box h3,
-#pvModalTitle {
-  font-size: 15.5px !important;
-  font-weight: 800 !important;
-}
-
-.modal-close,
-.btn-close-modal {
-  width: 30px !important;
-  height: 30px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  padding: 14px 20px !important;
+  box-sizing: border-box !important;
 }
 
 .modal-body {
   flex: 1 1 auto !important;
   overflow-y: auto !important;
-  max-height: calc(85vh - 105px) !important;
-  padding: 14px 18px !important;
-  scrollbar-width: thin !important;
+  padding: 18px 22px !important;
+  box-sizing: border-box !important;
 }
 
 .modal-footer,
 .stock-modal-footer {
   flex-shrink: 0 !important;
-  padding: 10px 18px !important;
-  border-top: 1px solid rgba(226, 232, 240, 0.8) !important;
+  padding: 12px 20px !important;
+  box-sizing: border-box !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: flex-end !important;
+  gap: 10px !important;
+}
+
+/* ===================================================================
+   3. MODO DARK / ESCURO (body:not(.tema-claro))
+   Tudo 100% Escuro em TODAS as 15 abas (sem painéis brancos!)
+   Tipografia em BRANCO FORTE (#ffffff / #f8fafc), sem tom "prata".
+   =================================================================== */
+body:not(.tema-claro) {
+  --bg-dark: #090a0c !important;
+  --bg-main: #0b0c0f !important;
+  --sidebar-bg: #0c0e12 !important;
+  --panel-bg: #12151d !important;
+  --panel-border: rgba(255, 255, 255, 0.08) !important;
+  --panel-hover: #171a20 !important;
+  --text-primary: #ffffff !important;
+  --text-secondary: #ffffff !important;
+  --text-muted: #f8fafc !important;
+  background-color: #090a0c !important;
+  color: #ffffff !important;
+}
+
+/* Painéis, Cards e Containers 100% Escuros em TODAS as Abas no Modo Dark */
+body:not(.tema-claro) .wms-panel,
+body:not(.tema-claro) .ped-table-card,
+body:not(.tema-claro) .table-panel,
+body:not(.tema-claro) .filter-panel,
+body:not(.tema-claro) .report-card,
+body:not(.tema-claro) .finance-card,
+body:not(.tema-claro) .dre-panel,
+body:not(.tema-claro) .stat-card,
+body:not(.tema-claro) .modern-dash-panel,
+body:not(.tema-claro) .venda-kpi-card,
+body:not(.tema-claro) .vendas-chart-card,
+body:not(.tema-claro) .exp-card,
+body:not(.tema-claro) .dash-alerts-box,
+body:not(.tema-claro) .orders-panel-card,
+body:not(.tema-claro) .order-kpi-card,
+body:not(.tema-claro) .orders-summary-card,
+body:not(.tema-claro) .orders-chart-card,
+body:not(.tema-claro) .ped-kpi-card,
+body:not(.tema-claro) .ped-resumo-card,
+body:not(.tema-claro) .rack-location-card,
+body:not(.tema-claro) .est-qa-card,
+body:not(.tema-claro) .stock-label-card,
+body:not(.tema-claro) #pane-dashboard .wms-panel,
+body:not(.tema-claro) #pane-produtos .wms-panel,
+body:not(.tema-claro) #pane-pecas .wms-panel,
+body:not(.tema-claro) #pane-pedidos .wms-panel,
+body:not(.tema-claro) #pane-vendas .wms-panel,
+body:not(.tema-claro) #pane-operacoes-estoque .wms-panel,
+body:not(.tema-claro) #pane-movimentacoes .wms-panel,
+body:not(.tema-claro) #pane-inventario .wms-panel,
+body:not(.tema-claro) #pane-localizacoes .wms-panel,
+body:not(.tema-claro) #pane-alertas .wms-panel,
+body:not(.tema-claro) #pane-expedicao .wms-panel,
+body:not(.tema-claro) #pane-financeiro .wms-panel,
+body:not(.tema-claro) #pane-notas-fiscais .wms-panel,
+body:not(.tema-claro) #pane-relatorios .wms-panel,
+body:not(.tema-claro) #pane-configuracoes .wms-panel {
+  background: #12151d !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  color: #ffffff !important;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4) !important;
+}
+
+/* Modais 100% Escuros no Modo Dark */
+body:not(.tema-claro) .modal-card,
+body:not(.tema-claro) .modal-stock-card {
+  background: #12151d !important;
+  border: 1px solid rgba(255, 255, 255, 0.12) !important;
+  color: #ffffff !important;
+}
+
+body:not(.tema-claro) .modal-header {
+  background: #12151d !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
 }
 
 body:not(.tema-claro) .modal-footer,
 body:not(.tema-claro) .stock-modal-footer {
-  border-top-color: rgba(255, 255, 255, 0.1) !important;
+  background: #0d0f17 !important;
+  border-top: 1px solid rgba(255, 255, 255, 0.1) !important;
 }
 
-/* Detalhes da Peça (#productViewModal) Compacto e Harmônico */
-.pv-modal-grid {
-  display: grid !important;
-  grid-template-columns: 110px 1fr !important;
-  gap: 14px !important;
-  align-items: center !important;
+body:not(.tema-claro) .stock-modal-info,
+body:not(.tema-claro) .pv-compat-box,
+body:not(.tema-claro) .pv-desc-box,
+body:not(.tema-claro) .pv-photo-wrap,
+body:not(.tema-claro) .pv-price-card,
+body:not(.tema-claro) .stock-stepper-wrap {
+  background: #181c26 !important;
+  border: 1px solid rgba(255, 255, 255, 0.12) !important;
+  color: #ffffff !important;
 }
 
-.pv-photo-wrap {
-  width: 110px !important;
-  height: 110px !important;
-  border-radius: 12px !important;
-  overflow: hidden !important;
+body:not(.tema-claro) .stock-modal-dark-input,
+body:not(.tema-claro) .stock-modal-dark-textarea,
+body:not(.tema-claro) .modal-card input:not([type="checkbox"]):not([type="radio"]),
+body:not(.tema-claro) .modal-card select,
+body:not(.tema-claro) .modal-card textarea {
+  background: #181c26 !important;
+  border: 1.5px solid rgba(255, 255, 255, 0.18) !important;
+  color: #ffffff !important;
 }
 
-.pv-photo-wrap img {
-  width: 100% !important;
-  height: 100% !important;
-  object-fit: cover !important;
+body:not(.tema-claro) .modal-close,
+body:not(.tema-claro) .modal-close-btn {
+  background: rgba(255, 255, 255, 0.08) !important;
+  border: 1px solid rgba(255, 255, 255, 0.15) !important;
+  color: #ffffff !important;
 }
 
-.pv-name {
-  font-size: 14px !important;
+body:not(.tema-claro) .modal-close:hover,
+body:not(.tema-claro) .modal-close-btn:hover {
+  background: #dc2626 !important;
+  color: #ffffff !important;
+}
+
+/* Letras e Palavras em BRANCO FORTE (#ffffff) no Modo Dark */
+body:not(.tema-claro) h1,
+body:not(.tema-claro) h2,
+body:not(.tema-claro) h3,
+body:not(.tema-claro) h4,
+body:not(.tema-claro) h5,
+body:not(.tema-claro) h6,
+body:not(.tema-claro) .page-title,
+body:not(.tema-claro) .dash-panel-title,
+body:not(.tema-claro) .panel-header h3,
+body:not(.tema-claro) .modal-title-box h3,
+body:not(.tema-claro) .vendas-card-header h3,
+body:not(.tema-claro) .stat-number,
+body:not(.tema-claro) .venda-kpi-val,
+body:not(.tema-claro) #dashTotalProducts,
+body:not(.tema-claro) #dashTodayOrders,
+body:not(.tema-claro) #dashStockAlerts,
+body:not(.tema-claro) #dashTotalRevenue,
+body:not(.tema-claro) #dashTotalPixDiscount,
+body:not(.tema-claro) .rep-code-val,
+body:not(.tema-claro) .rep-total-val,
+body:not(.tema-claro) .prod-sku-code,
+body:not(.tema-claro) .prod-name-strong,
+body:not(.tema-claro) .pv-name,
+body:not(.tema-claro) .pv-code,
+body:not(.tema-claro) .order-cust-name,
+body:not(.tema-claro) .order-item-title,
+body:not(.tema-claro) .cat-mix-name,
+body:not(.tema-claro) .cat-mix-vals strong,
+body:not(.tema-claro) .dash-cust-name,
+body:not(.tema-claro) .fin-cust-name,
+body:not(.tema-claro) .fiscal-cust-name,
+body:not(.tema-claro) .exp-cust-name {
+  color: #ffffff !important;
   font-weight: 800 !important;
-  line-height: 1.25 !important;
-  margin: 4px 0 !important;
 }
 
-.pv-price-card {
-  padding: 6px 10px !important;
-  margin: 6px 0 !important;
+body:not(.tema-claro) p,
+body:not(.tema-claro) .page-sub,
+body:not(.tema-claro) .page-subtitle,
+body:not(.tema-claro) .panel-sub,
+body:not(.tema-claro) label,
+body:not(.tema-claro) .stock-field-label,
+body:not(.tema-claro) .stock-sku-badge,
+body:not(.tema-claro) .pv-section-label,
+body:not(.tema-claro) .stat-label,
+body:not(.tema-claro) .stat-sub,
+body:not(.tema-claro) .venda-kpi-label,
+body:not(.tema-claro) .bar-day,
+body:not(.tema-claro) .cat-mix-vals small,
+body:not(.tema-claro) .dash-order-meta,
+body:not(.tema-claro) .order-cust-phone,
+body:not(.tema-claro) .order-date-text,
+body:not(.tema-claro) .fin-date-text,
+body:not(.tema-claro) .fiscal-date-text,
+body:not(.tema-claro) .exp-address-text,
+body:not(.tema-claro) .pv-compat-box,
+body:not(.tema-claro) .pv-desc-box {
+  color: #ffffff !important; /* Branco forte sem ser prata */
 }
 
-.pv-price-pix {
-  font-size: 15px !important;
+/* Tabelas 100% Escuras com Tipografia Branca Forte no Modo Dark */
+body:not(.tema-claro) table,
+body:not(.tema-claro) .wms-table,
+body:not(.tema-claro) .orders-table,
+body:not(.tema-claro) .wms-mini-table {
+  background: transparent !important;
+  color: #ffffff !important;
+}
+
+body:not(.tema-claro) table thead th,
+body:not(.tema-claro) .wms-table th,
+body:not(.tema-claro) .orders-table th,
+body:not(.tema-claro) .wms-mini-table th {
+  background: #0d0f17 !important;
+  color: #ffffff !important;
   font-weight: 800 !important;
-}
-
-.pv-price-reg {
-  font-size: 11px !important;
-}
-
-.pv-stock-box {
-  padding: 6px 10px !important;
-}
-
-.pv-stock-stepper {
-  gap: 4px !important;
-}
-
-.pv-stock-stepper strong {
-  font-size: 14px !important;
-}
-
-.btn-pv-step {
-  width: 26px !important;
-  height: 26px !important;
-  font-size: 13px !important;
-}
-
-.pv-section {
-  margin-top: 10px !important;
-}
-
-.pv-section-label {
-  font-size: 10.5px !important;
-  margin-bottom: 3px !important;
-}
-
-.pv-compat-box,
-.pv-desc-box {
-  padding: 6px 10px !important;
   font-size: 11.5px !important;
-  max-height: 60px !important;
-  overflow-y: auto !important;
+  letter-spacing: 0.6px !important;
+  border-bottom: 1.5px solid rgba(255, 255, 255, 0.15) !important;
 }
 
-.pv-history-table-wrap {
-  max-height: 140px !important;
-  overflow-y: auto !important;
+body:not(.tema-claro) table tbody td,
+body:not(.tema-claro) .wms-table td,
+body:not(.tema-claro) .orders-table td,
+body:not(.tema-claro) .wms-mini-table td {
+  background: transparent !important;
+  color: #ffffff !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.07) !important;
 }
 
+body:not(.tema-claro) table tbody tr:hover td,
+body:not(.tema-claro) .wms-table tbody tr:hover td,
+body:not(.tema-claro) .orders-table tbody tr:hover td {
+  background: rgba(255, 255, 255, 0.04) !important;
+}
+
+body:not(.tema-claro) table tbody td strong,
+body:not(.tema-claro) .wms-table td strong,
+body:not(.tema-claro) .orders-table td strong {
+  color: #ffffff !important;
+  font-weight: 700 !important;
+}
+
+body:not(.tema-claro) table tbody td small,
+body:not(.tema-claro) .wms-table td small,
+body:not(.tema-claro) .orders-table td small {
+  color: #ffffff !important;
+  font-weight: 500 !important;
+}
+
+body:not(.tema-claro) td strong[style*="monospace"] {
+  color: #ffffff !important;
+  font-weight: 800 !important;
+}
+
+/* Inputs, Selects e Filtros em Modo Dark */
+body:not(.tema-claro) input:not([type="checkbox"]):not([type="radio"]),
+body:not(.tema-claro) select,
+body:not(.tema-claro) textarea,
+body:not(.tema-claro) .orders-filter-bar,
+body:not(.tema-claro) .ped-search-wrap input,
+body:not(.tema-claro) .wms-input-clean,
+body:not(.tema-claro) .ped-date-range {
+  background: #181c26 !important;
+  border: 1px solid rgba(255, 255, 255, 0.15) !important;
+  color: #ffffff !important;
+}
+
+body:not(.tema-claro) ::placeholder {
+  color: #cbd5e1 !important;
+}
+
+body:not(.tema-claro) .btn-pv-step,
+body:not(.tema-claro) .stock-stepper-btn {
+  background: #1e293b !important;
+  border: 1px solid rgba(255, 255, 255, 0.15) !important;
+  color: #ffffff !important;
+}
+
+body:not(.tema-claro) .pv-stock-stepper strong,
+body:not(.tema-claro) #stockModalQty {
+  color: #ffffff !important;
+  background: #141721 !important;
+}
+
+body:not(.tema-claro) .status-badge.pendente,
+body:not(.tema-claro) .status-badge.pausado {
+  background: rgba(255, 255, 255, 0.08) !important;
+  color: #ffffff !important;
+  border: 1px solid rgba(255, 255, 255, 0.15) !important;
+}
 
 /* ===================================================================
-   ALTO CONTRASTE ABSOLUTO NO TEMA CLARO (MODO BRANCO) EM TODAS AS ABAS
-   Garante tipografia escura (#0f172a / #1e293b), nítida e 100% legível em:
-   - Relatórios (Código SKU, Total, Peça, Quantidades, Preços)
-   - Produtos / Catálogo de Estoque
-   - Pedidos & Expedição
-   - Operações de Estoque & Movimentações
-   - Inventário & Auditoria
-   - Notas Fiscais & Financeiro
+   4. MODO CLARO / BRANCO (body.tema-claro)
+   Tudo 100% Branco com Tipografia Escura (#0f172a / #1e293b) de Alto Contraste
    =================================================================== */
-
-/* Variáveis do Tema Claro com Máximo Contraste */
-html.tema-claro,
 body.tema-claro {
+  --bg-dark: #f0f2f5 !important;
+  --bg-main: #f8fafc !important;
+  --sidebar-bg: #ffffff !important;
+  --panel-bg: #ffffff !important;
+  --panel-border: #e2e8f0 !important;
+  --panel-hover: #f1f5f9 !important;
   --text-primary: #0f172a !important;
   --text-secondary: #1e293b !important;
   --text-muted: #334155 !important;
+  background-color: #f8fafc !important;
+  color: #0f172a !important;
 }
 
-/* 1. Cabeçalhos e Células de TODAS as Tabelas do Painel no Modo Claro */
+body.tema-claro .wms-panel,
+body.tema-claro .ped-table-card,
+body.tema-claro .table-panel,
+body.tema-claro .filter-panel,
+body.tema-claro .report-card,
+body.tema-claro .finance-card,
+body.tema-claro .dre-panel,
+body.tema-claro .stat-card,
+body.tema-claro .modern-dash-panel,
+body.tema-claro .venda-kpi-card,
+body.tema-claro .vendas-chart-card,
+body.tema-claro .exp-card,
+body.tema-claro .dash-alerts-box,
+body.tema-claro .orders-panel-card,
+body.tema-claro .order-kpi-card,
+body.tema-claro .orders-summary-card,
+body.tema-claro .orders-chart-card,
+body.tema-claro .ped-kpi-card,
+body.tema-claro .ped-resumo-card,
+body.tema-claro .rack-location-card,
+body.tema-claro .est-qa-card,
+body.tema-claro .stock-label-card,
+body.tema-claro #pane-dashboard .wms-panel,
+body.tema-claro #pane-produtos .wms-panel,
+body.tema-claro #pane-pecas .wms-panel,
+body.tema-claro #pane-pedidos .wms-panel,
+body.tema-claro #pane-vendas .wms-panel,
+body.tema-claro #pane-operacoes-estoque .wms-panel,
+body.tema-claro #pane-movimentacoes .wms-panel,
+body.tema-claro #pane-inventario .wms-panel,
+body.tema-claro #pane-localizacoes .wms-panel,
+body.tema-claro #pane-alertas .wms-panel,
+body.tema-claro #pane-expedicao .wms-panel,
+body.tema-claro #pane-financeiro .wms-panel,
+body.tema-claro #pane-notas-fiscais .wms-panel,
+body.tema-claro #pane-relatorios .wms-panel,
+body.tema-claro #pane-configuracoes .wms-panel {
+  background: #ffffff !important;
+  border: 1px solid #e2e8f0 !important;
+  color: #0f172a !important;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06) !important;
+}
+
+body.tema-claro .modal-card,
+body.tema-claro .modal-stock-card {
+  background: #ffffff !important;
+  border: 1px solid #e2e8f0 !important;
+  color: #0f172a !important;
+}
+
+body.tema-claro .modal-header {
+  background: #ffffff !important;
+  border-bottom: 1px solid #e2e8f0 !important;
+}
+
+body.tema-claro .modal-footer,
+body.tema-claro .stock-modal-footer {
+  background: #f8fafc !important;
+  border-top: 1px solid #e2e8f0 !important;
+}
+
+body.tema-claro .stock-modal-info,
+body.tema-claro .pv-compat-box,
+body.tema-claro .pv-desc-box,
+body.tema-claro .pv-price-card {
+  background: #f8fafc !important;
+  border: 1px solid #cbd5e1 !important;
+  color: #0f172a !important;
+}
+
+body.tema-claro .stock-modal-dark-input,
+body.tema-claro .stock-modal-dark-textarea,
+body.tema-claro .modal-card input:not([type="checkbox"]):not([type="radio"]),
+body.tema-claro .modal-card select,
+body.tema-claro .modal-card textarea {
+  background: #ffffff !important;
+  border: 1.5px solid #cbd5e1 !important;
+  color: #0f172a !important;
+}
+
+body.tema-claro .modal-close,
+body.tema-claro .modal-close-btn {
+  background: #f1f5f9 !important;
+  border: 1px solid #cbd5e1 !important;
+  color: #334155 !important;
+}
+
+body.tema-claro .modal-close:hover,
+body.tema-claro .modal-close-btn:hover {
+  background: #fee2e2 !important;
+  color: #dc2626 !important;
+}
+
+body.tema-claro h1,
+body.tema-claro h2,
+body.tema-claro h3,
+body.tema-claro h4,
+body.tema-claro h5,
+body.tema-claro h6,
+body.tema-claro .page-title,
+body.tema-claro .dash-panel-title,
+body.tema-claro .stat-number,
+body.tema-claro .venda-kpi-val,
+body.tema-claro .rep-code-val,
+body.tema-claro .rep-total-val,
+body.tema-claro .prod-sku-code,
+body.tema-claro .prod-name-strong,
+body.tema-claro .pv-name,
+body.tema-claro .pv-code,
+body.tema-claro .order-cust-name,
+body.tema-claro .order-item-title,
+body.tema-claro .cat-mix-name,
+body.tema-claro .cat-mix-vals strong,
+body.tema-claro .dash-cust-name,
+body.tema-claro #dashTotalProducts,
+body.tema-claro #dashTodayOrders,
+body.tema-claro #dashStockAlerts,
+body.tema-claro #dashTotalRevenue,
+body.tema-claro #dashTotalPixDiscount {
+  color: #0f172a !important;
+  font-weight: 800 !important;
+}
+
+body.tema-claro p,
+body.tema-claro .page-sub,
+body.tema-claro .page-subtitle,
+body.tema-claro .panel-sub,
+body.tema-claro label,
+body.tema-claro .stock-field-label,
+body.tema-claro .stock-sku-badge,
+body.tema-claro .pv-section-label,
+body.tema-claro .stat-label,
+body.tema-claro .stat-sub,
+body.tema-claro .venda-kpi-label,
+body.tema-claro .bar-day,
+body.tema-claro .cat-mix-vals small,
+body.tema-claro .dash-order-meta,
+body.tema-claro .order-cust-phone,
+body.tema-claro .order-date-text,
+body.tema-claro .fin-date-text,
+body.tema-claro .fiscal-date-text,
+body.tema-claro .exp-address-text,
+body.tema-claro .pv-compat-box,
+body.tema-claro .pv-desc-box {
+  color: #1e293b !important;
+  font-weight: 600 !important;
+}
+
 body.tema-claro table thead th,
 body.tema-claro .wms-table th,
 body.tema-claro .orders-table th,
 body.tema-claro .wms-mini-table th {
-  background: #f8fafc !important;
+  background: #f1f5f9 !important;
   color: #0f172a !important;
   font-weight: 800 !important;
-  font-size: 11.5px !important;
-  letter-spacing: 0.6px !important;
   border-bottom: 2px solid #cbd5e1 !important;
 }
 
@@ -10117,275 +10056,58 @@ body.tema-claro table tbody td,
 body.tema-claro .wms-table td,
 body.tema-claro .orders-table td,
 body.tema-claro .wms-mini-table td {
-  color: #1e293b !important;
-  border-bottom: 1px solid #e2e8f0 !important;
-  font-size: 12.5px !important;
-}
-
-body.tema-claro table tbody tr:hover td,
-body.tema-claro .wms-table tbody tr:hover td {
-  background: #f1f5f9 !important;
-}
-
-/* 2. Textos em Negrito (strong) e Rótulos Pequenos (small) nas Tabelas */
-body.tema-claro table tbody td strong,
-body.tema-claro .wms-table td strong {
+  background: #ffffff !important;
   color: #0f172a !important;
+  border-bottom: 1px solid #e2e8f0 !important;
+}
+
+body.tema-claro table tbody td strong,
+body.tema-claro .wms-table td strong,
+body.tema-claro .orders-table td strong {
+  color: #0f172a !important;
+  font-weight: 700 !important;
 }
 
 body.tema-claro table tbody td small,
-body.tema-claro .wms-table td small {
+body.tema-claro .wms-table td small,
+body.tema-claro .orders-table td small {
   color: #334155 !important;
   font-weight: 600 !important;
 }
 
-/* 3. ABA RELATÓRIOS (#pane-relatorios) - Alto Contraste */
-body.tema-claro .rep-code-val,
-body.tema-claro #pane-relatorios td strong[style*="monospace"],
-body.tema-claro #pane-relatorios .rep-code-val {
-  color: #0f172a !important;
-  font-weight: 800 !important;
-  font-family: var(--font-mono), monospace !important;
-}
-
-body.tema-claro .rep-total-val,
-body.tema-claro #pane-relatorios .rep-total-val {
-  color: #0f172a !important;
-  font-weight: 800 !important;
-  font-size: 13px !important;
-}
-
-body:not(.tema-claro) .rep-code-val {
-  color: #cbd5e1 !important;
-  font-weight: 700 !important;
-}
-
-body:not(.tema-claro) .rep-total-val {
-  color: #4ade80 !important;
-  font-weight: 800 !important;
-}
-
-body.tema-claro #pane-relatorios .wms-table td strong {
-  color: #0f172a !important;
-}
-
-body.tema-claro #pane-relatorios .wms-table td small {
-  color: #334155 !important;
-}
-
-/* 4. ABA PRODUTOS & ESTOQUE (#pane-produtos) - Alto Contraste */
-body.tema-claro .prod-sku-code {
-  color: #0f172a !important;
-  font-weight: 800 !important;
-  font-family: var(--font-mono), monospace !important;
-}
-
-body.tema-claro .prod-name-strong {
+body.tema-claro td strong[style*="monospace"] {
   color: #0f172a !important;
   font-weight: 800 !important;
 }
 
-body.tema-claro .prod-pix-price {
-  color: #15803d !important;
-  font-weight: 800 !important;
-}
-
-body.tema-claro .prod-reg-price {
-  color: #334155 !important;
-  font-weight: 600 !important;
-}
-
-body.tema-claro .stock-num-input {
-  color: #0f172a !important;
-  font-weight: 800 !important;
+body.tema-claro input:not([type="checkbox"]):not([type="radio"]),
+body.tema-claro select,
+body.tema-claro textarea,
+body.tema-claro .orders-filter-bar,
+body.tema-claro .ped-search-wrap input,
+body.tema-claro .wms-input-clean,
+body.tema-claro .ped-date-range {
   background: #ffffff !important;
-  border-color: #cbd5e1 !important;
-}
-
-/* 5. ABA PEDIDOS (#pane-pedidos) - Alto Contraste */
-body.tema-claro .order-cust-name {
-  color: #0f172a !important;
-  font-weight: 800 !important;
-}
-
-body.tema-claro .order-cust-phone {
-  color: #334155 !important;
-  font-weight: 600 !important;
-}
-
-body.tema-claro .order-item-title {
-  color: #0f172a !important;
-  font-weight: 600 !important;
-}
-
-body.tema-claro .order-total-price {
-  color: #15803d !important;
-  font-weight: 900 !important;
-}
-
-body.tema-claro .order-date-text {
-  color: #1e293b !important;
-  font-weight: 600 !important;
-}
-
-/* 6. ABA OPERAÇÕES DE ESTOQUE & MOVIMENTAÇÕES */
-body.tema-claro #pane-operacoes-estoque td,
-body.tema-claro #pane-movimentacoes td {
-  color: #1e293b !important;
-}
-
-body.tema-claro #pane-operacoes-estoque td strong,
-body.tema-claro #pane-movimentacoes td strong {
+  border: 1px solid #cbd5e1 !important;
   color: #0f172a !important;
 }
 
-body.tema-claro #pane-operacoes-estoque td small,
-body.tema-claro #pane-movimentacoes td small {
-  color: #334155 !important;
-  font-weight: 600 !important;
-}
-
-/* 7. ABA INVENTÁRIO & AUDITORIA */
-body.tema-claro #pane-inventario td,
-body.tema-claro #pane-inventario td strong {
-  color: #0f172a !important;
-}
-
-body.tema-claro #pane-inventario td small {
-  color: #334155 !important;
-  font-weight: 600 !important;
-}
-
-/* 8. ABA ALERTAS */
-body.tema-claro #pane-alertas td strong {
-  color: #0f172a !important;
-}
-
-body.tema-claro #pane-alertas td small,
-body.tema-claro #pane-alertas td span {
-  color: #334155 !important;
-  font-weight: 600 !important;
-}
-
-/* 9. ABA FINANCEIRO & NOTAS FISCAIS */
-body.tema-claro .fin-cust-name,
-body.tema-claro .fiscal-cust-name {
-  color: #0f172a !important;
-  font-weight: 700 !important;
-}
-
-body.tema-claro .fin-bruto-text,
-body.tema-claro .fiscal-nf-num {
-  color: #0f172a !important;
-  font-weight: 800 !important;
-}
-
-body.tema-claro .fiscal-key-text {
-  color: #1e293b !important;
-  font-weight: 700 !important;
-}
-
-body.tema-claro .fin-date-text,
-body.tema-claro .fiscal-date-text {
-  color: #334155 !important;
-  font-weight: 600 !important;
-}
-
-body.tema-claro .fin-disc-text {
-  color: #c2410c !important;
-  font-weight: 700 !important;
-}
-
-body.tema-claro .fiscal-total-price {
-  color: #15803d !important;
-  font-weight: 800 !important;
-}
-
-/* 10. ABA EXPEDIÇÃO */
-body.tema-claro .exp-cust-name {
-  color: #0f172a !important;
-  font-weight: 800 !important;
-}
-
-body.tema-claro .exp-address-text {
-  color: #334155 !important;
-  font-weight: 600 !important;
-}
-
-body.tema-claro .exp-item-line .order-item-title {
-  color: #0f172a !important;
-  font-weight: 700 !important;
-}
-
-body.tema-claro .exp-total-price {
-  color: #15803d !important;
-  font-weight: 800 !important;
-}
-
-/* 11. Badges de Localização e Categoria em Modo Claro */
-body.tema-claro .location-badge {
-  background: #eff6ff !important;
-  border: 1px solid #bfdbfe !important;
-  color: #1d4ed8 !important;
-  font-weight: 700 !important;
-}
-
-body.tema-claro .cat-pill-badge {
+body.tema-claro .btn-pv-step,
+body.tema-claro .stock-stepper-btn {
   background: #f1f5f9 !important;
   border: 1px solid #cbd5e1 !important;
   color: #0f172a !important;
-  font-weight: 700 !important;
 }
 
-/* 12. Modais em Modo Claro */
-body.tema-claro .modal-card,
-body.tema-claro .modal-stock-card {
+body.tema-claro .pv-stock-stepper strong,
+body.tema-claro #stockModalQty {
+  color: #0f172a !important;
   background: #ffffff !important;
-  color: #0f172a !important;
 }
 
-body.tema-claro .modal-header h3,
-body.tema-claro .modal-title-box h3 {
-  color: #0f172a !important;
-}
-
-body.tema-claro .stock-field-label,
-body.tema-claro .pv-section-label {
-  color: #334155 !important;
-  font-weight: 700 !important;
-}
-
-body.tema-claro .pv-name,
-body.tema-claro .pv-code {
-  color: #0f172a !important;
-}
-
-body.tema-claro .pv-compat-box,
-body.tema-claro .pv-desc-box {
-  background: #f8fafc !important;
-  border-color: #cbd5e1 !important;
-  color: #1e293b !important;
-}
-
-body.tema-claro .stock-modal-dark-input,
-body.tema-claro .stock-modal-dark-textarea {
-  background: #ffffff !important;
-  border-color: #cbd5e1 !important;
-  color: #0f172a !important;
-}
-
-/* 13. Configurações em Modo Claro */
-body.tema-claro #pane-configuracoes .wms-panel {
-  background: #ffffff !important;
-  border: 1px solid #e2e8f0 !important;
-  color: #0f172a !important;
-}
-
-body.tema-claro #pane-configuracoes strong {
-  color: #0f172a !important;
-}
-
-body.tema-claro #pane-configuracoes small {
+body.tema-claro .status-badge.pendente,
+body.tema-claro .status-badge.pausado {
+  background: #f1f5f9 !important;
   color: #475569 !important;
-  font-weight: 600 !important;
+  border: 1px solid #cbd5e1 !important;
 }
