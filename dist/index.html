@@ -42,7 +42,7 @@
 <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet"/>
 
-<link href="styles.css?v=mw05gex5" rel="stylesheet"/>
+<link href="styles.css?v=mw061p6m" rel="stylesheet"/>
 
   <style>
     .fp-whatsapp-float {
@@ -217,7 +217,7 @@
       <button type="button" id="vfBuscarBtn" class="vehicle-finder-btn">ENCONTRAR PEÇAS</button>
     </div>
 
-    <div class="vf-plate-row" id="vfPlateRow" style="display:none;margin-top:10px;">
+        <div class="vf-plate-row" id="vfPlateRow" style="display:none;margin-top:10px;">
       <div class="vf-plate-input-container">
         <div class="vf-plate-input-wrap">
           <span class="vf-plate-flag">🇧🇷 BRASIL</span>
@@ -229,15 +229,25 @@
       <div class="vf-plate-samples">
         <span class="vf-samples-label">💡 Placas de teste (clique em qualquer uma para testar):</span>
         <div class="vf-samples-chips">
-          <button type="button" class="vf-chip" data-plate="BRA2E19">🚘 BRA2E19 (T-Cross)</button>
-          <button type="button" class="vf-chip" data-plate="GOL2021">🚘 GOL2021 (Gol 1.0)</button>
-          <button type="button" class="vf-chip" data-plate="CIV2020">🚘 CIV2020 (Civic Touring)</button>
-          <button type="button" class="vf-chip" data-plate="ONX2023">🚘 ONX2023 (Onix Plus)</button>
-          <button type="button" class="vf-chip" data-plate="COR2022">🚘 COR2022 (Corolla XEi)</button>
+          <button type="button" class="vf-chip" data-plate="BRA2E19">🚗 BRA2E19 (T-Cross)</button>
+          <button type="button" class="vf-chip" data-plate="GOL2021">🚗 GOL2021 (Gol 1.0)</button>
+          <button type="button" class="vf-chip" data-plate="CIV2020">🚗 CIV2020 (Civic Touring)</button>
+          <button type="button" class="vf-chip" data-plate="ONX2023">🚗 ONX2023 (Onix Plus)</button>
+          <button type="button" class="vf-chip" data-plate="COR2022">🚗 COR2022 (Corolla XEi)</button>
         </div>
       </div>
     </div>
-      <button type="button" id="activeGarageClearBtn" class="btn-clear-garage" title="Trocar veículo">Trocar Veículo ✕</button>
+
+    <!-- Barra de Garagem / Veículo Selecionado -->
+    <div class="active-garage-bar" id="activeGarageBar" style="display:none;margin-top:14px;">
+      <div class="active-garage-info">
+        <span class="active-garage-icon">🚗</span>
+        <div>
+          <strong class="active-garage-label">Veículo Selecionado:</strong>
+          <span class="active-garage-title" id="activeGarageTitle"></span>
+        </div>
+      </div>
+      <button type="button" id="activeGarageClearBtn" class="btn-clear-garage" title="Remover filtro de veículo">Trocar Veículo ✕</button>
     </div>
   </div>
 
@@ -516,7 +526,17 @@
     <div class="search">
       <input id="catalogSearch" placeholder="Pesquisar peça, código ou categoria..." autocomplete="off"/>
     </div>
-    <div class="products" id="catalogResults" style="margin-top:18px">
+        <div class="active-garage-bar" id="activeGarageBarCatalog" style="display:none;margin-top:12px;margin-bottom:14px;">
+      <div class="active-garage-info">
+        <span class="active-garage-icon">🚗</span>
+        <div>
+          <strong class="active-garage-label">Peças filtradas para seu veículo:</strong>
+          <span class="active-garage-title" id="activeGarageTitleCatalog"></span>
+        </div>
+      </div>
+      <button type="button" id="activeGarageClearBtnCatalog" class="btn-clear-garage" title="Remover filtro de veículo">Trocar Veículo ✕</button>
+    </div>
+<div class="products" id="catalogResults" style="margin-top:18px">
       <p style="color:var(--fp-9da2aa)">Carregando peças...</p>
     </div>
   </div>
@@ -869,4 +889,4 @@
 <div id="toastContainer"></div>
 <script defer="True" src="vendor/qrcode.js"></script>
 <script defer="True" src="https://sdk.mercadopago.com/js/v2"></script>
-<script defer="True" src="loja.js?v=mw05gex5"></script></body></html>
+<script defer="True" src="loja.js?v=mw061p6m"></script></body></html>
