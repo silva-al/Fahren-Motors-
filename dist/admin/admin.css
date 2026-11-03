@@ -6076,8 +6076,8 @@ body:not(.tema-claro) .ped-search-wrap svg {
   display: flex;
   justify-content: space-between;
   padding-top: 8px;
-  font-size: 10.5px;
-  color: #94a3b8;
+  font-size: 11px;
+  color: var(--text-primary);
   font-weight: 600;
 }
 
@@ -6111,14 +6111,14 @@ body:not(.tema-claro) .ped-search-wrap svg {
 
 .donut-center-text strong {
   display: block;
-  font-size: 13px;
-  color: #0f172a;
+  font-size: 14px;
+  color: var(--text-primary);
   font-weight: 800;
 }
 
 .donut-center-text small {
-  font-size: 10px;
-  color: #64748b;
+  font-size: 10.5px;
+  color: var(--text-muted);
 }
 
 .donut-legend-list {
@@ -6131,8 +6131,8 @@ body:not(.tema-claro) .ped-search-wrap svg {
 .donut-legend-item {
   display: flex;
   align-items: center;
-  font-size: 12px;
-  color: #334155;
+  font-size: 12.5px;
+  color: var(--text-primary);
   gap: 8px;
 }
 
@@ -6150,7 +6150,7 @@ body:not(.tema-claro) .ped-search-wrap svg {
 
 .legend-pct {
   font-weight: 800;
-  color: #0f172a;
+  color: var(--text-primary);
 }
 
 /* Barras de Categorias */
@@ -6170,8 +6170,8 @@ body:not(.tema-claro) .ped-search-wrap svg {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  font-size: 12px;
-  color: #334155;
+  font-size: 12.5px;
+  color: var(--text-primary);
 }
 
 .cat-name {
@@ -6182,7 +6182,7 @@ body:not(.tema-claro) .ped-search-wrap svg {
 }
 
 .cat-pct {
-  color: #64748b;
+  color: var(--text-muted);
   font-weight: 600;
   font-size: 11px;
   margin-left: auto;
@@ -6190,7 +6190,7 @@ body:not(.tema-claro) .ped-search-wrap svg {
 }
 
 .cat-val {
-  color: #0f172a;
+  color: var(--text-primary);
   font-weight: 800;
 }
 
@@ -6278,28 +6278,28 @@ body:not(.tema-claro) .ped-search-wrap svg {
 }
 
 .top-prod-info strong {
-  font-size: 12px;
-  color: #0f172a;
+  font-size: 13px;
+  color: var(--text-primary);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
 .top-prod-cat {
-  font-size: 10.5px;
-  color: #64748b;
+  font-size: 11px;
+  color: var(--text-muted);
 }
 
 .top-prod-qty {
-  font-size: 11.5px;
-  color: #64748b;
+  font-size: 12px;
+  color: var(--text-muted);
   font-weight: 600;
 }
 
 .top-prod-revenue {
-  font-size: 12.5px;
+  font-size: 13px;
   font-weight: 800;
-  color: #0f172a;
+  color: var(--text-primary);
 }
 
 /* ----------------------------------------------------
@@ -10110,4 +10110,401 @@ body.tema-claro .status-badge.pausado {
   background: #f1f5f9 !important;
   color: #475569 !important;
   border: 1px solid #cbd5e1 !important;
+}
+
+
+/* ===================================================================
+   ABA VENDAS (#pane-vendas): MODO DARK 100% BRANCO FORTE & MODO CLARO
+   Garante visibilidade máxima de todos os textos, gráficos e listas.
+   =================================================================== */
+
+/* --- 1. MODO DARK NA ABA VENDAS (body:not(.tema-claro)) --- */
+body:not(.tema-claro) #pane-vendas,
+body:not(.tema-claro) #pane-vendas * {
+  border-color: rgba(255, 255, 255, 0.08);
+}
+
+body:not(.tema-claro) #pane-vendas .venda-kpi-card,
+body:not(.tema-claro) #pane-vendas .vendas-chart-card,
+body:not(.tema-claro) #pane-vendas .wms-panel {
+  background: #141721 !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  color: #ffffff !important;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4) !important;
+}
+
+body:not(.tema-claro) #pane-vendas .page-title,
+body:not(.tema-claro) #pane-vendas .vendas-card-header h3,
+body:not(.tema-claro) #pane-vendas h1,
+body:not(.tema-claro) #pane-vendas h2,
+body:not(.tema-claro) #pane-vendas h3 {
+  color: #ffffff !important;
+  font-weight: 800 !important;
+}
+
+body:not(.tema-claro) #pane-vendas .page-subtitle {
+  color: #f8fafc !important;
+}
+
+body:not(.tema-claro) #pane-vendas .card-action-link {
+  color: #38bdf8 !important;
+  font-weight: 700 !important;
+}
+
+/* 4 KPIs do Topo em Vendas */
+body:not(.tema-claro) #pane-vendas .venda-kpi-label {
+  color: #ffffff !important;
+  font-weight: 700 !important;
+  font-size: 12px !important;
+}
+
+body:not(.tema-claro) #pane-vendas .venda-kpi-val {
+  color: #ffffff !important;
+  font-weight: 900 !important;
+  font-size: 22px !important;
+}
+
+body:not(.tema-claro) #pane-vendas .venda-kpi-footer {
+  border-top: 1px solid rgba(255, 255, 255, 0.08) !important;
+}
+
+body:not(.tema-claro) #pane-vendas .venda-kpi-trend {
+  color: #4ade80 !important;
+  font-weight: 700 !important;
+}
+
+/* Card 1: Vendas por Período */
+body:not(.tema-claro) #pane-vendas .vendas-period-pills .v-pill {
+  background: #1e293b !important;
+  border: 1px solid rgba(255, 255, 255, 0.18) !important;
+  color: #ffffff !important;
+  font-weight: 700 !important;
+}
+
+body:not(.tema-claro) #pane-vendas .vendas-period-pills .v-pill.active {
+  background: #ed1c24 !important;
+  border-color: #ed1c24 !important;
+  color: #ffffff !important;
+  font-weight: 800 !important;
+}
+
+body:not(.tema-claro) #pane-vendas .chart-grid-line {
+  stroke: rgba(255, 255, 255, 0.1) !important;
+}
+
+body:not(.tema-claro) #pane-vendas .chart-x-labels,
+body:not(.tema-claro) #pane-vendas .chart-x-labels span {
+  color: #ffffff !important;
+  font-weight: 800 !important;
+  font-size: 11.5px !important;
+}
+
+body:not(.tema-claro) #pane-vendas .vendas-tooltip-badge {
+  background: #0d0f17 !important;
+  border: 1px solid rgba(255, 255, 255, 0.25) !important;
+  color: #ffffff !important;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.6) !important;
+}
+
+body:not(.tema-claro) #pane-vendas .vendas-tooltip-badge strong {
+  color: #ffffff !important;
+  font-weight: 900 !important;
+}
+
+/* Card 2: Formas de Pagamento */
+body:not(.tema-claro) #pane-vendas .donut-center-text strong {
+  color: #ffffff !important;
+  font-weight: 900 !important;
+  font-size: 15px !important;
+}
+
+body:not(.tema-claro) #pane-vendas .donut-center-text small {
+  color: #f8fafc !important;
+  font-weight: 700 !important;
+  font-size: 11px !important;
+}
+
+body:not(.tema-claro) #pane-vendas .donut-legend-item {
+  color: #ffffff !important;
+}
+
+body:not(.tema-claro) #pane-vendas .legend-name {
+  color: #ffffff !important;
+  font-weight: 700 !important;
+  font-size: 13.5px !important;
+}
+
+body:not(.tema-claro) #pane-vendas .legend-pct {
+  color: #ffffff !important;
+  font-weight: 900 !important;
+  font-size: 14px !important;
+}
+
+/* Card 3: Vendas por Categoria */
+body:not(.tema-claro) #pane-vendas .cat-bar-labels {
+  color: #ffffff !important;
+}
+
+body:not(.tema-claro) #pane-vendas .cat-name {
+  color: #ffffff !important;
+  font-weight: 700 !important;
+  font-size: 13.5px !important;
+}
+
+body:not(.tema-claro) #pane-vendas .cat-pct {
+  color: #ffffff !important;
+  font-weight: 800 !important;
+  font-size: 12.5px !important;
+}
+
+body:not(.tema-claro) #pane-vendas .cat-val {
+  color: #ffffff !important;
+  font-weight: 900 !important;
+  font-size: 13.5px !important;
+}
+
+body:not(.tema-claro) #pane-vendas .cat-bar-track {
+  background: rgba(255, 255, 255, 0.12) !important;
+}
+
+/* Card 4: Produtos Mais Vendidos */
+body:not(.tema-claro) #pane-vendas .top-prod-item {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
+}
+
+body:not(.tema-claro) #pane-vendas .top-prod-rank {
+  background: #1e293b !important;
+  color: #ffffff !important;
+  font-weight: 800 !important;
+}
+
+body:not(.tema-claro) #pane-vendas .top-prod-rank.rank-1 {
+  background: rgba(245, 158, 11, 0.3) !important;
+  color: #fbbf24 !important;
+  border: 1px solid rgba(245, 158, 11, 0.5) !important;
+}
+
+body:not(.tema-claro) #pane-vendas .top-prod-rank.rank-2 {
+  background: rgba(255, 255, 255, 0.15) !important;
+  color: #ffffff !important;
+  border: 1px solid rgba(255, 255, 255, 0.3) !important;
+}
+
+body:not(.tema-claro) #pane-vendas .top-prod-rank.rank-3 {
+  background: rgba(249, 115, 22, 0.3) !important;
+  color: #fb923c !important;
+  border: 1px solid rgba(249, 115, 22, 0.5) !important;
+}
+
+body:not(.tema-claro) #pane-vendas .top-prod-info strong {
+  color: #ffffff !important;
+  font-weight: 800 !important;
+  font-size: 13.5px !important;
+}
+
+body:not(.tema-claro) #pane-vendas .top-prod-cat {
+  color: #f8fafc !important;
+  font-weight: 600 !important;
+  font-size: 11.5px !important;
+}
+
+body:not(.tema-claro) #pane-vendas .top-prod-qty {
+  color: #ffffff !important;
+  font-weight: 800 !important;
+  font-size: 13px !important;
+}
+
+body:not(.tema-claro) #pane-vendas .top-prod-revenue {
+  color: #ffffff !important;
+  font-weight: 900 !important;
+  font-size: 14px !important;
+}
+
+/* --- 2. MODO CLARO NA ABA VENDAS (body.tema-claro) --- */
+body.tema-claro #pane-vendas .venda-kpi-card,
+body.tema-claro #pane-vendas .vendas-chart-card,
+body.tema-claro #pane-vendas .wms-panel {
+  background: #ffffff !important;
+  border: 1px solid #e2e8f0 !important;
+  color: #0f172a !important;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06) !important;
+}
+
+body.tema-claro #pane-vendas .page-title,
+body.tema-claro #pane-vendas .vendas-card-header h3,
+body.tema-claro #pane-vendas h1,
+body.tema-claro #pane-vendas h2,
+body.tema-claro #pane-vendas h3 {
+  color: #0f172a !important;
+  font-weight: 800 !important;
+}
+
+body.tema-claro #pane-vendas .page-subtitle {
+  color: #475569 !important;
+}
+
+body.tema-claro #pane-vendas .card-action-link {
+  color: #2563eb !important;
+  font-weight: 700 !important;
+}
+
+body.tema-claro #pane-vendas .venda-kpi-label {
+  color: #334155 !important;
+  font-weight: 700 !important;
+  font-size: 12px !important;
+}
+
+body.tema-claro #pane-vendas .venda-kpi-val {
+  color: #0f172a !important;
+  font-weight: 900 !important;
+  font-size: 22px !important;
+}
+
+body.tema-claro #pane-vendas .venda-kpi-footer {
+  border-top: 1px solid #f1f5f9 !important;
+}
+
+body.tema-claro #pane-vendas .venda-kpi-trend {
+  color: #15803d !important;
+  font-weight: 700 !important;
+}
+
+body.tema-claro #pane-vendas .vendas-period-pills .v-pill {
+  background: #f1f5f9 !important;
+  border: 1px solid #cbd5e1 !important;
+  color: #334155 !important;
+  font-weight: 700 !important;
+}
+
+body.tema-claro #pane-vendas .vendas-period-pills .v-pill.active {
+  background: #0f172a !important;
+  border-color: #0f172a !important;
+  color: #ffffff !important;
+  font-weight: 800 !important;
+}
+
+body.tema-claro #pane-vendas .chart-grid-line {
+  stroke: #f1f5f9 !important;
+}
+
+body.tema-claro #pane-vendas .chart-x-labels,
+body.tema-claro #pane-vendas .chart-x-labels span {
+  color: #334155 !important;
+  font-weight: 700 !important;
+  font-size: 11.5px !important;
+}
+
+body.tema-claro #pane-vendas .vendas-tooltip-badge {
+  background: #ffffff !important;
+  border: 1px solid #cbd5e1 !important;
+  color: #0f172a !important;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.08) !important;
+}
+
+body.tema-claro #pane-vendas .vendas-tooltip-badge strong {
+  color: #0f172a !important;
+  font-weight: 900 !important;
+}
+
+body.tema-claro #pane-vendas .donut-center-text strong {
+  color: #0f172a !important;
+  font-weight: 900 !important;
+  font-size: 15px !important;
+}
+
+body.tema-claro #pane-vendas .donut-center-text small {
+  color: #475569 !important;
+  font-weight: 700 !important;
+  font-size: 11px !important;
+}
+
+body.tema-claro #pane-vendas .donut-legend-item {
+  color: #0f172a !important;
+}
+
+body.tema-claro #pane-vendas .legend-name {
+  color: #0f172a !important;
+  font-weight: 700 !important;
+  font-size: 13.5px !important;
+}
+
+body.tema-claro #pane-vendas .legend-pct {
+  color: #0f172a !important;
+  font-weight: 900 !important;
+  font-size: 14px !important;
+}
+
+body.tema-claro #pane-vendas .cat-bar-labels {
+  color: #0f172a !important;
+}
+
+body.tema-claro #pane-vendas .cat-name {
+  color: #0f172a !important;
+  font-weight: 700 !important;
+  font-size: 13.5px !important;
+}
+
+body.tema-claro #pane-vendas .cat-pct {
+  color: #334155 !important;
+  font-weight: 700 !important;
+  font-size: 12.5px !important;
+}
+
+body.tema-claro #pane-vendas .cat-val {
+  color: #0f172a !important;
+  font-weight: 900 !important;
+  font-size: 13.5px !important;
+}
+
+body.tema-claro #pane-vendas .cat-bar-track {
+  background: #f1f5f9 !important;
+}
+
+body.tema-claro #pane-vendas .top-prod-item {
+  border-bottom: 1px solid #f1f5f9 !important;
+}
+
+body.tema-claro #pane-vendas .top-prod-rank {
+  background: #f1f5f9 !important;
+  color: #334155 !important;
+  font-weight: 800 !important;
+}
+
+body.tema-claro #pane-vendas .top-prod-rank.rank-1 {
+  background: #fef3c7 !important;
+  color: #d97706 !important;
+}
+
+body.tema-claro #pane-vendas .top-prod-rank.rank-2 {
+  background: #e2e8f0 !important;
+  color: #334155 !important;
+}
+
+body.tema-claro #pane-vendas .top-prod-rank.rank-3 {
+  background: #ffedd5 !important;
+  color: #c2410c !important;
+}
+
+body.tema-claro #pane-vendas .top-prod-info strong {
+  color: #0f172a !important;
+  font-weight: 800 !important;
+  font-size: 13.5px !important;
+}
+
+body.tema-claro #pane-vendas .top-prod-cat {
+  color: #475569 !important;
+  font-weight: 600 !important;
+  font-size: 11.5px !important;
+}
+
+body.tema-claro #pane-vendas .top-prod-qty {
+  color: #334155 !important;
+  font-weight: 700 !important;
+  font-size: 13px !important;
+}
+
+body.tema-claro #pane-vendas .top-prod-revenue {
+  color: #0f172a !important;
+  font-weight: 900 !important;
+  font-size: 14px !important;
 }
