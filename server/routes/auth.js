@@ -5,7 +5,7 @@ const db = require('../db');
 const { setAuthCookie, clearAuthCookie, requireRole } = require('../middleware/auth');
 const { rateLimit } = require('../middleware/rate-limit');
 const { validateBody } = require('../middleware/validate');
-const { registerSchema, loginSchema } = require('../validators/auth-schema');
+const { registerSchema, loginSchema, cartSyncSchema } = require('../validators/auth-schema');
 
 const router = express.Router();
 
@@ -162,54 +162,53 @@ router.get('/cart', requireRole('customer'), async (req, res) => {
     const result = await db.query('SELECT cart_json FROM customers WHERE id = $1', [req.user.sub]);
     const raw = result.rows[0]?.cart_json;
     let items = [];
-    let updatedAt = 0;
+    let version = 0;
     if (raw) {
       try {
         const parsed = JSON.parse(raw);
         if (Array.isArray(parsed)) {
           items = parsed;
+          version = 1;
         } else if (parsed && typeof parsed === 'object') {
           items = Array.isArray(parsed.items) ? parsed.items : [];
-          updatedAt = Number(parsed.updatedAt) || 0;
+          version = Number(parsed.version) || 1;
         }
       } catch {}
     }
-    res.json({ cart: items, updatedAt });
+    res.json({ cart: items, version });
   } catch (err) {
     console.error('[Auth:getCart]', err);
     res.status(500).json({ error: 'Erro ao carregar carrinho.' });
   }
 });
 
-router.put('/cart', requireRole('customer'), async (req, res) => {
+router.put('/cart', requireRole('customer'), validateBody(cartSyncSchema), async (req, res) => {
   try {
     await ensureCustomerCartColumn();
-    const { cart, updatedAt } = req.body || {};
+    const { cart } = req.body || {};
     const safeCart = Array.isArray(cart) ? cart : [];
-    const clientTimestamp = Number(updatedAt) || Date.now();
 
-    // Consulta versão atual salva no banco
+    // Busca versão atual do banco para incrementar monotonamente
     const result = await db.query('SELECT cart_json FROM customers WHERE id = $1', [req.user.sub]);
     const raw = result.rows[0]?.cart_json;
-    let serverTimestamp = 0;
+    let nextVersion = 1;
     if (raw) {
       try {
         const parsed = JSON.parse(raw);
-        if (parsed && typeof parsed.updatedAt === 'number') {
-          serverTimestamp = parsed.updatedAt;
+        if (parsed && typeof parsed.version === 'number') {
+          nextVersion = parsed.version + 1;
         }
       } catch {}
     }
 
-    // Se a alteração do cliente é mais nova ou igual, grava com sucesso
-    if (clientTimestamp >= serverTimestamp) {
-      const payload = { items: safeCart, updatedAt: clientTimestamp };
-      await db.query('UPDATE customers SET cart_json = $1 WHERE id = $2', [JSON.stringify(payload), req.user.sub]);
-      res.json({ ok: true, cart: safeCart, updatedAt: clientTimestamp });
-    } else {
-      // Conflito: o servidor já tem uma versão mais nova
-      res.json({ ok: false, conflict: true, cart: safeCart, updatedAt: serverTimestamp });
-    }
+    const payload = {
+      items: safeCart,
+      version: nextVersion,
+      updatedAt: Date.now()
+    };
+
+    await db.query('UPDATE customers SET cart_json = $1 WHERE id = $2', [JSON.stringify(payload), req.user.sub]);
+    res.json({ ok: true, cart: safeCart, version: nextVersion });
   } catch (err) {
     console.error('[Auth:putCart]', err);
     res.status(500).json({ error: 'Erro ao salvar carrinho.' });

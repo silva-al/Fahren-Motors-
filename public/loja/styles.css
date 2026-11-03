@@ -7612,14 +7612,15 @@ body:not(.tema-claro) .cart-row:hover {
   border-color: #3b4354 !important;
 }
 
-/* Foto do produto em destaque (preenche altura com vida e brilho) */
+/* Foto do produto em destaque (quadrada, sem cortes e proporcional) */
 .cart-item-thumb {
-  width: 120px !important;
-  min-width: 120px !important;
-  max-width: 120px !important;
-  min-height: 120px !important;
-  height: auto !important;
-  align-self: stretch !important;
+  width: 100px !important;
+  min-width: 100px !important;
+  max-width: 100px !important;
+  height: 100px !important;
+  min-height: 100px !important;
+  max-height: 100px !important;
+  aspect-ratio: 1 / 1 !important;
   border-radius: 12px !important;
   overflow: hidden !important;
   background: #0f172a !important;
@@ -7629,7 +7630,9 @@ body:not(.tema-claro) .cart-row:hover {
   align-items: center !important;
   justify-content: center !important;
   flex-shrink: 0 !important;
-  order: 0 !important;
+  align-self: flex-start !important;
+  padding: 6px !important;
+  box-sizing: border-box !important;
 }
 
 body:not(.tema-claro) .cart-item-thumb {
@@ -7640,13 +7643,17 @@ body:not(.tema-claro) .cart-item-thumb {
 .cart-item-thumb img {
   width: 100% !important;
   height: 100% !important;
-  object-fit: cover !important;
+  max-width: 100% !important;
+  max-height: 100% !important;
+  object-fit: contain !important;
+  object-position: center !important;
   display: block !important;
+  background: transparent !important;
   transition: transform 0.25s ease !important;
 }
 
 .cart-row:hover .cart-item-thumb img {
-  transform: scale(1.04) !important;
+  transform: scale(1.03) !important;
 }
 
 /* Badge de desconto no Pix sobre a foto */
@@ -8495,12 +8502,22 @@ body:not(.screen-is-inicio) .fp-footer-legal {
 /* ==========================================================================
    CORREÇÃO DA IMAGEM DA PEÇA NO CARRINHO (NÃO CORTAR / EXIBIÇÃO COMPLETA)
    ========================================================================== */
+.cart-device-sync-banner {
+  display: none !important;
+}
+
+.cart-row.modern-cart-card {
+  align-items: flex-start !important;
+}
+
 .cart-item-thumb {
-  width: 105px !important;
-  min-width: 105px !important;
-  max-width: 105px !important;
-  height: 105px !important;
-  min-height: 105px !important;
+  width: 100px !important;
+  min-width: 100px !important;
+  max-width: 100px !important;
+  height: 100px !important;
+  min-height: 100px !important;
+  max-height: 100px !important;
+  aspect-ratio: 1 / 1 !important;
   border-radius: 12px !important;
   overflow: hidden !important;
   background: #0d1017 !important;
@@ -8510,7 +8527,8 @@ body:not(.screen-is-inicio) .fp-footer-legal {
   align-items: center !important;
   justify-content: center !important;
   flex-shrink: 0 !important;
-  padding: 4px !important;
+  align-self: flex-start !important;
+  padding: 6px !important;
   box-sizing: border-box !important;
 }
 
@@ -8537,22 +8555,26 @@ body:not(.tema-claro) .cart-item-thumb {
 
 @media (max-width: 480px) {
   .cart-item-thumb {
-    width: 92px !important;
-    min-width: 92px !important;
-    max-width: 92px !important;
-    height: 92px !important;
-    min-height: 92px !important;
-    padding: 3px !important;
+    width: 88px !important;
+    min-width: 88px !important;
+    max-width: 88px !important;
+    height: 88px !important;
+    min-height: 88px !important;
+    max-height: 88px !important;
+    aspect-ratio: 1 / 1 !important;
+    padding: 4px !important;
   }
 }
 
 @media (max-width: 360px) {
   .cart-item-thumb {
-    width: 80px !important;
-    min-width: 80px !important;
-    max-width: 80px !important;
-    height: 80px !important;
-    min-height: 80px !important;
-    padding: 2px !important;
+    width: 78px !important;
+    min-width: 78px !important;
+    max-width: 78px !important;
+    height: 78px !important;
+    min-height: 78px !important;
+    max-height: 78px !important;
+    aspect-ratio: 1 / 1 !important;
+    padding: 3px !important;
   }
 }

@@ -3,7 +3,7 @@ import fs from 'fs';
 import path from 'path';
 import { Window } from 'happy-dom';
 
-const { registerSchema, loginSchema } = require('../server/validators/auth-schema');
+const { registerSchema, loginSchema, cartSyncSchema } = require('../server/validators/auth-schema');
 const { createOrderSchema } = require('../server/validators/order-schema');
 
 describe('Zod Schemas - Auth Validation', () => {
@@ -255,4 +255,39 @@ it('deve conter o modal de tela cheia (lightbox) com controles de zoom e fechar'
     expect(js).toContain('activeCatalogCategory = normalizeCatalogCategory');
     expect(js).toContain('fahren-tema-v2');
   });
+
+  describe('cartSyncSchema', () => {
+    it('aceita carrinho vazio ao excluir todos os itens', () => {
+      const res = cartSyncSchema.safeParse({ cart: [] });
+      expect(res.success).toBe(true);
+      expect(res.data.cart).toEqual([]);
+    });
+
+    it('aceita itens de carrinho válidos com produtos e quantidades', () => {
+      const res = cartSyncSchema.safeParse({
+        cart: [
+          { productId: 1, name: 'Pastilha de Freio', price: 120.5, quantity: 2 },
+          { productId: 'prod_99', name: 'Óleo Motor', price: 45, quantity: 1 }
+        ]
+      });
+      expect(res.success).toBe(true);
+      expect(res.data.cart.length).toBe(2);
+      expect(res.data.cart[0].productId).toBe(1);
+    });
+
+    it('rejeita quantidade inválida (menor que 1 ou negativa)', () => {
+      const res = cartSyncSchema.safeParse({
+        cart: [{ productId: 1, quantity: 0 }]
+      });
+      expect(res.success).toBe(false);
+    });
+
+    it('rejeita preço negativo', () => {
+      const res = cartSyncSchema.safeParse({
+        cart: [{ productId: 1, price: -50, quantity: 1 }]
+      });
+      expect(res.success).toBe(false);
+    });
+  });
+
 });

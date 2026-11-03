@@ -111,75 +111,85 @@ function loadCartFromStorage() {
 
 
 // ==========================================================================
-// SINCRONIZAÇÃO EM NUVEM DO CARRINHO COM CONTROLE DE TIMESTAMP (SEM VOLTAR PRODUTO)
+// SINCRONIZAÇÃO EM NUVEM DO CARRINHO POR VERSÃO MONOTÔNICA (SERVER-AUTHORITATIVE)
 // ==========================================================================
-let localCartUpdatedAt = 0;
+let localCartVersion = 0;
 try {
-  localCartUpdatedAt = Number(localStorage.getItem('fahren-cart-updated-at')) || 0;
+  localCartVersion = Number(localStorage.getItem('fahren-cart-version')) || 0;
 } catch {}
 
-function setLocalCartUpdatedAt(ts) {
-  localCartUpdatedAt = ts || Date.now();
+function setLocalCartVersion(v) {
+  localCartVersion = Number(v) || 0;
   try {
-    localStorage.setItem('fahren-cart-updated-at', String(localCartUpdatedAt));
+    localStorage.setItem('fahren-cart-version', String(localCartVersion));
   } catch {}
 }
 
 let isSyncingCart = false;
 let isPushingCart = false;
+let pushDebounce = null;
 
-function pushCartToServer() {
+function pushCartToServer(immediate = false) {
   if (!currentUser) return;
   isPushingCart = true;
-  const ts = localCartUpdatedAt || Date.now();
-  api('/api/auth/cart', {
-    method: 'PUT',
-    body: JSON.stringify({ cart, updatedAt: ts })
-  })
-  .then(res => {
-    if (res && res.updatedAt) {
-      setLocalCartUpdatedAt(res.updatedAt);
-    }
-  })
-  .catch(err => console.warn('Erro ao enviar carrinho:', err))
-  .finally(() => {
-    setTimeout(() => { isPushingCart = false; }, 1000);
-  });
+  clearTimeout(pushDebounce);
+
+  const doPush = () => {
+    api('/api/auth/cart', {
+      method: 'PUT',
+      body: JSON.stringify({ cart })
+    })
+    .then(res => {
+      if (res && typeof res.version === 'number') {
+        setLocalCartVersion(res.version);
+      }
+    })
+    .catch(err => console.warn('Erro ao salvar carrinho na nuvem:', err))
+    .finally(() => {
+      setTimeout(() => { isPushingCart = false; }, 800);
+    });
+  };
+
+  if (immediate) {
+    doPush();
+  } else {
+    pushDebounce = setTimeout(doPush, 150);
+  }
 }
 
 async function syncCartWithServer() {
-  // Se está enviando alterações locais no momento, não sobrepõe
+  // Se está enviando alterações no momento, não faz polling para evitar race condition
   if (!currentUser || isSyncingCart || isPushingCart) return;
   isSyncingCart = true;
   try {
     const res = await api('/api/auth/cart');
     if (res && Array.isArray(res.cart)) {
-      const serverItems = res.cart;
-      const serverUpdatedAt = Number(res.updatedAt) || 0;
+      const serverVersion = Number(res.version) || 0;
 
-      // Só atualiza se a nuvem tiver uma versão ESTRITAMENTE mais recente que a local
-      if (serverUpdatedAt > localCartUpdatedAt) {
-        cart = serverItems;
-        setLocalCartUpdatedAt(serverUpdatedAt);
-        saveCart(true); // salva localmente sem re-enviar
+      // 1. O servidor tem versão estritamente mais recente que este dispositivo
+      if (serverVersion > localCartVersion) {
+        cart = res.cart;
+        setLocalCartVersion(serverVersion);
+        saveCart(true); // salva no localStorage sem re-enviar
         updateCartBadge();
         const cartScreen = document.getElementById('carrinho');
         if (cartScreen && cartScreen.classList.contains('active')) {
           renderCart();
         }
-      } else if (localCartUpdatedAt > serverUpdatedAt && localCartUpdatedAt > 0) {
-        // Local tem alterações mais novas que ainda não subiram
-        pushCartToServer();
+      }
+      // 2. Primeira conexão do dispositivo com itens do visitante
+      else if (localCartVersion === 0 && serverVersion === 0 && cart.length > 0) {
+        pushCartToServer(true);
       }
     }
   } catch (err) {
-    // Falha silenciosa
+    // Silencioso se offline
   } finally {
     isSyncingCart = false;
   }
 }
 
-function saveCart(skipServerSync = false) {
+function saveCart(skipServerSync = false, immediatePush = false) {
   try {
     const serialized = JSON.stringify(cart);
     localStorage.setItem(CART_STORAGE_KEY, serialized);
@@ -189,12 +199,8 @@ function saveCart(skipServerSync = false) {
     console.warn('Falha ao gravar carrinho no storage:', e);
   }
   updateCartBadge();
-  if (!skipServerSync) {
-    // Qualquer ação do usuário (adicionar, alterar quantidade, excluir) gera novo timestamp
-    setLocalCartUpdatedAt(Date.now());
-    if (currentUser) {
-      pushCartToServer();
-    }
+  if (!skipServerSync && currentUser) {
+    pushCartToServer(immediatePush);
   }
 }
 
@@ -566,9 +572,15 @@ function openRegister() {
 }
 
 function applyUser(user) {
+  const previousUser = currentUser;
   currentUser = user;
   authenticated = !!user;
   updateNav();
+  if (user) {
+    setTimeout(syncCartWithServer, 50);
+  } else {
+    setLocalCartVersion(0);
+  }
   if (user) {
     const n = document.getElementById('profileName'), e = document.getElementById('profileEmail');
     const c = document.getElementById('profileCpfCnpj');
@@ -2351,7 +2363,7 @@ function addToCart(productId, productsList, quantity = 1, triggerBtn = null) {
       image: image || ''
     });
   }
-  saveCart();
+  saveCart(false, true);
 
   // Feedback visual imediato no botão da peça sem sair da página
   if (triggerBtn) {
@@ -2572,7 +2584,7 @@ function renderCart() {
     const id = row.dataset.id;
     row.querySelector('.qty-plus').onclick = () => { changeQty(id, 1); };
     row.querySelector('.qty-minus').onclick = () => { changeQty(id, -1); };
-    row.querySelector('.remove-item').onclick = () => { cart = cart.filter(i => String(i.productId) !== String(id)); saveCart(); renderCart(); };
+    row.querySelector('.remove-item').onclick = () => { cart = cart.filter(i => String(i.productId) !== String(id)); saveCart(false, true); renderCart(); };
   });
   el.querySelectorAll('input[name="paymentMethod"]').forEach(input => {
     input.addEventListener('change', () => {

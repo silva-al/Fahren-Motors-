@@ -28,8 +28,22 @@ const loginSchema = z.object({
     .min(1, 'E-mail ou senha incorretos.')
 });
 
+const cartItemSchema = z.object({
+  productId: z.union([z.number(), z.string()]),
+  name: z.string().optional().default(''),
+  price: z.number().nonnegative().optional().default(0),
+  quantity: z.number().int().min(1).max(999).default(1),
+  image: z.string().optional().nullable().default(''),
+  category: z.string().optional().nullable().default('')
+}).passthrough();
+
+const cartSyncSchema = z.object({
+  cart: z.array(cartItemSchema).max(150).default([])
+}).passthrough();
+
 module.exports = {
   registerSchema,
-  loginSchema
+  loginSchema,
+  cartItemSchema,
+  cartSyncSchema
 };
-
