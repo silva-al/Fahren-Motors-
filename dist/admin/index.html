@@ -37,7 +37,7 @@
   <link
     href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@500;700&display=swap"
     rel="stylesheet" />
-  <link href="/admin/admin.css?v=mw18l16m" rel="stylesheet" />
+  <link href="/admin/admin.css?v=mw1c9v2m" rel="stylesheet" />
   <!-- Vercel Web Analytics & Speed Insights -->
   <script>
     window.va = window.va || function () { (window.vaq = window.vaq || []).push(arguments); };
@@ -1277,6 +1277,126 @@
                     <div class="cat-bar-fill" style="width:8%;background:#94a3b8"></div>
                   </div>
                 </div>
+              </div>
+            </div>
+
+            
+            <!-- CARD 5: PORCENTAGEM DE VENDAS POR SEMANA -->
+            <div class="wms-panel vendas-chart-card">
+              <div class="vendas-card-header">
+                <h3>Vendas por Semana (% do Mês)</h3>
+                <span class="venda-badge-period">Mês Atual</span>
+              </div>
+              <div class="vendas-weekly-dist-wrap">
+                <div class="weekly-bar-item">
+                  <div class="weekly-bar-labels">
+                    <span class="weekly-name"><strong>Semana 1</strong> (01 a 07)</span>
+                    <span class="weekly-pct">22%</span>
+                    <strong class="weekly-val">R$ 18.970,70</strong>
+                  </div>
+                  <div class="cat-bar-track">
+                    <div class="cat-bar-fill" style="width:22%;background:linear-gradient(90deg, #3b82f6, #06b6d4)"></div>
+                  </div>
+                </div>
+
+                <div class="weekly-bar-item">
+                  <div class="weekly-bar-labels">
+                    <span class="weekly-name"><strong>Semana 2</strong> (08 a 14)</span>
+                    <span class="weekly-pct">27%</span>
+                    <strong class="weekly-val">R$ 23.282,22</strong>
+                  </div>
+                  <div class="cat-bar-track">
+                    <div class="cat-bar-fill" style="width:27%;background:linear-gradient(90deg, #8b5cf6, #ec4899)"></div>
+                  </div>
+                </div>
+
+                <div class="weekly-bar-item">
+                  <div class="weekly-bar-labels">
+                    <span class="weekly-name"><strong>Semana 3</strong> (15 a 21)</span>
+                    <span class="weekly-pct">29%</span>
+                    <strong class="weekly-val">R$ 25.006,83</strong>
+                  </div>
+                  <div class="cat-bar-track">
+                    <div class="cat-bar-fill" style="width:29%;background:linear-gradient(90deg, #10b981, #14b8a6)"></div>
+                  </div>
+                </div>
+
+                <div class="weekly-bar-item">
+                  <div class="weekly-bar-labels">
+                    <span class="weekly-name"><strong>Semana 4</strong> (22 a 31)</span>
+                    <span class="weekly-pct">22%</span>
+                    <strong class="weekly-val">R$ 18.970,70</strong>
+                  </div>
+                  <div class="cat-bar-track">
+                    <div class="cat-bar-fill" style="width:22%;background:linear-gradient(90deg, #f59e0b, #ef4444)"></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- CARD 6: RELATÓRIO DETALHADO SEMANAL -->
+            <div class="wms-panel vendas-chart-card" style="grid-column: 1 / -1;">
+              <div class="vendas-card-header">
+                <div>
+                  <h3>Relatório Detalhado de Performance Semanal</h3>
+                  <p style="margin: 3px 0 0; font-size: 12px; color: var(--text-muted);">Auditoria consolidada de faturamento, volume de pedidos e taxa de conversão semanal</p>
+                </div>
+                <button class="btn btn-secondary btn-sm" onclick="exportWeeklyReportCSV()" type="button">
+                  Exportar Relatório CSV
+                </button>
+              </div>
+              <div class="table-responsive" style="margin-top: 10px;">
+                <table class="wms-table weekly-detailed-table" style="width: 100%;">
+                  <thead>
+                    <tr>
+                      <th>SEMANA</th>
+                      <th>PERÍODO</th>
+                      <th>PEDIDOS CONCLUÍDOS</th>
+                      <th>TICKET MÉDIO</th>
+                      <th>TOTAL FATURADO</th>
+                      <th>% PARTICIPAÇÃO</th>
+                      <th>STATUS / DESEMPENHO</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td><strong>Semana 1</strong></td>
+                      <td>01/09 a 07/09</td>
+                      <td>29 pedidos</td>
+                      <td>R$ 654,16</td>
+                      <td><strong>R$ 18.970,70</strong></td>
+                      <td><span class="pct-pill">22%</span></td>
+                      <td><span class="status-badge pronto">Dentro da Meta</span></td>
+                    </tr>
+                    <tr>
+                      <td><strong>Semana 2</strong></td>
+                      <td>08/09 a 14/09</td>
+                      <td>36 pedidos</td>
+                      <td>R$ 646,72</td>
+                      <td><strong>R$ 23.282,22</strong></td>
+                      <td><span class="pct-pill">27%</span></td>
+                      <td><span class="status-badge pronto">Superou Meta (+12%)</span></td>
+                    </tr>
+                    <tr>
+                      <td><strong>Semana 3</strong></td>
+                      <td>15/09 a 21/09</td>
+                      <td>38 pedidos</td>
+                      <td>R$ 658,07</td>
+                      <td><strong>R$ 25.006,83</strong></td>
+                      <td><span class="pct-pill">29%</span></td>
+                      <td><span class="status-badge pronto">Pico de Vendas 🔥</span></td>
+                    </tr>
+                    <tr>
+                      <td><strong>Semana 4</strong></td>
+                      <td>22/09 a 31/09</td>
+                      <td>29 pedidos</td>
+                      <td>R$ 654,16</td>
+                      <td><strong>R$ 18.970,70</strong></td>
+                      <td><span class="pct-pill">22%</span></td>
+                      <td><span class="status-badge pronto">Dentro da Meta</span></td>
+                    </tr>
+                  </tbody>
+                </table>
               </div>
             </div>
 
@@ -3402,7 +3522,7 @@
           <h4 style="margin: 0 0 12px; font-size: 14px; font-weight: 700; color: var(--text-primary); display: flex; align-items: center; gap: 6px;">
             📦 Adicionar Peças ao Pedido
           </h4>
-          <div style="display: grid; grid-template-columns: 2fr 1fr 1fr auto; gap: 10px; align-items: flex-end;">
+          <div class="no-add-grid" style="display: grid; grid-template-columns: minmax(320px, 1fr) 95px 130px auto; gap: 12px; align-items: flex-end;">
             <div class="field" style="margin: 0;">
               <label>Selecione ou Digite a Peça *</label>
               <div class="wms-search-combobox" id="noCombobox">
@@ -3412,7 +3532,7 @@
                     <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
                   </svg>
                   <input type="text" id="noSearchInput" class="wms-input-clean combobox-input" 
-                    placeholder="🔍 Digite a peça ou código..." 
+                    placeholder="Buscar por nome da peça, código SKU ou categoria..." 
                     style="width: 100%; height: 38px; padding-left: 32px;" autocomplete="off" />
                   <button type="button" class="combobox-clear-btn hidden" id="noClearBtn" title="Limpar">✕</button>
                 </div>
@@ -3515,7 +3635,7 @@
     <span id="wmsToastMsg">Sistema atualizado com sucesso!</span>
   </div>
 
-  <script src="/admin/admin.js?v=mw18l16m"></script>
+  <script src="/admin/admin.js?v=mw1c9v2m"></script>
 </body>
 
 </html>

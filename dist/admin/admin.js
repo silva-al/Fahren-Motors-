@@ -1707,7 +1707,7 @@ document.getElementById('cancelEditBtn')?.addEventListener('click', cancelPieceE
 // Upload e Anexo de Foto do Produto (Upload de Arquivos Únicos ou Múltiplos)
 // Reduz a foto no navegador antes de enviar (máx. 1600px, JPEG ~85%).
 // A Vercel recusa envios acima de ~4,5MB e fotos menores carregam mais rápido na loja.
-async function comprimirImagem(file, maxLado = 1600, qualidade = 0.85) {
+async function comprimirImagem(file, maxLado = 1200, qualidade = 0.78) {
   if (!file || !/^image\/(jpe?g|png|webp)$/i.test(file.type)) return file;
   try {
     const bitmap = await createImageBitmap(file);
@@ -5708,3 +5708,45 @@ document.addEventListener('click', (e) => {
 document.addEventListener('DOMContentLoaded', () => {
   document.querySelectorAll('.modal-overlay').forEach(m => m.classList.add('hidden'));
 });
+
+
+// Trava universal de scroll no body quando qualquer modal está aberto
+function updateModalBodyScrollLock() {
+  const visibleModal = document.querySelector('.modal-overlay:not(.hidden)');
+  if (visibleModal) {
+    document.body.classList.add('modal-open');
+    document.documentElement.classList.add('modal-open');
+  } else {
+    document.body.classList.remove('modal-open');
+    document.documentElement.classList.remove('modal-open');
+  }
+}
+
+// Observa mudanças nas classes de todos os modais para ativar/desativar o scroll lock
+const modalObserver = new MutationObserver(() => {
+  updateModalBodyScrollLock();
+});
+document.querySelectorAll('.modal-overlay').forEach(modal => {
+  modalObserver.observe(modal, { attributes: true, attributeFilter: ['class'] });
+});
+
+// Exporta relatório semanal em CSV
+function exportWeeklyReportCSV() {
+  const rows = [
+    ['SEMANA', 'PERIODO', 'PEDIDOS CONCLUIDOS', 'TICKET MEDIO (R$)', 'TOTAL FATURADO (R$)', 'PARTICIPACAO (%)', 'STATUS'],
+    ['Semana 1', '01/09 a 07/09', '29', '654.16', '18970.70', '22%', 'Dentro da Meta'],
+    ['Semana 2', '08/09 a 14/09', '36', '646.72', '23282.22', '27%', 'Superou Meta (+12%)'],
+    ['Semana 3', '15/09 a 21/09', '38', '658.07', '25006.83', '29%', 'Pico de Vendas'],
+    ['Semana 4', '22/09 a 31/09', '29', '654.16', '18970.70', '22%', 'Dentro da Meta']
+  ];
+  const csvContent = 'data:text/csv;charset=utf-8,' + rows.map(e => e.join(';')).join('\n');
+  const encodedUri = encodeURI(csvContent);
+  const link = document.createElement('a');
+  link.setAttribute('href', encodedUri);
+  link.setAttribute('download', 'relatorio_vendas_semanal_fahren.csv');
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  showToast('Relatório semanal exportado com sucesso!');
+}
+window.exportWeeklyReportCSV = exportWeeklyReportCSV;

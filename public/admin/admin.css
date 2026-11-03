@@ -3537,11 +3537,7 @@ body.tema-claro .field label {
 body.tema-claro .field input,
 body.tema-claro .field select,
 body.tema-claro .field textarea,
-body.tema-claro .topbar-search input {
-  background: #f8fafc;
-  border: 1px solid #cbd5e1;
-  color: #0f172a;
-}
+
 
 body.tema-claro .field input:focus,
 body.tema-claro .field select:focus,
@@ -4560,12 +4556,7 @@ body.tema-claro .topbar-search svg {
   stroke: #64748b !important;
 }
 
-body.tema-claro .topbar-search input {
-  background: transparent !important;
-  border: none !important;
-  color: #0f172a !important;
-  box-shadow: none !important;
-}
+
 
 body.tema-claro .topbar-search input::placeholder {
   color: #64748b !important;
@@ -5182,15 +5173,7 @@ body.tema-claro .topbar-search svg {
 }
 
 .tema-claro .topbar-search input,
-body.tema-claro .topbar-search input {
-  background: transparent !important;
-  border: none !important;
-  color: #0f172a !important;
-  font-weight: 500 !important;
-  box-shadow: none !important;
-  outline: none !important;
-  padding: 0 !important;
-}
+
 
 .tema-claro .topbar-search input::placeholder,
 body.tema-claro .topbar-search input::placeholder {
@@ -10507,4 +10490,285 @@ body.tema-claro #pane-vendas .top-prod-revenue {
   color: #0f172a !important;
   font-weight: 900 !important;
   font-size: 14px !important;
+}
+
+
+/* ===================================================================
+   ATUALIZAÇÕES DE PERFORMANCE, SCROLL LOCK E CENTRALIZAÇÃO DAS COLUNAS
+   =================================================================== */
+
+/* 1. SCROLL LOCK NO BODY (A TELA DE TRÁS NÃO MEXE AO ROLAR O MODAL) */
+html.modal-open,
+body.modal-open {
+  overflow: hidden !important;
+  height: 100vh !important;
+  touch-action: none !important;
+}
+
+.modal-overlay {
+  position: fixed !important;
+  inset: 0 !important;
+  width: 100vw !important;
+  height: 100vh !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  padding: 16px !important;
+  box-sizing: border-box !important;
+  background: rgba(0, 0, 0, 0.78) !important;
+  z-index: 999999 !important;
+  overscroll-behavior: contain !important;
+}
+
+.modal-body {
+  overscroll-behavior: contain !important;
+}
+
+/* 2. CENTRALIZAÇÃO UNIVERSAL DE TODAS AS COLUNAS EM TODAS AS ABAS DO WMS */
+.wms-table th,
+.wms-table td,
+.orders-table th,
+.orders-table td,
+.wms-mini-table th,
+.wms-mini-table td,
+table th,
+table td {
+  text-align: center !important;
+  vertical-align: middle !important;
+}
+
+.wms-table td > div,
+.orders-table td > div,
+.wms-mini-table td > div,
+.order-item-row {
+  justify-content: center !important;
+}
+
+/* 3. BARRA DE PESQUISA SUPERIOR (TOPBAR SEARCH): DESIGN MODERNO E LIMPO */
+.topbar-search {
+  border-radius: 12px !important;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+
+body:not(.tema-claro) .topbar-search {
+  background: #141721 !important;
+  border: 1px solid rgba(255, 255, 255, 0.12) !important;
+}
+
+body:not(.tema-claro) .topbar-search input {
+  background: transparent !important;
+  border: none !important;
+  outline: none !important;
+  color: #ffffff !important;
+  font-weight: 600 !important;
+  font-size: 13.5px !important;
+  box-shadow: none !important;
+}
+
+body.tema-claro .topbar-search {
+  background: #ffffff !important;
+  border: 1.5px solid #cbd5e1 !important;
+  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.04) !important;
+  border-radius: 12px !important;
+}
+
+body.tema-claro .topbar-search:focus-within {
+  border-color: #ed1c24 !important;
+  box-shadow: 0 0 0 3px rgba(237, 28, 36, 0.12), 0 4px 12px rgba(15, 23, 42, 0.08) !important;
+}
+
+body.tema-claro .topbar-search svg {
+  color: #64748b !important;
+  stroke: #64748b !important;
+}
+
+body.tema-claro .topbar-search input {
+  background: transparent !important;
+  border: none !important;
+  outline: none !important;
+  box-shadow: none !important;
+  color: #0f172a !important;
+  font-size: 13.5px !important;
+  font-weight: 600 !important;
+  padding: 0 !important;
+}
+
+body.tema-claro .topbar-search input::placeholder {
+  color: #94a3b8 !important;
+  font-weight: 500 !important;
+}
+
+/* 4. BLOCO DE ALERTAS NO DASHBOARD (ALINHADO E COM ESPAÇAMENTO CONFORTÁVEL) */
+.dash-alerts-box {
+  border-radius: 14px !important;
+  padding: 16px 20px !important;
+  margin: 0 0 22px 0 !important;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08) !important;
+  box-sizing: border-box !important;
+  width: 100% !important;
+}
+
+.dash-alerts-header {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  margin-bottom: 12px !important;
+  padding-bottom: 8px !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
+}
+
+body.tema-claro .dash-alerts-header {
+  border-bottom-color: #e2e8f0 !important;
+}
+
+.dash-alerts-grid {
+  display: grid !important;
+  grid-template-columns: repeat(4, 1fr) !important;
+  gap: 12px !important;
+}
+
+@media (max-width: 900px) {
+  .dash-alerts-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+}
+
+.dash-alert-chip {
+  display: flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+  padding: 10px 14px !important;
+  border-radius: 10px !important;
+  cursor: pointer !important;
+  transition: all 0.2s ease !important;
+  font-size: 12.5px !important;
+  font-weight: 600 !important;
+  box-sizing: border-box !important;
+}
+
+body:not(.tema-claro) .dash-alert-chip {
+  background: rgba(255, 255, 255, 0.04) !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  color: #ffffff !important;
+}
+
+body:not(.tema-claro) .dash-alert-chip:hover {
+  background: rgba(255, 255, 255, 0.08) !important;
+  border-color: rgba(255, 255, 255, 0.18) !important;
+  transform: translateY(-1px) !important;
+}
+
+body.tema-claro .dash-alert-chip {
+  background: #f8fafc !important;
+  border: 1px solid #e2e8f0 !important;
+  color: #0f172a !important;
+}
+
+body.tema-claro .dash-alert-chip:hover {
+  background: #f1f5f9 !important;
+  border-color: #cbd5e1 !important;
+  transform: translateY(-1px) !important;
+}
+
+.dash-alert-chip .chip-dot {
+  width: 8px !important;
+  height: 8px !important;
+  border-radius: 50% !important;
+  flex-shrink: 0 !important;
+}
+
+.dash-alert-chip .chip-dot.red { background: #ef4444 !important; }
+.dash-alert-chip .chip-dot.orange { background: #f97316 !important; }
+.dash-alert-chip .chip-dot.blue { background: #3b82f6 !important; }
+.dash-alert-chip .chip-dot.purple { background: #8b5cf6 !important; }
+
+.dash-alert-chip .chip-arrow {
+  margin-left: auto !important;
+  opacity: 0.6 !important;
+  font-size: 14px !important;
+}
+
+/* 5. NOVO GRÁFICO E TABELA DE VENDAS SEMANAL */
+.vendas-weekly-dist-wrap {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 14px !important;
+  margin-top: 10px !important;
+}
+
+.weekly-bar-item {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 6px !important;
+}
+
+.weekly-bar-labels {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  font-size: 12.5px !important;
+}
+
+body:not(.tema-claro) .weekly-bar-labels {
+  color: #ffffff !important;
+}
+
+body.tema-claro .weekly-bar-labels {
+  color: #0f172a !important;
+}
+
+.weekly-name strong {
+  font-weight: 800 !important;
+}
+
+.weekly-pct {
+  font-weight: 800 !important;
+  margin-left: auto !important;
+  margin-right: 14px !important;
+}
+
+body:not(.tema-claro) .weekly-pct {
+  color: #ffffff !important;
+}
+
+body.tema-claro .weekly-pct {
+  color: #334155 !important;
+}
+
+.weekly-val {
+  font-weight: 900 !important;
+}
+
+body:not(.tema-claro) .weekly-val {
+  color: #ffffff !important;
+}
+
+body.tema-claro .weekly-val {
+  color: #0f172a !important;
+}
+
+.venda-badge-period {
+  background: rgba(59, 130, 246, 0.15) !important;
+  color: #38bdf8 !important;
+  font-size: 11px !important;
+  font-weight: 800 !important;
+  padding: 3px 10px !important;
+  border-radius: 9999px !important;
+  border: 1px solid rgba(59, 130, 246, 0.25) !important;
+}
+
+.pct-pill {
+  display: inline-block !important;
+  padding: 2px 8px !important;
+  border-radius: 12px !important;
+  background: rgba(59, 130, 246, 0.15) !important;
+  color: #3b82f6 !important;
+  font-weight: 800 !important;
+  font-size: 11px !important;
+}
+
+body:not(.tema-claro) .pct-pill {
+  background: rgba(255, 255, 255, 0.1) !important;
+  color: #ffffff !important;
+  border: 1px solid rgba(255, 255, 255, 0.15) !important;
 }
