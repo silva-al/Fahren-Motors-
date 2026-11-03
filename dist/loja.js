@@ -114,28 +114,8 @@ function loadCartFromStorage() {
 // SINCRONIZAÇÃO EM NUVEM DO CARRINHO (DESKTOP <-> CELULAR PARA CONTA LOGADA)
 // ==========================================================================
 let isSyncingCart = false;
-async function syncCartWithServer() {
-  if (!currentUser || isSyncingCart) return;
-  isSyncingCart = true;
-  try {
-    const res = await api('/api/auth/cart');
-    if (res && Array.isArray(res.cart)) {
-      cart = res.cart;
-      saveCart(true); // salva no localStorage sem chamar o servidor de volta
-      updateCartBadge();
-      const cartScreen = document.getElementById('carrinho');
-      if (cartScreen && cartScreen.classList.contains('active')) {
-        renderCart();
-      }
-    }
-  } catch (err) {
-    // Falha silenciosa se offline
-  } finally {
-    isSyncingCart = false;
-  }
-}
-
 let syncTimeout = null;
+
 function pushCartToServer() {
   if (!currentUser) return;
   clearTimeout(syncTimeout);
@@ -143,8 +123,50 @@ function pushCartToServer() {
     api('/api/auth/cart', {
       method: 'PUT',
       body: JSON.stringify({ cart })
-    }).catch(() => {});
-  }, 250);
+    }).catch(err => console.warn('Erro ao enviar carrinho para a nuvem:', err));
+  }, 200);
+}
+
+async function syncCartWithServer() {
+  if (!currentUser || isSyncingCart) return;
+  isSyncingCart = true;
+  try {
+    const res = await api('/api/auth/cart');
+    if (res && Array.isArray(res.cart)) {
+      const serverItems = res.cart;
+      let hasChanged = false;
+
+      if (serverItems.length === 0 && cart.length > 0) {
+        // Se o celular já tem produtos e o servidor está vazio, envia os do celular para a nuvem!
+        pushCartToServer();
+      } else if (serverItems.length > 0 && cart.length === 0) {
+        // Se a nuvem tem produtos e este aparelho está vazio, baixa os produtos da nuvem!
+        cart = serverItems;
+        hasChanged = true;
+      } else if (serverItems.length > 0 && cart.length > 0) {
+        // Se ambos têm produtos, sincroniza pela versão da nuvem
+        const serverJson = JSON.stringify(serverItems);
+        const localJson = JSON.stringify(cart);
+        if (serverJson !== localJson) {
+          cart = serverItems;
+          hasChanged = true;
+        }
+      }
+
+      if (hasChanged) {
+        saveCart(true); // salva no localStorage sem loop de envio
+        updateCartBadge();
+        const cartScreen = document.getElementById('carrinho');
+        if (cartScreen && cartScreen.classList.contains('active')) {
+          renderCart();
+        }
+      }
+    }
+  } catch (err) {
+    // Falha silenciosa
+  } finally {
+    isSyncingCart = false;
+  }
 }
 
 function saveCart(skipServerSync = false) {
@@ -157,6 +179,9 @@ function saveCart(skipServerSync = false) {
     console.warn('Falha ao gravar carrinho no storage:', e);
   }
   updateCartBadge();
+  if (!skipServerSync && currentUser) {
+    pushCartToServer();
+  }
 }
 
 loadCartFromStorage();
@@ -3567,3 +3592,6 @@ window.addEventListener('focus', () => {
     syncCartWithServer();
   }
 });
+
+// Polling suave em segundo plano para refletir mudanças do celular no desktop sem recarregar
+setInterval(() => { if (currentUser) syncCartWithServer(); }, 3500);
