@@ -2392,7 +2392,7 @@ function renderExpedicao() {
           </div>
         </div>
         <div class="exp-items-box">
-          <strong style="display:block;margin-bottom:4px;color:#0f172a">Itens a separar:</strong>
+          <strong class="exp-separar-title">Itens a separar:</strong>
           ${(o.items || []).map(i => `<div class="exp-item-line"><span class="order-item-qty">${i.quantity}x</span> <span class="order-item-title">${i.name}</span></div>`).join('')}
         </div>
         <div class="exp-card-footer">
