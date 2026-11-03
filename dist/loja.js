@@ -369,10 +369,20 @@ function show(id, opts = {}) {
   if (id === 'carrinho') renderCart();
   if (id === 'perfil') loadMyOrders();
 
+    try {
+    sessionStorage.setItem('fahren-last-screen', id);
+  } catch {}
+
   if (push) {
     const depth = (window.history.state && typeof window.history.state.depth === 'number') ? window.history.state.depth + 1 : 1;
-    window.history.pushState({ screen: id, depth }, '');
+    const targetHash = (id === 'inicio' ? '' : '#' + id);
+    window.history.pushState({ screen: id, depth }, '', targetHash || window.location.pathname);
     navDepth = depth;
+  } else {
+    try {
+      const targetHash = (id === 'inicio' ? '' : '#' + id);
+      window.history.replaceState({ screen: id, depth: navDepth }, '', targetHash || window.location.pathname);
+    } catch {}
   }
   updateBackBtn(id);
 }
@@ -2764,9 +2774,25 @@ async function init() {
   } catch {
     applyUser(null);
   }
-  updateNav();
+    updateNav();
   updateCartBadge();
-  show('inicio', { push: false });
+
+  // Restaura a tela onde o usuário estava ao atualizar (ex: #carrinho ou última salva)
+  let initialScreen = 'inicio';
+  const validScreens = ['inicio', 'pecas', 'carrinho', 'perfil', 'produto', 'cadastro'];
+  const rawHash = (window.location.hash || '').replace('#', '').trim();
+  if (rawHash && validScreens.includes(rawHash)) {
+    initialScreen = rawHash;
+  } else {
+    try {
+      const savedScreen = sessionStorage.getItem('fahren-last-screen');
+      if (savedScreen && validScreens.includes(savedScreen)) {
+        initialScreen = savedScreen;
+      }
+    } catch {}
+  }
+
+  show(initialScreen, { push: false });
   loadAddress();
   
   // Pré-carrega carrossel da home e catálogo de peças em paralelo para velocidade máxima
