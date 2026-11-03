@@ -138,6 +138,16 @@ window.addEventListener('keydown', (e) => {
 
 function show(id, opts = {}) {
   const { push = true } = opts;
+  // O rodapé da loja só é visível na tela inicial ('inicio')
+  if (id === 'inicio') {
+    document.body.classList.add('screen-is-inicio');
+  } else {
+    document.body.classList.remove('screen-is-inicio');
+  }
+  const footer = document.querySelector('.fp-footer');
+  if (footer) {
+    footer.style.display = (id === 'inicio') ? 'block' : 'none';
+  }
   if (!authenticated && !['welcome', 'inicio', 'pecas', 'cadastro', 'carrinho', 'produto'].includes(id)) {
     alert('Faça seu cadastro ou entre na sua conta para acessar esta área.');
     show('inicio');
@@ -777,7 +787,7 @@ async function goToCategory(category) {
   const searchInput = document.getElementById('catalogSearch');
   if (searchInput) {
     searchInput.value = category || '';
-    searchInput.focus();
+    // Sem auto-focus no mobile
   }
   await loadCatalog();
 }
@@ -842,9 +852,60 @@ function clearActiveVehicle() {
   try {
     localStorage.removeItem('fahren_selected_vehicle');
   } catch {}
+
+  // 1. Limpa o input de placa
+  const placaInput = document.getElementById('vfPlacaInput');
+  if (placaInput) placaInput.value = '';
+
+  // 2. Limpa os selects de modelo, ano, motor e montadora
+  const montadora = document.getElementById('vfMontadora');
+  const modelo = document.getElementById('vfModelo');
+  const ano = document.getElementById('vfAno');
+  const motor = document.getElementById('vfMotor');
+  if (montadora) montadora.value = '';
+  if (modelo) {
+    modelo.innerHTML = '<option value="">Modelo</option>';
+    modelo.disabled = true;
+  }
+  if (ano) {
+    ano.innerHTML = '<option value="">Ano</option>';
+    ano.disabled = true;
+  }
+  if (motor) {
+    motor.innerHTML = '<option value="">Motor</option>';
+    motor.disabled = true;
+  }
+
+  // 3. Limpa o campo de busca do catálogo
+  const catInput = document.getElementById('catalogSearch');
+  if (catInput) catInput.value = '';
+
+  // 4. Atualiza a barra de garagem (oculta o veículo ativo)
   updateGarageUI();
   if (typeof loadCatalog === 'function') loadCatalog();
-  showToast('Filtro de veículo removido.');
+
+  // 5. Navega para a página inicial
+  show('inicio');
+
+  // 6. Ativa a aba "Por Placa do Veículo" na página inicial
+  const tabPlate = document.getElementById('vfTabPlate');
+  const tabModel = document.getElementById('vfTabModel');
+  const rowModel = document.getElementById('vfModelRow');
+  const rowPlate = document.getElementById('vfPlateRow');
+  if (tabPlate && tabModel) {
+    tabPlate.classList.add('active');
+    tabModel.classList.remove('active');
+    if (rowModel) rowModel.style.display = 'none';
+    if (rowPlate) rowPlate.style.display = 'flex';
+  }
+
+  // 7. Rola suavemente até o localizador de veículo (sem abrir teclado virtual!)
+  setTimeout(() => {
+    const vf = document.getElementById('vehicleFinderWidget') || document.querySelector('.vehicle-finder');
+    vf?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }, 100);
+
+  showToast('Filtro limpo! Digite uma placa ou selecione o modelo.');
 }
 
 function updateGarageUI() {
@@ -1525,28 +1586,35 @@ let catalogTimer = null;
 async function loadCatalog() {
   await loadCategories();
   const container = document.getElementById('catalogResults');
+  if (!container) return;
   const params = new URLSearchParams();
   const q = document.getElementById('catalogSearch')?.value.trim();
   const category = document.getElementById('filterCategory')?.value;
   if (q) params.set('q', q);
   if (category) params.set('category', category);
 
-  // Não exibe peças soltas até o cliente pesquisar
-  if (!q) {
-    container.innerHTML = `
-      <div class="catalog-prompt-empty" style="text-align:center;padding:46px 16px;color:var(--fp-8f949c);">
-        <div style="width:52px;height:52px;margin:0 auto 14px;border-radius:50%;background:rgba(237,28,36,0.1);border:1px solid rgba(237,28,36,0.25);display:flex;align-items:center;justify-content:center;color:#ed1c24;">
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
-        </div>
-        <p style="font-size:15px;color:var(--fp-ffffff);font-weight:700;margin:0 0 6px;">O que você procura?</p>
-        <p style="font-size:13px;color:var(--fp-8f949c);margin:0 auto;max-width:320px;">Digite o nome da peça, modelo do veículo ou código para pesquisar no catálogo.</p>
-      </div>`;
-    return;
-  }
-
   try {
-    const { products } = await api('/api/products?' + params.toString());
-    renderProducts(container, products);
+    let prods = [];
+    try {
+      const res = await api('/api/products?' + params.toString());
+      if (res && Array.isArray(res.products)) prods = res.products;
+    } catch (_) {}
+
+    // Se a API estiver offline ou sem retorno, exibe os produtos do catálogo com busca e filtro ativos
+    if (!prods.length && typeof CATALOG_FALLBACK_PRODUCTS !== 'undefined') {
+      const qLower = (q || '').toLowerCase();
+      const catLower = (category || '').toLowerCase();
+      prods = CATALOG_FALLBACK_PRODUCTS.filter(p => {
+        const matchQ = !qLower || (p.name && p.name.toLowerCase().includes(qLower)) ||
+                                  (p.description && p.description.toLowerCase().includes(qLower)) ||
+                                  (p.compatibility && p.compatibility.toLowerCase().includes(qLower)) ||
+                                  (p.code && p.code.toLowerCase().includes(qLower));
+        const matchCat = !catLower || (p.category && p.category.toLowerCase() === catLower);
+        return matchQ && matchCat;
+      });
+    }
+
+    renderProducts(container, prods);
   } catch (err) {
     container.innerHTML = `<p style="color:#e06a6a">Não foi possível carregar as peças agora. ${err.message}</p>`;
   }
@@ -2321,7 +2389,7 @@ init();
         tabModel?.classList.remove('active');
         if (rowModel) rowModel.style.display = 'none';
         if (rowPlate) rowPlate.style.display = 'flex';
-        setTimeout(() => placaInput?.focus(), 80);
+        // Sem auto-focus para não abrir teclado virtual no mobile
       } else {
         tabModel?.classList.add('active');
         tabPlate?.classList.remove('active');
@@ -2346,7 +2414,7 @@ init();
       const data = (typeof VEHICLE_CATALOG !== 'undefined') ? VEHICLE_CATALOG[brand] : null;
 
       if (modeloSelect) {
-        modeloSelect.innerHTML = '<option value="">Selecione o Modelo</option>';
+        modeloSelect.innerHTML = '<option value="">Modelo</option>';
         if (data && data.models) {
           data.models.forEach(m => {
             const opt = document.createElement('option');
@@ -2361,7 +2429,7 @@ init();
       }
 
       if (anoSelect) {
-        anoSelect.innerHTML = '<option value="">Selecione o Ano</option>';
+        anoSelect.innerHTML = '<option value="">Ano</option>';
         for (let y = 2026; y >= 2005; y--) {
           const opt = document.createElement('option');
           opt.value = String(y);
@@ -2372,7 +2440,7 @@ init();
       }
 
       if (motorSelect) {
-        motorSelect.innerHTML = '<option value="">Selecione o Motor</option>';
+        motorSelect.innerHTML = '<option value="">Motor</option>';
         if (data && data.engines) {
           data.engines.forEach(eng => {
             const opt = document.createElement('option');
@@ -2515,7 +2583,7 @@ init();
     setTimeout(() => {
       const vf = document.querySelector('.vehicle-finder');
       vf?.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      setTimeout(() => document.getElementById('vfMontadora')?.focus(), 400);
+      // Sem auto-focus para não abrir teclado virtual no mobile
     }, 80);
   });
 
@@ -2636,7 +2704,7 @@ init();
       setActiveTab('buscar');
       setTimeout(() => {
         window.scrollTo({ top: 0, behavior: 'smooth' });
-        document.getElementById('headerSearchInputMobile')?.focus();
+        // Sem auto-focus no mobile
       }, 80);
     });
     tabbar.querySelector('[data-tab="perfil"]')?.addEventListener('click', () => { show('perfil'); setActiveTab('perfil'); });

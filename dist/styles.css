@@ -3024,7 +3024,13 @@ body.tema-claro .cat-card-count-box{background:#f8fafc !important;border:1px sol
     border-radius: 14px;
   }
   .vehicle-finder-row{display:grid;grid-template-columns:1fr 1fr;gap:8px}
-  .vehicle-finder-row select{font-size:12.5px;padding:10px}
+  .vehicle-finder-row select{
+    font-size: 13px !important;
+    padding: 10px 8px !important;
+    text-align: center !important;
+    text-align-last: center !important;
+    font-weight: 700 !important;
+  }
   .vehicle-finder-btn{grid-column:1/-1}
 
   /* Grade de categorias no mobile no mesmo padrão dos cards */
@@ -3254,35 +3260,41 @@ body.tema-claro .cat-card-count-box{background:#f8fafc !important;border:1px sol
    o nome "FAHREN MOTORS" empilhado/torto e escondia o carrinho.
    ========================================================================== */
 @media(max-width:760px){
-  /* Cabeçalho mobile corrigido: alinhamento e espaçamento seguro */
+  /* Cabeçalho mobile corrigido: alinhamento perfeito sem sobreposição */
   header.header{height:auto !important}
-  header.header .header-inner{height:auto !important;padding:10px 12px 0 !important;gap:6px !important}
+  header.header .header-inner{
+    height:auto !important;
+    padding:8px 10px 0 !important;
+    gap:4px !important;
+    display:flex !important;
+    align-items:center !important;
+  }
 
   header.header .back-btn{
-    margin-right: 4px !important;
-    width: 36px !important;
-    height: 36px !important;
+    margin-right: 3px !important;
+    width: 32px !important;
+    height: 32px !important;
     flex-shrink: 0 !important;
     order: 0 !important;
   }
 
-  /* Botão de categorias afastado para a esquerda e com margem segura da logo */
+  /* Botão de categorias no canto esquerdo com margem segura */
   header.header .header-cat-dropdown{
     order: 1 !important;
     display: flex !important;
     position: relative !important;
     flex-shrink: 0 !important;
     margin-left: 0 !important;
-    margin-right: 14px !important;
+    margin-right: 6px !important;
   }
   header.header .header-cat-btn{
     display: flex !important;
     background: rgba(255,255,255,.05) !important;
     border: 1px solid rgba(255,255,255,.09) !important;
-    width: 36px !important;
-    height: 36px !important;
+    width: 32px !important;
+    height: 32px !important;
     padding: 0 !important;
-    border-radius: 9px !important;
+    border-radius: 8px !important;
     align-items: center !important;
     justify-content: center !important;
     flex-shrink: 0 !important;
@@ -3295,22 +3307,23 @@ body.tema-claro .cat-card-count-box{background:#f8fafc !important;border:1px sol
     min-width: 200px !important;
   }
 
+  /* Logo compacta e fixa (sem flex:1 que causava overflow em cima de MOTORS) */
   header.header .logo{
     display: flex !important;
     flex-direction: row !important;
     align-items: center !important;
     justify-content: flex-start !important;
-    gap: 6px !important;
-    font-size: 14.5px !important;
+    gap: 5px !important;
+    font-size: 13.5px !important;
     line-height: 1.1 !important;
     color: #fff !important;
     letter-spacing: 0.2px !important;
     margin: 0 !important;
     order: 2 !important;
-    flex: 1 !important;
+    flex: 0 0 auto !important;
     min-width: 0 !important;
   }
-  header.header .logo-text{display:flex !important;align-items:baseline !important;gap:3px !important;white-space:nowrap !important}
+  header.header .logo-text{display:flex !important;align-items:baseline !important;gap:2.5px !important;white-space:nowrap !important}
   header.header .logo span{
     display: inline !important;
     font-size: inherit !important;
@@ -3319,19 +3332,42 @@ body.tema-claro .cat-card-count-box{background:#f8fafc !important;border:1px sol
     margin-top: 0 !important;
     font-style: normal !important;
   }
-  header.header .logo-badge{width:30px !important;height:30px !important;flex-shrink:0 !important}
-  header.header .logo-badge-inner{font-size:10.5px !important}
+  header.header .logo-badge{width:26px !important;height:26px !important;flex-shrink:0 !important}
+  header.header .logo-badge-inner{font-size:9.5px !important}
 
-  /* Carrinho continua visível no canto direito */
+  /* Botão Dark/Light: com margin-left: auto empurra para a DIREITA com folga segura da palavra MOTORS */
+  header.header .theme-toggle,
+  .theme-toggle{
+    display: inline-flex !important;
+    width: 32px !important;
+    height: 32px !important;
+    border-radius: 8px !important;
+    order: 3 !important;
+    margin-left: auto !important;
+    margin-right: 6px !important;
+    flex-shrink: 0 !important;
+  }
+  header.header .theme-toggle svg,
+  .theme-toggle svg{width:16px !important;height:16px !important}
+
+  /* Carrinho no canto direito */
   header.header nav.nav{
     display: flex !important;
     margin-left: 0 !important;
     height: auto !important;
     flex-shrink: 0 !important;
-    order: 3 !important;
+    order: 4 !important;
   }
   header.header nav.nav button:not(.nav-cart-btn){display:none !important}
-  header.header nav.nav .nav-cart-btn{display:inline-flex !important}
+  header.header nav.nav .nav-cart-btn{
+    display: inline-flex !important;
+    width: 32px !important;
+    height: 32px !important;
+    padding: 0 !important;
+    align-items: center !important;
+    justify-content: center !important;
+    flex-shrink: 0 !important;
+  }
 }
 
 /* ==========================================================================
@@ -6097,4 +6133,12 @@ body.tema-claro header.header .back-btn {
   background: #ffffff !important;
   border: 1px solid #dfe3ea !important;
   color: #12151b !important;
+}
+
+/* O rodapé oficial da loja só aparece na tela inicial */
+body:not(.screen-is-inicio) .fp-footer {
+  display: none !important;
+}
+body.screen-is-inicio .fp-footer {
+  display: block !important;
 }
