@@ -8304,3 +8304,189 @@ body:not(.tema-claro) .empty-cart-title {
   transform: translateY(-2px) !important;
   box-shadow: 0 6px 18px rgba(237, 28, 36, 0.45) !important;
 }
+
+
+/* ==========================================================================
+   AJUSTES SOLICITADOS: CARRINHO E RODAPÉ DESKTOP
+   ========================================================================== */
+
+/* 1. Ocultar completamente o banner de sincronização do computador */
+.cart-device-sync-banner {
+  display: none !important;
+}
+
+/* 2. Botão de remoção (lixeira) — cores oficiais do projeto (cinza/grafite neutro, sem vermelho) */
+.cart-btn-remove {
+  width: 32px !important;
+  height: 32px !important;
+  border-radius: 8px !important;
+  border: 1px solid #e2e8f0 !important;
+  background: #f8fafc !important;
+  color: #94a3b8 !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  cursor: pointer !important;
+  transition: all 0.15s ease !important;
+  flex-shrink: 0 !important;
+  padding: 0 !important;
+}
+
+.cart-btn-remove:hover {
+  background: #f1f5f9 !important;
+  border-color: #cbd5e1 !important;
+  color: #475569 !important;
+  transform: scale(1.05) !important;
+}
+
+body:not(.tema-claro) .cart-btn-remove {
+  background: #181d26 !important;
+  border-color: #2a313d !important;
+  color: #94a3b8 !important;
+}
+
+body:not(.tema-claro) .cart-btn-remove:hover {
+  background: #232a37 !important;
+  border-color: #3e4859 !important;
+  color: #cbd5e1 !important;
+}
+
+/* 3. Ajuste do layout de preços e subtotal no carrinho mobile (elimina overflow/vazamento) */
+.cart-item-footer {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  flex-wrap: wrap !important;
+  gap: 6px 10px !important;
+  margin-top: 6px !important;
+}
+
+.cart-item-subtotal {
+  text-align: right !important;
+  display: flex !important;
+  align-items: baseline !important;
+  gap: 4px !important;
+  flex-shrink: 1 !important;
+  min-width: 0 !important;
+}
+
+.cart-item-subtotal .subtotal-amount {
+  font-size: 14px !important;
+  font-weight: 900 !important;
+  color: #0f172a !important;
+  white-space: nowrap !important;
+}
+
+body:not(.tema-claro) .cart-item-subtotal .subtotal-amount {
+  color: #ffffff !important;
+}
+
+@media (max-width: 480px) {
+  .cart-row,
+  .cart-row.modern-cart-card {
+    padding: 10px 12px !important;
+    gap: 10px !important;
+  }
+  .cart-item-thumb {
+    width: 90px !important;
+    min-width: 90px !important;
+    max-width: 90px !important;
+    min-height: 98px !important;
+  }
+  .cart-item-title {
+    font-size: 12.5px !important;
+    line-height: 1.3 !important;
+  }
+  .cart-pix-price {
+    font-size: 15px !important;
+  }
+  .cart-item-footer {
+    flex-wrap: wrap !important;
+    gap: 6px !important;
+  }
+  .cart-qty-pill {
+    height: 28px !important;
+  }
+  .cart-qty-pill .qty-minus,
+  .cart-qty-pill .qty-plus {
+    width: 24px !important;
+    height: 24px !important;
+  }
+  .cart-item-subtotal .subtotal-amount {
+    font-size: 13.5px !important;
+  }
+}
+
+@media (max-width: 375px) {
+  .cart-item-thumb {
+    width: 78px !important;
+    min-width: 78px !important;
+    max-width: 78px !important;
+    min-height: 88px !important;
+  }
+  .cart-item-footer {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 4px !important;
+  }
+  .cart-item-subtotal {
+    text-align: left !important;
+  }
+}
+
+/* 4. Centralização perfeita do rodapé no Desktop e Mobile */
+.fp-footer {
+  width: 100% !important;
+  text-align: center !important;
+}
+
+.fp-footer-inner {
+  max-width: 1100px !important;
+  margin: 0 auto !important;
+  padding: 24px 20px 24px !important;
+  box-sizing: border-box !important;
+  text-align: center !important;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+
+.fp-footer-legal {
+  width: 100% !important;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  justify-content: center !important;
+  text-align: center !important;
+  margin: 0 auto !important;
+}
+
+body:not(.screen-is-inicio) .fp-footer-legal {
+  border-top: none !important;
+  margin-top: 0 !important;
+  padding-top: 14px !important;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  justify-content: center !important;
+  text-align: center !important;
+}
+
+.fp-footer-brand-line {
+  width: 100% !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  text-align: center !important;
+  margin: 0 auto !important;
+  flex-wrap: wrap !important;
+}
+
+.fp-footer-copy-line {
+  width: 100% !important;
+  max-width: 980px !important;
+  margin: 6px auto 0 !important;
+  text-align: center !important;
+  display: block !important;
+}

@@ -2363,19 +2363,7 @@ function renderCart() {
   const amounts = { subtotal, pixTotal, pixSavings, installment };
 
   el.innerHTML = `
-    <div class="cart-device-sync-banner" id="cartSyncBanner">
-      <div class="sync-banner-info">
-        <span class="sync-banner-icon">📱</span>
-        <div class="sync-banner-text">
-          <b>Acessando do computador?</b>
-          <p>Abra este mesmo carrinho no seu celular em segundos escaneando o QR Code.</p>
-        </div>
-      </div>
-      <button type="button" class="btn-sync-mobile" id="openMobileSyncModalBtn">
-        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="5" y="2" width="14" height="20" rx="2" ry="2"></rect><line x1="12" y1="18" x2="12.01" y2="18"></line></svg>
-        <span>Abrir no Celular</span>
-      </button>
-    </div>
+    
 
     <div class="cart-items">
       ${cart.map(i => {
@@ -2491,7 +2479,7 @@ function renderCart() {
     <div class="fp-error" id="checkoutError" style="display:none;margin-top:10px"></div>
   `;
 
-  el.querySelector('#openMobileSyncModalBtn')?.addEventListener('click', openMobileSyncModal);
+  
 
   el.querySelectorAll('.cart-row').forEach(row => {
     const id = row.dataset.id;
