@@ -169,7 +169,15 @@ function show(id, opts = {}) {
   nav.forEach(b => b.classList.toggle('active', b.dataset.screen === id));
   window.scrollTo({ top: 0, behavior: 'smooth' });
 
-  if (id === 'pecas') loadCatalog();
+  if (id === 'pecas') {
+    if (!opts.keepFilter) {
+      const catInput = document.getElementById('catalogSearch');
+      if (catInput) catInput.value = '';
+      const catSelect = document.getElementById('filterCategory');
+      if (catSelect) catSelect.value = '';
+    }
+    loadCatalog();
+  }
   if (id === 'carrinho') renderCart();
   if (id === 'perfil') loadMyOrders();
 
@@ -818,7 +826,7 @@ async function loadRecommendedProducts(product) {
 }
 
 async function goToCategory(category) {
-  show('pecas');
+  show('pecas', { keepFilter: true });
   const searchInput = document.getElementById('catalogSearch');
   if (searchInput) {
     searchInput.value = category || '';
@@ -1605,7 +1613,7 @@ function initProductViewer() {
             lbPanX = 0;
             lbPanY = 0;
           } else {
-            lbScale = 2.0;
+            lbScale = 1.5;
           }
           updateLbTransform();
           lastTapTime = 0;
