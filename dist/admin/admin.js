@@ -281,34 +281,53 @@ function switchTab(tabId, pushHistory = true, resetScroll = true) {
     window.scrollTo({ top: 0, behavior: 'instant' });
   }
 
-  if (tabId === 'dashboard') {
-    updateDashboardMetrics();
-    loadStockAlerts();
-  }
-  if (tabId === 'produtos' || tabId === 'estoque') renderProductsTable(allProducts);
-  if (tabId === 'pecas') {
-    const formPanel = document.getElementById('productFormPanel');
-    if (formPanel) formPanel.classList.remove('hidden');
-  }
-  if (tabId === 'pedidos') renderOrdersTable(allOrders);
-  if (tabId === 'vendas') renderVendas();
-  if (tabId === 'operacoes-estoque') loadRecentOperations();
-  if (tabId === 'movimentacoes') loadStockMovements();
-  if (tabId === 'inventario') loadInventoryAudit();
-  if (tabId === 'localizacoes' || tabId === 'armazem') renderWarehouseLocation();
-  if (tabId === 'alertas') loadStockAlerts();
-  if (tabId === 'expedicao') renderExpedicao();
-  if (tabId === 'financeiro') renderFinances();
-  if (tabId === 'notas-fiscais') renderFiscalTable();
-  if (tabId === 'relatorios') renderRelatorios();
-  if (tabId === 'armazem') {
+  // Transição fluida de abas: alterna UI no frame 0 e defere renders pesados
+  requestAnimationFrame(() => {
     setTimeout(() => {
-      const rackEl = document.querySelector('.rack-widget-card');
-      if (rackEl) rackEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }, 120);
-  }
+      if (tabId === 'dashboard') {
+        updateDashboardMetrics();
+        loadStockAlerts();
+      }
+      if (tabId === 'produtos' || tabId === 'estoque') renderProductsTable(allProducts);
+      if (tabId === 'pecas') {
+        if (!editingProductId) {
+          resetProductForm();
+        }
+        const formPanel = document.getElementById('productFormPanel');
+        if (formPanel) formPanel.classList.remove('hidden');
+      }
+      if (tabId === 'pedidos') renderOrdersTable(allOrders);
+      if (tabId === 'vendas') renderVendas();
+      if (tabId === 'operacoes-estoque') loadRecentOperations();
+      if (tabId === 'movimentacoes') loadStockMovements();
+      if (tabId === 'inventario') loadInventoryAudit();
+      if (tabId === 'localizacoes' || tabId === 'armazem') renderWarehouseLocation();
+      if (tabId === 'alertas') loadStockAlerts();
+      if (tabId === 'expedicao') renderExpedicao();
+      if (tabId === 'financeiro') renderFinances();
+      if (tabId === 'notas-fiscais') renderFiscalTable();
+      if (tabId === 'relatorios') renderRelatorios();
+      if (tabId === 'armazem') {
+        const rackEl = document.querySelector('.rack-widget-card');
+        if (rackEl) rackEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    }, 0);
+  });
 }
 
+// Abertura de formulário de cadastro de peça 100% LIMPO e DO ZERO
+function openNewProductForm() {
+  editingProductId = null;
+  resetProductForm();
+  switchTab('pecas');
+  setTimeout(() => {
+    const el = document.getElementById('pName');
+    if (el) el.focus();
+  }, 60);
+}
+
+window.openNewProductForm = openNewProductForm;
+window.openNewPieceForm = openNewProductForm;
 window.switchTab = switchTab;
 
 window.addEventListener('hashchange', () => {
