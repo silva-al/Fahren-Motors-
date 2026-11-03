@@ -52,8 +52,76 @@ const nav = [...document.querySelectorAll('.nav button')];
 
 let authenticated = false;
 let currentUser = null;
-let cart = []; // [{ productId, name, price, quantity }]
-try { cart = JSON.parse(sessionStorage.getItem('fahren_cart') || '[]'); } catch { cart = []; }
+const CART_STORAGE_KEY = 'fahren_cart_v2';
+const CART_LEGACY_KEY = 'fahren_cart';
+
+let cart = []; // [{ productId, name, price, quantity, image, category }]
+
+function loadCartFromStorage() {
+  // 1. Verificar sincronização via URL (?cart=... ou ?carrinho=...)
+  try {
+    const params = new URLSearchParams(window.location.search);
+    const sharedParam = params.get('cart') || params.get('carrinho');
+    if (sharedParam) {
+      let rawJson = '';
+      try {
+        rawJson = decodeURIComponent(atob(sharedParam));
+      } catch (e1) {
+        try {
+          rawJson = decodeURIComponent(sharedParam);
+        } catch (e2) {
+          rawJson = sharedParam;
+        }
+      }
+      const parsed = JSON.parse(rawJson);
+      if (Array.isArray(parsed) && parsed.length > 0) {
+        cart = parsed;
+        saveCart();
+        const cleanUrl = new URL(window.location.href);
+        cleanUrl.searchParams.delete('cart');
+        cleanUrl.searchParams.delete('carrinho');
+        window.history.replaceState({}, '', cleanUrl.pathname + (cleanUrl.search || '') + (cleanUrl.hash || ''));
+        setTimeout(() => {
+          showToast('✨ Carrinho sincronizado do seu computador com sucesso!');
+          updateCartBadge();
+        }, 500);
+        return;
+      }
+    }
+  } catch (err) {
+    console.warn('Falha ao processar carrinho compartilhado:', err);
+  }
+
+  // 2. Carregar do localStorage persistente com fallback ao sessionStorage
+  try {
+    const fromLocal = localStorage.getItem(CART_STORAGE_KEY) || localStorage.getItem(CART_LEGACY_KEY);
+    if (fromLocal) {
+      cart = JSON.parse(fromLocal) || [];
+      return;
+    }
+    const fromSession = sessionStorage.getItem(CART_LEGACY_KEY);
+    if (fromSession) {
+      cart = JSON.parse(fromSession) || [];
+      return;
+    }
+  } catch (err) {
+    cart = [];
+  }
+}
+
+function saveCart() {
+  try {
+    const serialized = JSON.stringify(cart);
+    localStorage.setItem(CART_STORAGE_KEY, serialized);
+    localStorage.setItem(CART_LEGACY_KEY, serialized);
+    sessionStorage.setItem(CART_LEGACY_KEY, serialized);
+  } catch (e) {
+    console.warn('Falha ao gravar carrinho no storage:', e);
+  }
+  updateCartBadge();
+}
+
+loadCartFromStorage();
 
 // ---------- API helper ----------
 async function api(path, options = {}) {
@@ -113,10 +181,7 @@ function showToast(message, onAction) {
   }, 4000);
 }
 
-function saveCart() {
-  sessionStorage.setItem('fahren_cart', JSON.stringify(cart));
-  updateCartBadge();
-}
+// saveCart implementado no topo com persistência unificada (localStorage + sessionStorage)
 
 
 // ---------- Navegação ----------
@@ -2216,6 +2281,66 @@ function addToCart(productId, productsList, quantity = 1, triggerBtn = null) {
   showToast(`✓ ${qty}x "${product.name}" colocado no carrinho!`, () => show('carrinho'));
 }
 
+function getCartShareUrl() {
+  try {
+    const compact = cart.map(i => ({
+      productId: i.productId,
+      name: i.name,
+      price: i.price,
+      quantity: i.quantity,
+      image: i.image || ''
+    }));
+    const raw = encodeURIComponent(JSON.stringify(compact));
+    const token = btoa(raw);
+    const origin = window.location.origin && window.location.origin !== 'null' ? window.location.origin : 'https://fahrenmotors.com.br';
+    const path = window.location.pathname.includes('loja') ? window.location.pathname : '/loja/';
+    return `${origin}${path}?cart=${token}#carrinho`;
+  } catch (e) {
+    return window.location.href;
+  }
+}
+
+function openMobileSyncModal() {
+  const shareUrl = getCartShareUrl();
+  const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=${encodeURIComponent(shareUrl)}`;
+  const modal = document.createElement('div');
+  modal.className = 'cart-sync-modal-backdrop';
+  modal.innerHTML = `
+    <div class="cart-sync-modal">
+      <button type="button" class="cart-sync-modal-close" aria-label="Fechar">✕</button>
+      <h3 class="cart-sync-modal-title">📱 Carrinho no seu Celular</h3>
+      <p class="cart-sync-modal-subtitle">Aponte a câmera do seu celular para o QR Code abaixo para abrir os mesmos produtos instantaneamente.</p>
+      <div class="cart-sync-qr-wrap">
+        <img src="${qrUrl}" alt="QR Code do Carrinho" width="180" height="180" />
+      </div>
+      <div class="cart-sync-actions">
+        <button type="button" class="btn-sync-copy" id="syncCopyLinkBtn">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+          <span>Copiar Link do Carrinho</span>
+        </button>
+        <a href="https://api.whatsapp.com/send?text=${encodeURIComponent('Acesse seu carrinho da Fahren Motors: ' + shareUrl)}" target="_blank" rel="noopener noreferrer" class="btn-sync-whatsapp">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.742-.981z"/></svg>
+          <span>Enviar por WhatsApp</span>
+        </a>
+      </div>
+    </div>
+  `;
+  modal.querySelector('.cart-sync-modal-close').onclick = () => modal.remove();
+  modal.onclick = (e) => { if (e.target === modal) modal.remove(); };
+  modal.querySelector('#syncCopyLinkBtn').onclick = () => {
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(shareUrl).then(() => {
+        showToast('📋 Link do carrinho copiado com sucesso!');
+      }).catch(() => {
+        showToast('Link: ' + shareUrl);
+      });
+    } else {
+      showToast('Link: ' + shareUrl);
+    }
+  };
+  document.body.appendChild(modal);
+}
+
 function renderCart() {
   updateCartBadge();
   const el = document.getElementById('cartContent');
@@ -2238,32 +2363,63 @@ function renderCart() {
   const amounts = { subtotal, pixTotal, pixSavings, installment };
 
   el.innerHTML = `
+    <div class="cart-device-sync-banner" id="cartSyncBanner">
+      <div class="sync-banner-info">
+        <span class="sync-banner-icon">📱</span>
+        <div class="sync-banner-text">
+          <b>Acessando do computador?</b>
+          <p>Abra este mesmo carrinho no seu celular em segundos escaneando o QR Code.</p>
+        </div>
+      </div>
+      <button type="button" class="btn-sync-mobile" id="openMobileSyncModalBtn">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="5" y="2" width="14" height="20" rx="2" ry="2"></rect><line x1="12" y1="18" x2="12.01" y2="18"></line></svg>
+        <span>Abrir no Celular</span>
+      </button>
+    </div>
+
     <div class="cart-items">
       ${cart.map(i => {
         const itemImg = getCartItemImage(i);
+        const itemPixPrice = i.price * (1 - PIX_DISCOUNT_RATE);
+        const itemTotal = i.price * i.quantity;
         return `
-        <div class="cart-row" data-id="${i.productId}">
+        <div class="cart-row modern-cart-card" data-id="${i.productId}">
           <div class="cart-item-thumb">
+            <span class="cart-thumb-badge">-4% PIX</span>
             <img src="${itemImg}" alt="${i.name}" loading="lazy" onerror="this.onerror=null; this.src='images/categorias/filtros.jpg';" />
           </div>
-          <div class="cart-item-info">
-            <b class="cart-item-title" title="${i.name}">${i.name}</b>
-            <div class="cart-item-unit">${money(i.price)} un.</div>
-            <div class="cart-item-actions">
+          <div class="cart-item-details">
+            <div class="cart-item-head">
+              <div class="cart-item-title-block">
+                <span class="cart-stock-badge">● Em estoque • Envio Imediato</span>
+                <b class="cart-item-title" title="${i.name}">${i.name}</b>
+              </div>
+              <button type="button" class="cart-btn-remove remove-item" title="Remover item do carrinho" aria-label="Remover item">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/>
+                </svg>
+              </button>
+            </div>
+            <div class="cart-item-pricing">
+              <div class="cart-pix-line">
+                <span class="cart-pix-price">${money(itemPixPrice)}</span>
+                <span class="cart-pix-pill">no Pix</span>
+              </div>
+              <div class="cart-unit-subtext">
+                ${money(i.price)} un. ou em até 12x
+              </div>
+            </div>
+            <div class="cart-item-footer">
               <div class="cart-qty-pill">
                 <button type="button" class="qty-minus" title="Diminuir quantidade">−</button>
                 <span class="qty-value">${i.quantity}</span>
                 <button type="button" class="qty-plus" title="Aumentar quantidade">+</button>
               </div>
-              <button type="button" class="remove-item" title="Remover item">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>
-                <span>Remover</span>
-              </button>
+              <div class="cart-item-subtotal">
+                <span class="subtotal-label">Subtotal:</span>
+                <span class="subtotal-amount">${money(itemTotal)}</span>
+              </div>
             </div>
-          </div>
-          <div class="cart-item-subtotal">
-            <span class="subtotal-label">Subtotal:</span>
-            <span class="subtotal-amount">${money(i.price * i.quantity)}</span>
           </div>
         </div>`;
       }).join('')}
@@ -2334,6 +2490,8 @@ function renderCart() {
     <button class="btn" id="checkoutBtn" style="width:100%;margin-top:18px">FINALIZAR PEDIDO</button>
     <div class="fp-error" id="checkoutError" style="display:none;margin-top:10px"></div>
   `;
+
+  el.querySelector('#openMobileSyncModalBtn')?.addEventListener('click', openMobileSyncModal);
 
   el.querySelectorAll('.cart-row').forEach(row => {
     const id = row.dataset.id;

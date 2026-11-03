@@ -199,10 +199,7 @@ html,body{scrollbar-color:#3a3d43 #0b0c0f}
   .product .btn,.card.add-cart{width:100%}
   .products .btn{width:100%}
 
-  .cart-row{flex-wrap:wrap;gap:8px!important}
-  .cart-row > div:first-child{flex:1 1 100%;order:1}
-  .cart-row .qty-minus,.cart-row .qty-plus{width:34px;height:34px;order:2}
-  .cart-row .remove-item{order:4;margin-left:auto}
+  /* Regra legada de carrinho neutralizada */
 
   .fp-whatsapp-float{width:50px;height:50px;right:16px;bottom:84px !important;z-index:2147483647 !important}
   .fp-whatsapp-float svg{width:26px;height:26px}
@@ -2183,15 +2180,7 @@ html, body {
     font-size: 13.5px !important;
   }
 
-  /* Carrinho no Mobile */
-  .cart-row {
-    flex-direction: column !important;
-    align-items: flex-start !important;
-    gap: 8px !important;
-  }
-  .cart-row > div:first-child {
-    min-width: 100% !important;
-  }
+  /* Regra legada de carrinho mobile neutralizada */
 
   /* Formulários no Mobile (evita auto-zoom do Safari) */
   input, select, textarea {
@@ -7370,119 +7359,481 @@ body.tema-claro .product .part-photo {
   gap: 12px !important;
 }
 
-/* Card individual de item no carrinho */
-.cart-row {
-  background: #ffffff !important;
-  border: 1px solid #e2e8f0 !important;
+/* ==========================================================================
+   CARDS DE PRODUTO DO CARRINHO — DESIGN MODERNO, VÍVIDO E IMAGEM EM DESTAQUE
+   ========================================================================== */
+
+/* Banner de Sincronização Celular/Desktop */
+.cart-device-sync-banner {
+  background: linear-gradient(135deg, #f0fdf4 0%, #e0f2fe 100%) !important;
+  border: 1.5px solid #86efac !important;
   border-radius: 14px !important;
-  padding: 14px 16px !important;
-  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.04) !important;
+  padding: 12px 16px !important;
+  margin-bottom: 16px !important;
   display: flex !important;
   align-items: center !important;
-  gap: 14px !important;
-  position: relative !important;
-  transition: border-color 0.15s ease !important;
+  justify-content: space-between !important;
+  gap: 12px !important;
+  box-shadow: 0 2px 10px rgba(22, 163, 74, 0.08) !important;
 }
 
-body:not(.tema-claro) .cart-row {
-  background: #12151b !important;
-  border-color: #282d38 !important;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25) !important;
+body:not(.tema-claro) .cart-device-sync-banner {
+  background: linear-gradient(135deg, #0d2818 0%, #082f49 100%) !important;
+  border-color: #166534 !important;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3) !important;
 }
 
-/* Miniatura da foto da peça */
-.cart-item-thumb {
-  width: 72px !important;
-  height: 72px !important;
-  min-width: 72px !important;
-  border-radius: 10px !important;
-  overflow: hidden !important;
-  background: #f8fafc !important;
-  border: 1px solid #e2e8f0 !important;
+.sync-banner-info {
   display: flex !important;
   align-items: center !important;
-  justify-content: center !important;
-  padding: 4px !important;
+  gap: 12px !important;
+  min-width: 0 !important;
+}
+
+.sync-banner-icon {
+  font-size: 26px !important;
+  line-height: 1 !important;
   flex-shrink: 0 !important;
 }
 
+.sync-banner-text {
+  min-width: 0 !important;
+}
+
+.sync-banner-text b {
+  display: block !important;
+  font-size: 13.5px !important;
+  font-weight: 800 !important;
+  color: #14532d !important;
+  line-height: 1.3 !important;
+}
+
+body:not(.tema-claro) .sync-banner-text b {
+  color: #86efac !important;
+}
+
+.sync-banner-text p {
+  font-size: 12px !important;
+  color: #166534 !important;
+  margin: 2px 0 0 !important;
+  line-height: 1.35 !important;
+}
+
+body:not(.tema-claro) .sync-banner-text p {
+  color: #bbf7d0 !important;
+}
+
+.btn-sync-mobile {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+  background: #16a34a !important;
+  color: #ffffff !important;
+  font-size: 13px !important;
+  font-weight: 800 !important;
+  padding: 9px 14px !important;
+  border-radius: 9px !important;
+  border: none !important;
+  cursor: pointer !important;
+  white-space: nowrap !important;
+  flex-shrink: 0 !important;
+  box-shadow: 0 2px 8px rgba(22, 163, 74, 0.3) !important;
+  transition: all 0.15s ease !important;
+}
+
+.btn-sync-mobile:hover {
+  background: #15803d !important;
+  transform: translateY(-1px) !important;
+  box-shadow: 0 4px 12px rgba(22, 163, 74, 0.4) !important;
+}
+
+/* Modal de Sincronização Mobile */
+.cart-sync-modal-backdrop {
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  bottom: 0 !important;
+  background: rgba(15, 23, 42, 0.75) !important;
+  backdrop-filter: blur(4px) !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  z-index: 99999 !important;
+  padding: 16px !important;
+  animation: fadeIn 0.2s ease !important;
+}
+
+.cart-sync-modal {
+  background: #ffffff !important;
+  border-radius: 20px !important;
+  max-width: 400px !important;
+  width: 100% !important;
+  padding: 24px !important;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3) !important;
+  text-align: center !important;
+  position: relative !important;
+  border: 1px solid #e2e8f0 !important;
+}
+
+body:not(.tema-claro) .cart-sync-modal {
+  background: #14171f !important;
+  border-color: #282d38 !important;
+  color: #f8fafc !important;
+}
+
+.cart-sync-modal-close {
+  position: absolute !important;
+  top: 14px !important;
+  right: 14px !important;
+  background: #f1f5f9 !important;
+  border: none !important;
+  width: 32px !important;
+  height: 32px !important;
+  border-radius: 50% !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  cursor: pointer !important;
+  font-size: 16px !important;
+  font-weight: 700 !important;
+  color: #64748b !important;
+}
+
+body:not(.tema-claro) .cart-sync-modal-close {
+  background: #1e2430 !important;
+  color: #cbd5e1 !important;
+}
+
+.cart-sync-modal-title {
+  font-size: 18px !important;
+  font-weight: 900 !important;
+  color: #0f172a !important;
+  margin: 0 0 6px !important;
+}
+
+body:not(.tema-claro) .cart-sync-modal-title {
+  color: #ffffff !important;
+}
+
+.cart-sync-modal-subtitle {
+  font-size: 13px !important;
+  color: #64748b !important;
+  margin: 0 0 16px !important;
+  line-height: 1.4 !important;
+}
+
+body:not(.tema-claro) .cart-sync-modal-subtitle {
+  color: #94a3b8 !important;
+}
+
+.cart-sync-qr-wrap {
+  background: #ffffff !important;
+  padding: 12px !important;
+  border-radius: 14px !important;
+  display: inline-block !important;
+  box-shadow: 0 4px 14px rgba(15, 23, 42, 0.08) !important;
+  border: 1.5px solid #e2e8f0 !important;
+  margin-bottom: 16px !important;
+}
+
+.cart-sync-qr-wrap img {
+  display: block !important;
+  width: 180px !important;
+  height: 180px !important;
+}
+
+.cart-sync-actions {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 8px !important;
+}
+
+.btn-sync-copy,
+.btn-sync-whatsapp {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 8px !important;
+  padding: 11px 16px !important;
+  border-radius: 10px !important;
+  font-size: 13.5px !important;
+  font-weight: 800 !important;
+  cursor: pointer !important;
+  text-decoration: none !important;
+  border: none !important;
+  transition: all 0.15s ease !important;
+}
+
+.btn-sync-copy {
+  background: #f1f5f9 !important;
+  color: #0f172a !important;
+}
+
+body:not(.tema-claro) .btn-sync-copy {
+  background: #1e2430 !important;
+  color: #f8fafc !important;
+}
+
+.btn-sync-whatsapp {
+  background: #25d366 !important;
+  color: #ffffff !important;
+}
+
+/* Card individual do item no carrinho */
+.cart-row,
+.cart-row.modern-cart-card {
+  background: #ffffff !important;
+  border: 1px solid #e2e8f0 !important;
+  border-radius: 16px !important;
+  padding: 12px !important;
+  box-shadow: 0 4px 16px rgba(15, 23, 42, 0.05) !important;
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: stretch !important;
+  gap: 14px !important;
+  position: relative !important;
+  min-height: 130px !important;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease !important;
+}
+
+body:not(.tema-claro) .cart-row,
+body:not(.tema-claro) .cart-row.modern-cart-card {
+  background: #14171f !important;
+  border-color: #282d38 !important;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.35) !important;
+}
+
+.cart-row:hover {
+  border-color: #cbd5e1 !important;
+}
+
+body:not(.tema-claro) .cart-row:hover {
+  border-color: #3b4354 !important;
+}
+
+/* Foto do produto em destaque (preenche altura com vida e brilho) */
+.cart-item-thumb {
+  width: 120px !important;
+  min-width: 120px !important;
+  max-width: 120px !important;
+  min-height: 120px !important;
+  height: auto !important;
+  align-self: stretch !important;
+  border-radius: 12px !important;
+  overflow: hidden !important;
+  background: #0f172a !important;
+  border: 1px solid #e2e8f0 !important;
+  position: relative !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  flex-shrink: 0 !important;
+  order: 0 !important;
+}
+
 body:not(.tema-claro) .cart-item-thumb {
-  background: #181c24 !important;
+  background: #090a0d !important;
   border-color: #282d38 !important;
 }
 
 .cart-item-thumb img {
   width: 100% !important;
   height: 100% !important;
-  object-fit: contain !important;
+  object-fit: cover !important;
   display: block !important;
+  transition: transform 0.25s ease !important;
 }
 
-/* Informações do item */
-.cart-item-info {
+.cart-row:hover .cart-item-thumb img {
+  transform: scale(1.04) !important;
+}
+
+/* Badge de desconto no Pix sobre a foto */
+.cart-thumb-badge {
+  position: absolute !important;
+  top: 6px !important;
+  left: 6px !important;
+  background: #16a34a !important;
+  color: #ffffff !important;
+  font-size: 10px !important;
+  font-weight: 900 !important;
+  padding: 3px 6px !important;
+  border-radius: 6px !important;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.35) !important;
+  z-index: 2 !important;
+  letter-spacing: 0.3px !important;
+  line-height: 1 !important;
+}
+
+/* Detalhes do item (lado direito) */
+.cart-item-details {
   flex: 1 1 auto !important;
   min-width: 0 !important;
+  display: flex !important;
+  flex-direction: column !important;
+  justify-content: space-between !important;
+  gap: 6px !important;
+  order: 1 !important;
+}
+
+/* Cabeçalho do item (título + botão remover) */
+.cart-item-head {
+  display: flex !important;
+  align-items: flex-start !important;
+  justify-content: space-between !important;
+  gap: 8px !important;
+}
+
+.cart-item-title-block {
+  min-width: 0 !important;
+  flex: 1 1 auto !important;
+}
+
+.cart-stock-badge {
+  display: inline-block !important;
+  font-size: 11px !important;
+  font-weight: 700 !important;
+  color: #16a34a !important;
+  margin-bottom: 2px !important;
+  line-height: 1.2 !important;
+}
+
+body:not(.tema-claro) .cart-stock-badge {
+  color: #4ade80 !important;
 }
 
 .cart-item-title {
   font-size: 14px !important;
-  font-weight: 700 !important;
+  font-weight: 800 !important;
   color: #0f172a !important;
   line-height: 1.35 !important;
+  margin: 0 !important;
   display: -webkit-box !important;
   -webkit-line-clamp: 2 !important;
   -webkit-box-orient: vertical !important;
   overflow: hidden !important;
-  margin: 0 !important;
 }
 
 body:not(.tema-claro) .cart-item-title {
-  color: #f1f5f9 !important;
+  color: #f8fafc !important;
 }
 
-.cart-item-unit {
-  font-size: 12.5px !important;
+/* Botão de remoção (lixeira elegante no topo direito) */
+.cart-btn-remove {
+  width: 32px !important;
+  height: 32px !important;
+  border-radius: 8px !important;
+  border: 1px solid #fee2e2 !important;
+  background: #fff5f5 !important;
+  color: #ef4444 !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  cursor: pointer !important;
+  transition: all 0.15s ease !important;
+  flex-shrink: 0 !important;
+  padding: 0 !important;
+}
+
+.cart-btn-remove:hover {
+  background: #fee2e2 !important;
+  color: #dc2626 !important;
+  transform: scale(1.05) !important;
+}
+
+body:not(.tema-claro) .cart-btn-remove {
+  background: rgba(239, 68, 68, 0.12) !important;
+  border-color: rgba(239, 68, 68, 0.25) !important;
+  color: #f87171 !important;
+}
+
+body:not(.tema-claro) .cart-btn-remove:hover {
+  background: rgba(239, 68, 68, 0.22) !important;
+  color: #ef4444 !important;
+}
+
+/* Preços em destaque no Pix e Cartão */
+.cart-item-pricing {
+  margin: 2px 0 !important;
+}
+
+.cart-pix-line {
+  display: flex !important;
+  align-items: baseline !important;
+  gap: 6px !important;
+}
+
+.cart-pix-price {
+  font-size: 17px !important;
+  font-weight: 900 !important;
+  color: #16a34a !important;
+  letter-spacing: -0.3px !important;
+  line-height: 1.2 !important;
+}
+
+body:not(.tema-claro) .cart-pix-price {
+  color: #22c55e !important;
+}
+
+.cart-pix-pill {
+  font-size: 11px !important;
+  font-weight: 800 !important;
+  color: #15803d !important;
+  background: #dcfce7 !important;
+  padding: 2px 6px !important;
+  border-radius: 5px !important;
+  line-height: 1.2 !important;
+}
+
+body:not(.tema-claro) .cart-pix-pill {
+  color: #4ade80 !important;
+  background: rgba(34, 197, 94, 0.18) !important;
+}
+
+.cart-unit-subtext {
+  font-size: 12px !important;
   color: #64748b !important;
-  margin-top: 3px !important;
   font-weight: 600 !important;
+  margin-top: 1px !important;
 }
 
-body:not(.tema-claro) .cart-item-unit {
+body:not(.tema-claro) .cart-unit-subtext {
   color: #94a3b8 !important;
 }
 
-/* Ações (quantidade e remoção) */
-.cart-item-actions {
+/* Rodapé do item: Seletor de quantidade e Subtotal alinhados */
+.cart-item-footer {
   display: flex !important;
   align-items: center !important;
-  gap: 12px !important;
-  margin-top: 8px !important;
-  flex-wrap: wrap !important;
+  justify-content: space-between !important;
+  gap: 8px !important;
+  margin-top: 4px !important;
 }
 
-/* Pílula de quantidade [+] [-] */
 .cart-qty-pill {
   display: inline-flex !important;
   align-items: center !important;
-  border: 1px solid #e2e8f0 !important;
+  border: 1.5px solid #cbd5e1 !important;
   border-radius: 8px !important;
   background: #f8fafc !important;
-  padding: 2px !important;
+  padding: 1px !important;
+  height: 32px !important;
 }
 
 body:not(.tema-claro) .cart-qty-pill {
-  border-color: #282d38 !important;
-  background: #181c24 !important;
+  border-color: #334155 !important;
+  background: #1a1e27 !important;
 }
 
 .cart-qty-pill .qty-minus,
 .cart-qty-pill .qty-plus {
-  width: 26px !important;
-  height: 26px !important;
+  width: 28px !important;
+  height: 28px !important;
   border: none !important;
   background: transparent !important;
   color: #0f172a !important;
-  font-size: 15px !important;
+  font-size: 16px !important;
   font-weight: 800 !important;
   cursor: pointer !important;
   border-radius: 6px !important;
@@ -7506,7 +7857,7 @@ body:not(.tema-claro) .cart-qty-pill .qty-plus {
 
 body:not(.tema-claro) .cart-qty-pill .qty-minus:hover,
 body:not(.tema-claro) .cart-qty-pill .qty-plus:hover {
-  background: #282d38 !important;
+  background: #2d3748 !important;
   color: #ffffff !important;
 }
 
@@ -7522,49 +7873,25 @@ body:not(.tema-claro) .cart-qty-pill .qty-value {
   color: #f8fafc !important;
 }
 
-/* Botão Remover */
-.cart-row .remove-item {
-  display: inline-flex !important;
-  align-items: center !important;
-  gap: 4px !important;
-  border: none !important;
-  background: transparent !important;
-  color: #ef4444 !important;
-  font-size: 12.5px !important;
-  font-weight: 600 !important;
-  cursor: pointer !important;
-  padding: 4px 6px !important;
-  border-radius: 6px !important;
-  transition: all 0.15s ease !important;
-}
-
-.cart-row .remove-item:hover {
-  color: #dc2626 !important;
-  background: #fee2e2 !important;
-}
-
-body:not(.tema-claro) .cart-row .remove-item:hover {
-  background: rgba(239, 68, 68, 0.15) !important;
-}
-
-/* Subtotal do item */
 .cart-item-subtotal {
   text-align: right !important;
   display: flex !important;
-  flex-direction: column !important;
-  align-items: flex-end !important;
-  min-width: 90px !important;
-  flex-shrink: 0 !important;
+  align-items: baseline !important;
+  gap: 4px !important;
 }
 
 .cart-item-subtotal .subtotal-label {
-  display: none !important;
-  font-size: 12px !important;
+  font-size: 11.5px !important;
   color: #64748b !important;
+  font-weight: 600 !important;
+}
+
+body:not(.tema-claro) .cart-item-subtotal .subtotal-label {
+  color: #94a3b8 !important;
 }
 
 .cart-item-subtotal .subtotal-amount {
-  font-size: 16px !important;
+  font-size: 15.5px !important;
   font-weight: 900 !important;
   color: #0f172a !important;
 }
@@ -7573,28 +7900,48 @@ body:not(.tema-claro) .cart-item-subtotal .subtotal-amount {
   color: #ffffff !important;
 }
 
-/* Responsividade Mobile do item do carrinho */
-@media (max-width: 540px) {
-  .cart-row {
-    display: grid !important;
-    grid-template-columns: 72px 1fr !important;
-    gap: 12px !important;
-    padding: 12px !important;
+/* Adaptação inteligente para telas menores (mantém sempre 2 colunas horizontais) */
+@media (max-width: 460px) {
+  .cart-row,
+  .cart-row.modern-cart-card {
+    padding: 10px !important;
+    gap: 10px !important;
   }
-  .cart-item-subtotal {
-    grid-column: 1 / -1 !important;
-    flex-direction: row !important;
-    justify-content: space-between !important;
-    align-items: center !important;
-    border-top: 1px solid #f1f5f9 !important;
-    padding-top: 8px !important;
-    margin-top: 4px !important;
+  .cart-item-thumb {
+    width: 105px !important;
+    min-width: 105px !important;
+    max-width: 105px !important;
+    min-height: 115px !important;
   }
-  body:not(.tema-claro) .cart-item-subtotal {
-    border-top-color: #202530 !important;
+  .cart-item-title {
+    font-size: 13px !important;
   }
-  .cart-item-subtotal .subtotal-label {
-    display: inline !important;
+  .cart-pix-price {
+    font-size: 15.5px !important;
+  }
+  .cart-item-subtotal .subtotal-amount {
+    font-size: 14.5px !important;
+  }
+  .cart-qty-pill {
+    height: 30px !important;
+  }
+  .cart-qty-pill .qty-minus,
+  .cart-qty-pill .qty-plus {
+    width: 25px !important;
+    height: 25px !important;
+  }
+  .cart-btn-remove {
+    width: 28px !important;
+    height: 28px !important;
+  }
+}
+
+@media (max-width: 360px) {
+  .cart-item-thumb {
+    width: 95px !important;
+    min-width: 95px !important;
+    max-width: 95px !important;
+    min-height: 105px !important;
   }
 }
 
