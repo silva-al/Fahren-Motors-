@@ -1,3 +1,48 @@
+
+// Estado global de categoria ativa no catálogo e mapa de normalização canônica
+let activeCatalogCategory = '';
+const LOJA_CATEGORY_MAP = {
+  freio: 'Freios',
+  freios: 'Freios',
+  eletrica: 'Elétrica e ignição',
+  'elétrica': 'Elétrica e ignição',
+  ignicao: 'Elétrica e ignição',
+  'ignição': 'Elétrica e ignição',
+  'eletrica e ignicao': 'Elétrica e ignição',
+  'elétrica e ignição': 'Elétrica e ignição',
+  suspensao: 'Suspensão',
+  'suspensão': 'Suspensão',
+  sensor: 'Sensores e injeção',
+  sensores: 'Sensores e injeção',
+  injecao: 'Sensores e injeção',
+  'injeção': 'Sensores e injeção',
+  'sensores e injeção': 'Sensores e injeção',
+  'sensores e injecao': 'Sensores e injeção',
+  filtro: 'Filtros',
+  filtros: 'Filtros',
+  correia: 'Correias',
+  correias: 'Correias',
+  oleo: 'Óleos e fluidos',
+  'óleo': 'Óleos e fluidos',
+  oleos: 'Óleos e fluidos',
+  'óleos': 'Óleos e fluidos',
+  fluido: 'Óleos e fluidos',
+  fluidos: 'Óleos e fluidos',
+  'fluídos': 'Óleos e fluidos',
+  'óleos e fluidos': 'Óleos e fluidos',
+  'oleos e fluidos': 'Óleos e fluidos',
+  iluminacao: 'Iluminação',
+  'iluminação': 'Iluminação',
+  lampada: 'Iluminação',
+  'lâmpada': 'Iluminação'
+};
+
+function normalizeCatalogCategory(cat) {
+  if (!cat) return '';
+  const key = String(cat).toLowerCase().trim();
+  return LOJA_CATEGORY_MAP[key] || cat.trim();
+}
+
 // Fahren Motors — loja do cliente
 // Agora conectada a uma API real (Node + PostgreSQL) em vez de localStorage.
 // Mantém a mesma estrutura visual (telas, cores, cards) do protótipo original.
@@ -171,6 +216,7 @@ function show(id, opts = {}) {
 
   if (id === 'pecas') {
     if (!opts.keepFilter) {
+      activeCatalogCategory = '';
       const catInput = document.getElementById('catalogSearch');
       if (catInput) catInput.value = '';
       const catSelect = document.getElementById('filterCategory');
@@ -826,12 +872,12 @@ async function loadRecommendedProducts(product) {
 }
 
 async function goToCategory(category) {
-  show('pecas', { keepFilter: true });
+  activeCatalogCategory = normalizeCatalogCategory(category);
   const searchInput = document.getElementById('catalogSearch');
   if (searchInput) {
-    searchInput.value = category || '';
-    // Sem auto-focus no mobile
+    searchInput.value = '';
   }
+  show('pecas', { keepFilter: true });
   await loadCatalog();
 }
 
@@ -1432,6 +1478,12 @@ function initProductViewer() {
   }
 
   function touchStart(e) {
+    const slides = track.querySelectorAll('.gallery-slide');
+    if (slides.length <= 1) return; // Foto estática quando há apenas 1 foto da peça
+    if (e.touches && e.touches.length > 1) {
+      isDragging = false;
+      return;
+    }
     isDragging = true;
     startX = getPositionX(e);
     track.style.transition = 'none';
@@ -1439,6 +1491,12 @@ function initProductViewer() {
 
   function touchMove(e) {
     if (!isDragging) return;
+    const slides = track.querySelectorAll('.gallery-slide');
+    if (slides.length <= 1) return; // Foto 100% estática
+    if (e.touches && e.touches.length > 1) {
+      isDragging = false;
+      return;
+    }
     const currentX = getPositionX(e);
     const diff = currentX - startX;
     const offset = -currentSlide * slider.offsetWidth + diff;
@@ -1448,10 +1506,12 @@ function initProductViewer() {
   function touchEnd(e) {
     if (!isDragging) return;
     isDragging = false;
+    const slides = track.querySelectorAll('.gallery-slide');
+    if (slides.length <= 1) return;
     const endX = e.type.includes('mouse') ? e.pageX : (e.changedTouches ? e.changedTouches[0].clientX : startX);
     const diff = endX - startX;
 
-    if (diff < -40 && currentSlide < totalSlides - 1) {
+    if (diff < -40 && currentSlide < slides.length - 1) {
       updateGallery(currentSlide + 1);
     } else if (diff > 40 && currentSlide > 0) {
       updateGallery(currentSlide - 1);
@@ -1546,6 +1606,8 @@ function initProductViewer() {
 
   document.getElementById('ctrlFullscreen')?.addEventListener('click', openLightbox);
   document.getElementById('galleryZoomBtn')?.addEventListener('click', openLightbox);
+  document.getElementById('detailMainImg')?.addEventListener('click', openLightbox);
+  document.querySelector('.slide-img-wrap')?.addEventListener('click', openLightbox);
   lbOverlay?.addEventListener('click', () => closeLightbox(true));
   lbClose?.addEventListener('click', () => closeLightbox(true));
 
@@ -1687,9 +1749,22 @@ async function loadCatalog() {
   await loadCategories();
   const container = document.getElementById('catalogResults');
   if (!container) return;
+
+  const catBar = document.getElementById('activeCategoryBarCatalog');
+  const catTitle = document.getElementById('activeCategoryTitleCatalog');
+  if (catBar && catTitle) {
+    if (activeCatalogCategory) {
+      catTitle.textContent = activeCatalogCategory;
+      catBar.style.display = 'flex';
+    } else {
+      catBar.style.display = 'none';
+      catTitle.textContent = '';
+    }
+  }
+
   const params = new URLSearchParams();
   const q = document.getElementById('catalogSearch')?.value.trim();
-  const category = document.getElementById('filterCategory')?.value;
+  const category = activeCatalogCategory || document.getElementById('filterCategory')?.value || '';
   if (q) params.set('q', q);
   if (category) params.set('category', category);
 
@@ -1705,12 +1780,15 @@ async function loadCatalog() {
       const qLower = (q || '').toLowerCase();
       const catLower = (category || '').toLowerCase();
       prods = CATALOG_FALLBACK_PRODUCTS.filter(p => {
-        const matchQ = !qLower || (p.name && p.name.toLowerCase().includes(qLower)) ||
-                                  (p.description && p.description.toLowerCase().includes(qLower)) ||
-                                  (p.compatibility && p.compatibility.toLowerCase().includes(qLower)) ||
-                                  (p.code && p.code.toLowerCase().includes(qLower));
-        const matchCat = !catLower || (p.category && p.category.toLowerCase() === catLower);
-        return matchQ && matchCat;
+        const pCat = (p.category || '').toLowerCase();
+        const pName = (p.name || '').toLowerCase();
+        const pDesc = (p.description || '').toLowerCase();
+        const pComp = (p.compatibility || '').toLowerCase();
+        const pCode = (p.code || '').toLowerCase();
+
+        const matchCat = !catLower || pCat === catLower || pCat.includes(catLower) || catLower.includes(pCat);
+        const matchQ = !qLower || pName.includes(qLower) || pDesc.includes(qLower) || pComp.includes(qLower) || pCode.includes(qLower) || pCat.includes(qLower);
+        return matchCat && matchQ;
       });
     }
 
@@ -2435,9 +2513,29 @@ init();
   hSearchInM?.addEventListener('keydown', (e) => { if (e.key === 'Enter') runHeaderSearch(hSearchInM); });
 
   // Grade de categorias na home
+  // Limpar filtro de categoria selecionada
+  document.getElementById('activeCategoryClearBtnCatalog')?.addEventListener('click', () => {
+    activeCatalogCategory = '';
+    const catBar = document.getElementById('activeCategoryBarCatalog');
+    if (catBar) catBar.style.display = 'none';
+    loadCatalog();
+  });
+
+  // Grade de categorias na home (clique no card, imagem ou setinha busca imediatamente)
   document.querySelectorAll('.cat-grid-item[data-cat]').forEach((item) => {
-    item.addEventListener('click', () => {
-      if (typeof goToCategory === 'function') goToCategory(item.dataset.cat || '');
+    const handleCategorySelect = (e) => {
+      e?.preventDefault?.();
+      const cat = item.dataset.cat || item.getAttribute('data-cat') || '';
+      goToCategory(cat);
+    };
+    item.addEventListener('click', handleCategorySelect);
+    item.querySelectorAll('img, .cat-card-thumb, .cat-card-body, .cat-card-arrow-btn').forEach((child) => {
+      child.addEventListener('click', handleCategorySelect);
+    });
+    item.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        handleCategorySelect(e);
+      }
     });
   });
 

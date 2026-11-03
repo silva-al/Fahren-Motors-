@@ -48,6 +48,49 @@ function serialize(row) {
 // Busca avançada: texto (nome/código), categoria, faixa de preço, disponibilidade, tipo.
 const { syncCatalog } = require('../sync-catalog');
 
+const CATEGORY_CANONICAL_MAP = {
+  freio: 'Freios',
+  freios: 'Freios',
+  eletrica: 'Elétrica e ignição',
+  'elétrica': 'Elétrica e ignição',
+  ignicao: 'Elétrica e ignição',
+  'ignição': 'Elétrica e ignição',
+  'eletrica e ignicao': 'Elétrica e ignição',
+  'elétrica e ignição': 'Elétrica e ignição',
+  suspensao: 'Suspensão',
+  'suspensão': 'Suspensão',
+  sensor: 'Sensores e injeção',
+  sensores: 'Sensores e injeção',
+  injecao: 'Sensores e injeção',
+  'injeção': 'Sensores e injeção',
+  'sensores e injeção': 'Sensores e injeção',
+  'sensores e injecao': 'Sensores e injeção',
+  filtro: 'Filtros',
+  filtros: 'Filtros',
+  correia: 'Correias',
+  correias: 'Correias',
+  oleo: 'Óleos e fluidos',
+  'óleo': 'Óleos e fluidos',
+  oleos: 'Óleos e fluidos',
+  'óleos': 'Óleos e fluidos',
+  fluido: 'Óleos e fluidos',
+  fluidos: 'Óleos e fluidos',
+  'fluídos': 'Óleos e fluidos',
+  'óleos e fluidos': 'Óleos e fluidos',
+  'oleos e fluidos': 'Óleos e fluidos',
+  iluminacao: 'Iluminação',
+  'iluminação': 'Iluminação',
+  lampada: 'Iluminação',
+  'lâmpada': 'Iluminação'
+};
+
+function normalizeServerCategory(raw) {
+  if (!raw) return '';
+  const key = String(raw).toLowerCase().trim();
+  return CATEGORY_CANONICAL_MAP[key] || raw.trim();
+}
+
+
 router.get('/', async (req, res) => {
   try {
     // Garante sincronização inicial do catálogo se o banco estiver vazio ou desatualizado
@@ -59,11 +102,12 @@ router.get('/', async (req, res) => {
 
     if (q) {
       params.push(`%${q.trim()}%`);
-      clauses.push(`(name ILIKE $${params.length} OR code ILIKE $${params.length} OR description ILIKE $${params.length} OR location ILIKE $${params.length} OR compatibility ILIKE $${params.length})`);
+      clauses.push(`(name ILIKE $` + params.length + ` OR code ILIKE $` + params.length + ` OR description ILIKE $` + params.length + ` OR location ILIKE $` + params.length + ` OR compatibility ILIKE $` + params.length + ` OR category ILIKE $` + params.length + `)`);
     }
     if (category) {
-      params.push(category);
-      clauses.push(`category = $${params.length}`);
+      const normCat = normalizeServerCategory(category);
+      params.push(`%${normCat}%`);
+      clauses.push(`category ILIKE $` + params.length);
     }
     if (type) {
       params.push(type);

@@ -231,4 +231,23 @@ it('deve conter o modal de tela cheia (lightbox) com controles de zoom e fechar'
     expect(js).toContain('// Itens únicos sem repetições infinitas');
     expect(js).not.toContain('while (baseList.length < 8)');
   });
+  it('deve conter a barra de categoria ativa no catalogo e regras de foto preenchendo o card', () => {
+    const htmlPath = path.join(__dirname, '../public/loja/index.html');
+    const html = fs.readFileSync(htmlPath, 'utf8');
+    expect(html).toContain('id="activeCategoryBarCatalog"');
+    expect(html).toContain('id="activeCategoryClearBtnCatalog"');
+
+    const cssPath = path.join(__dirname, '../public/loja/styles.css');
+    const css = fs.readFileSync(cssPath, 'utf8');
+    expect(css).toContain('.active-category-bar');
+    expect(css).toContain('.product .part-photo');
+    expect(css).toContain('object-fit: cover !important');
+  });
+
+  it('deve validar que a foto da peça no detalhe fica estática e não arrasta se houver apenas 1 foto', () => {
+    const jsPath = path.join(__dirname, '../public/loja/loja.js');
+    const js = fs.readFileSync(jsPath, 'utf8');
+    expect(js).toContain('if (slides.length <= 1) return;');
+    expect(js).toContain('activeCatalogCategory = normalizeCatalogCategory');
+  });
 });

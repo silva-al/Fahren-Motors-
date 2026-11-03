@@ -7148,3 +7148,155 @@ body:not(.tema-claro) .fp-rec-card-name {
     font-size: 17.5px !important;
   }
 }
+
+
+/* ==========================================================================
+   BARRA DE CATEGORIA ATIVA NO CATÁLOGO
+   ========================================================================== */
+.active-category-bar {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  gap: 12px !important;
+  background: linear-gradient(135deg, #181b22 0%, #0e1015 100%) !important;
+  border: 1.5px solid rgba(237, 28, 36, 0.55) !important;
+  color: #ffffff !important;
+  border-radius: 14px !important;
+  padding: 12px 18px !important;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4), 0 0 14px rgba(237, 28, 36, 0.15) !important;
+}
+.active-category-info {
+  display: flex !important;
+  align-items: center !important;
+  gap: 10px !important;
+}
+.active-category-icon {
+  font-size: 20px !important;
+  line-height: 1 !important;
+}
+.active-category-label {
+  color: #ffffff !important;
+  font-weight: 800 !important;
+  font-size: 13.5px !important;
+  margin-right: 6px !important;
+}
+.active-category-title {
+  color: #ff4d53 !important;
+  font-weight: 800 !important;
+  font-size: 14px !important;
+}
+.btn-clear-cat {
+  background: #ed1c24 !important;
+  border: none !important;
+  color: #ffffff !important;
+  font-size: 12.5px !important;
+  font-weight: 800 !important;
+  padding: 8px 16px !important;
+  border-radius: 20px !important;
+  box-shadow: 0 3px 12px rgba(237, 28, 36, 0.35) !important;
+  cursor: pointer !important;
+  transition: all 0.2s ease !important;
+  white-space: nowrap !important;
+  flex-shrink: 0 !important;
+}
+.btn-clear-cat:hover {
+  background: #c8151c !important;
+  color: #ffffff !important;
+  transform: translateY(-1px) !important;
+}
+
+body.tema-claro .active-category-bar {
+  background: #ffffff !important;
+  border: 1.5px solid rgba(237, 28, 36, 0.4) !important;
+  color: #0f172a !important;
+  box-shadow: 0 4px 14px rgba(15, 23, 42, 0.08) !important;
+}
+body.tema-claro .active-category-label {
+  color: #0f172a !important;
+}
+
+/* ==========================================================================
+   FOTOS QUE COMPLETAM TODO O CARD (SEM BORDAS OU ESPAÇOS SOBRANDO)
+   ========================================================================== */
+/* 1. Cards de Peças no Catálogo (#pecas .product .part-photo) */
+#pecas .product .part-photo,
+.product .part-photo {
+  padding: 0 !important;
+  margin: 0 !important;
+  overflow: hidden !important;
+  display: block !important;
+  background: #0b0d13 !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  border-radius: 12px !important;
+}
+body.tema-claro #pecas .product .part-photo,
+body.tema-claro .product .part-photo {
+  background: #f1f3f7 !important;
+  border: 1px solid #e2e8f0 !important;
+}
+#pecas .product .part-photo img,
+.product .part-photo img {
+  width: 100% !important;
+  height: 100% !important;
+  max-width: 100% !important;
+  max-height: 100% !important;
+  object-fit: cover !important;
+  object-position: center !important;
+  border-radius: inherit !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  display: block !important;
+  filter: none !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+
+/* 2. Cards de Categorias na Home (.cat-card-thumb) */
+.cat-card-thumb {
+  padding: 0 !important;
+  overflow: hidden !important;
+  background: #090a0d !important;
+}
+.cat-card-thumb img {
+  width: 100% !important;
+  height: 100% !important;
+  max-width: 100% !important;
+  max-height: 100% !important;
+  object-fit: cover !important;
+  object-position: center !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  display: block !important;
+}
+
+/* 3. Imagem no Detalhe do Produto (#produto: completa o card e fica estática) */
+.gallery-slide {
+  padding: 0 !important;
+  overflow: hidden !important;
+}
+.gallery-slide .slide-img-wrap {
+  width: 100% !important;
+  height: 100% !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  overflow: hidden !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  cursor: zoom-in !important;
+}
+#detailMainImg {
+  width: 100% !important;
+  height: 100% !important;
+  max-width: 100% !important;
+  max-height: 100% !important;
+  object-fit: cover !important;
+  object-position: center !important;
+  display: block !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  border-radius: inherit !important;
+  filter: none !important;
+  cursor: zoom-in !important;
+  pointer-events: auto !important;
+}
