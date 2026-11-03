@@ -514,28 +514,113 @@ function updateDashboardMetrics() {
 
   renderBarChart();
   renderRecentOrders();
+  renderCategoryDistribution();
 }
 
 function renderBarChart() {
   const wrap = document.getElementById('dashBarChart');
   if (!wrap) return;
 
-  const days = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
-  const todayIdx = new Date().getDay();
-  const mockCounts = [2, 5, 8, 4, 11, 7, 9]; // Simulação proporcional de fluxo
-  // Ajusta o dia atual com os pedidos reais
-  mockCounts[todayIdx] = Math.max(allOrders.length, 3);
+  const daysShort = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
+  const today = new Date();
 
-  const maxVal = Math.max(...mockCounts, 10);
+  // Constrói os últimos 7 dias em ordem cronológica real
+  const last7Days = [];
+  for (let i = 6; i >= 0; i--) {
+    const d = new Date(today);
+    d.setDate(today.getDate() - i);
+    const dateStr = d.toISOString().slice(0, 10);
+    const dayName = daysShort[d.getDay()];
+    last7Days.push({
+      dateStr,
+      dayName,
+      isToday: i === 0,
+      count: 0,
+      revenue: 0
+    });
+  }
 
-  wrap.innerHTML = mockCounts.map((val, idx) => {
-    const heightPct = Math.round((val / maxVal) * 100);
-    const dayName = days[idx];
-    const isToday = idx === todayIdx;
+  // Acumula os pedidos reais cadastrados
+  allOrders.forEach(o => {
+    if (o.status === 'cancelado') return;
+    const orderDate = (o.createdAt || '').slice(0, 10);
+    const bucket = last7Days.find(d => d.dateStr === orderDate);
+    if (bucket) {
+      bucket.count += 1;
+      bucket.revenue += Number(o.total) || 0;
+    }
+  });
+
+  const maxVal = Math.max(...last7Days.map(d => d.count), 4);
+
+  wrap.innerHTML = `
+    <div class="dash-chart-bars-container">
+      ${last7Days.map(d => {
+        const heightPct = Math.max(14, Math.round((d.count / maxVal) * 100));
+        return `
+          <div class="bar-col ${d.isToday ? 'today' : ''}" title="${d.dayName} (${d.dateStr}): ${d.count} pedido(s) • ${money(d.revenue)}">
+            <div class="bar-tooltip-pop">${d.count} ped.<br/><strong>${money(d.revenue)}</strong></div>
+            <div class="bar-track">
+              <div class="bar-fill" style="height:${heightPct}%;"></div>
+            </div>
+            <span class="bar-day">${d.isToday ? 'Hoje' : d.dayName}</span>
+          </div>
+        `;
+      }).join('')}
+    </div>
+  `;
+}
+
+function renderCategoryDistribution() {
+  const wrap = document.getElementById('dashCategoryDistribution');
+  if (!wrap) return;
+
+  const categoryCounts = {};
+  let totalStockUnits = 0;
+
+  allProducts.forEach(p => {
+    if (p.active === false) return;
+    const cat = p.category || 'Outros';
+    const qty = Number(p.stockQty) || 0;
+    categoryCounts[cat] = (categoryCounts[cat] || 0) + qty;
+    totalStockUnits += qty;
+  });
+
+  const sortedCats = Object.entries(categoryCounts)
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 5);
+
+  if (!sortedCats.length) {
+    wrap.innerHTML = '<p class="text-muted" style="padding:16px 0;font-size:13px;">Nenhum produto cadastrado no catálogo.</p>';
+    return;
+  }
+
+  const colorPalettes = [
+    { bar: '#ed1c24', glow: 'rgba(237, 28, 36, 0.3)' },
+    { bar: '#3b82f6', glow: 'rgba(59, 130, 246, 0.3)' },
+    { bar: '#10b981', glow: 'rgba(16, 185, 129, 0.3)' },
+    { bar: '#f59e0b', glow: 'rgba(245, 158, 11, 0.3)' },
+    { bar: '#8b5cf6', glow: 'rgba(139, 92, 246, 0.3)' }
+  ];
+
+  wrap.innerHTML = sortedCats.map(([cat, qty], idx) => {
+    const pct = totalStockUnits > 0 ? Math.round((qty / totalStockUnits) * 100) : 0;
+    const col = colorPalettes[idx % colorPalettes.length];
     return `
-      <div class="bar-col">
-        <div class="bar-fill" data-val="${val}" style="height:${heightPct}%;${isToday ? 'background:linear-gradient(180deg,#00e676 0%,rgba(0,230,118,.25) 100%);' : ''}"></div>
-        <span class="bar-day" style="${isToday ? 'color:#00e676;font-weight:800' : ''}">${dayName}</span>
+      <div class="cat-mix-row">
+        <div class="cat-mix-header">
+          <span class="cat-mix-name">
+            <span class="cat-color-dot" style="background:${col.bar};box-shadow:0 0 6px ${col.glow};"></span>
+            ${cat}
+          </span>
+          <span class="cat-mix-vals">
+            <strong>${qty} un.</strong>
+            <small>(${pct}%)</small>
+          </span>
+        </div>
+        <div class="cat-mix-track">
+          <div class="cat-mix-fill" style="width:${pct}%;background:${col.bar};"></div>
+        </div>
       </div>
     `;
   }).join('');
@@ -545,22 +630,36 @@ function renderRecentOrders() {
   const wrap = document.getElementById('dashRecentOrders');
   if (!wrap) return;
   if (!allOrders.length) {
-    wrap.innerHTML = '<p style="color:var(--text-muted);font-size:13px;padding:10px 0">Nenhum pedido recente registrado.</p>';
+    wrap.innerHTML = '<div class="dash-empty-state"><span class="empty-icon">📦</span><p>Nenhum pedido recente registrado.</p></div>';
     return;
   }
   const recent = allOrders.slice(0, 5);
-  wrap.innerHTML = recent.map(o => `
-    <div class="dash-recent-item">
-      <div>
-        <strong class="dash-order-id">Pedido #${o.id}</strong> — <span class="dash-cust-name">${o.customerName || 'Cliente'}</span>
-        <div class="dash-order-meta">${formatDate(o.createdAt)} • ${o.paymentMethodLabel}</div>
+  wrap.innerHTML = recent.map(o => {
+    const timeFormatted = formatDate(o.createdAt);
+    const initials = (o.customerName || 'Cliente').split(' ').map(n => n[0]).slice(0, 2).join('').toUpperCase();
+    return `
+      <div class="dash-recent-item" onclick="switchTab('pedidos')" style="cursor:pointer;" title="Ver detalhes do Pedido #${o.id}">
+        <div class="recent-item-left">
+          <div class="recent-cust-avatar">${initials}</div>
+          <div class="recent-cust-info">
+            <div class="recent-order-headline">
+              <strong class="dash-order-id">#${o.id}</strong>
+              <span class="dash-cust-name">${o.customerName || 'Cliente'}</span>
+            </div>
+            <div class="dash-order-meta">
+              <span>${timeFormatted}</span>
+              <span class="meta-dot">•</span>
+              <span class="meta-pay">${o.paymentMethodLabel}</span>
+            </div>
+          </div>
+        </div>
+        <div class="recent-item-right">
+          <div class="dash-order-val">${money(o.total)}</div>
+          <span class="status-badge ${o.status}">${ORDER_STATUS_LABEL[o.status] || o.status}</span>
+        </div>
       </div>
-      <div style="text-align:right">
-        <div class="dash-order-val">${money(o.total)}</div>
-        <span class="status-badge ${o.status}">${ORDER_STATUS_LABEL[o.status] || o.status}</span>
-      </div>
-    </div>
-  `).join('');
+    `;
+  }).join('');
 }
 
 // ---------- 2. ESTOQUE & PRODUTOS (WMS & LOCALIZAÇÃO) ----------
@@ -1896,7 +1995,7 @@ function renderOrdersTable(orders) {
         <td class="order-col-customer">
           <div class="order-cust-name">${o.customerName || 'Cliente'}</div>
           <div class="order-cust-phone">
-            <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path></svg>
+            <svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path></svg>
             ${o.customerPhone || 'Sem telefone'}
           </div>
         </td>
@@ -1905,11 +2004,11 @@ function renderOrdersTable(orders) {
             ${itemsHtml}
           </div>
         </td>
-        <td class="order-col-pay">
-          ${payBadge}
-        </td>
         <td class="order-col-total">
           <strong class="order-total-price">${money(o.total)}</strong>
+        </td>
+        <td class="order-col-pay">
+          ${payBadge}
         </td>
         <td class="order-col-date">
           <div class="order-date-text">${formatDate(o.createdAt)}</div>
@@ -1928,11 +2027,11 @@ function renderOrdersTable(orders) {
         </td>
         <td class="order-col-actions" style="text-align:right;white-space:nowrap">
           <button class="order-action-btn btn-danfe-action" onclick="openDanfeForOrder(${o.id})" title="Imprimir DANFE / Nota Fiscal">
-            <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.2"><polyline points="6 9 6 2 18 2 18 9"></polyline><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg>
-            DANFE
+            <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.2"><polyline points="6 9 6 2 18 2 18 9"></polyline><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg>
+            <span>DANFE</span>
           </button>
           <button class="order-action-btn btn-delete-action" onclick="deleteExpedicaoOrder(${o.id})" title="Excluir Pedido">
-            <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+            <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
           </button>
         </td>
       </tr>
