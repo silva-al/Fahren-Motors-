@@ -8490,3 +8490,69 @@ body:not(.screen-is-inicio) .fp-footer-legal {
   text-align: center !important;
   display: block !important;
 }
+
+
+/* ==========================================================================
+   CORREÇÃO DA IMAGEM DA PEÇA NO CARRINHO (NÃO CORTAR / EXIBIÇÃO COMPLETA)
+   ========================================================================== */
+.cart-item-thumb {
+  width: 105px !important;
+  min-width: 105px !important;
+  max-width: 105px !important;
+  height: 105px !important;
+  min-height: 105px !important;
+  border-radius: 12px !important;
+  overflow: hidden !important;
+  background: #0d1017 !important;
+  border: 1px solid #e2e8f0 !important;
+  position: relative !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  flex-shrink: 0 !important;
+  padding: 4px !important;
+  box-sizing: border-box !important;
+}
+
+body:not(.tema-claro) .cart-item-thumb {
+  background: #080a0f !important;
+  border-color: #242a36 !important;
+}
+
+.cart-item-thumb img {
+  width: 100% !important;
+  height: 100% !important;
+  max-width: 100% !important;
+  max-height: 100% !important;
+  object-fit: contain !important;
+  object-position: center !important;
+  display: block !important;
+  background: transparent !important;
+  transform: none !important;
+}
+
+.cart-row:hover .cart-item-thumb img {
+  transform: scale(1.02) !important;
+}
+
+@media (max-width: 480px) {
+  .cart-item-thumb {
+    width: 92px !important;
+    min-width: 92px !important;
+    max-width: 92px !important;
+    height: 92px !important;
+    min-height: 92px !important;
+    padding: 3px !important;
+  }
+}
+
+@media (max-width: 360px) {
+  .cart-item-thumb {
+    width: 80px !important;
+    min-width: 80px !important;
+    max-width: 80px !important;
+    height: 80px !important;
+    min-height: 80px !important;
+    padding: 2px !important;
+  }
+}

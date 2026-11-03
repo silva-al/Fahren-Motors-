@@ -109,7 +109,45 @@ function loadCartFromStorage() {
   }
 }
 
-function saveCart() {
+
+// ==========================================================================
+// SINCRONIZAÇÃO EM NUVEM DO CARRINHO (DESKTOP <-> CELULAR PARA CONTA LOGADA)
+// ==========================================================================
+let isSyncingCart = false;
+async function syncCartWithServer() {
+  if (!currentUser || isSyncingCart) return;
+  isSyncingCart = true;
+  try {
+    const res = await api('/api/auth/cart');
+    if (res && Array.isArray(res.cart)) {
+      cart = res.cart;
+      saveCart(true); // salva no localStorage sem chamar o servidor de volta
+      updateCartBadge();
+      const cartScreen = document.getElementById('carrinho');
+      if (cartScreen && cartScreen.classList.contains('active')) {
+        renderCart();
+      }
+    }
+  } catch (err) {
+    // Falha silenciosa se offline
+  } finally {
+    isSyncingCart = false;
+  }
+}
+
+let syncTimeout = null;
+function pushCartToServer() {
+  if (!currentUser) return;
+  clearTimeout(syncTimeout);
+  syncTimeout = setTimeout(() => {
+    api('/api/auth/cart', {
+      method: 'PUT',
+      body: JSON.stringify({ cart })
+    }).catch(() => {});
+  }, 250);
+}
+
+function saveCart(skipServerSync = false) {
   try {
     const serialized = JSON.stringify(cart);
     localStorage.setItem(CART_STORAGE_KEY, serialized);
@@ -3517,3 +3555,15 @@ window.refreshLojaStockData = refreshLojaStockData;
     refreshLojaStockData();
   });
 })();
+
+// Sincronização automática quando o usuário volta para a aba no PC ou Celular
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState === 'visible' && currentUser) {
+    syncCartWithServer();
+  }
+});
+window.addEventListener('focus', () => {
+  if (currentUser) {
+    syncCartWithServer();
+  }
+});

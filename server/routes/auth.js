@@ -143,4 +143,47 @@ router.put('/me', requireRole('customer'), async (req, res) => {
   }
 });
 
+
+// ---- Sincronização em Nuvem do Carrinho do Cliente (Desktop <-> Celular) ----
+let cartColumnReady = false;
+async function ensureCustomerCartColumn() {
+  if (cartColumnReady) return;
+  try {
+    await db.query("ALTER TABLE customers ADD COLUMN IF NOT EXISTS cart_json TEXT DEFAULT '[]'");
+    cartColumnReady = true;
+  } catch (err) {
+    console.warn('[Cart:ensureCustomerCartColumn]', err.message);
+  }
+}
+
+router.get('/cart', requireRole('customer'), async (req, res) => {
+  try {
+    await ensureCustomerCartColumn();
+    const result = await db.query('SELECT cart_json FROM customers WHERE id = $1', [req.user.sub]);
+    const raw = result.rows[0]?.cart_json;
+    let items = [];
+    if (raw) {
+      try { items = JSON.parse(raw); } catch {}
+    }
+    res.json({ cart: Array.isArray(items) ? items : [] });
+  } catch (err) {
+    console.error('[Auth:getCart]', err);
+    res.status(500).json({ error: 'Erro ao carregar carrinho.' });
+  }
+});
+
+router.put('/cart', requireRole('customer'), async (req, res) => {
+  try {
+    await ensureCustomerCartColumn();
+    const { cart } = req.body || {};
+    const safeCart = Array.isArray(cart) ? cart : [];
+    await db.query('UPDATE customers SET cart_json = $1 WHERE id = $2', [JSON.stringify(safeCart), req.user.sub]);
+    res.json({ ok: true, cart: safeCart });
+  } catch (err) {
+    console.error('[Auth:putCart]', err);
+    res.status(500).json({ error: 'Erro ao salvar carrinho.' });
+  }
+});
+
 module.exports = router;
+

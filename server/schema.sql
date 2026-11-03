@@ -12,6 +12,7 @@ CREATE TABLE IF NOT EXISTS customers (
 );
 -- Garante a coluna também em bancos que já existiam antes desse campo ser criado.
 ALTER TABLE customers ADD COLUMN IF NOT EXISTS cpf_cnpj TEXT;
+ALTER TABLE customers ADD COLUMN IF NOT EXISTS cart_json TEXT DEFAULT '[]';
 
 CREATE TABLE IF NOT EXISTS admins (
   id            SERIAL PRIMARY KEY,
