@@ -80,6 +80,26 @@
     <div class="splash-status" id="splashStatus">Carregando catálogo...</div>
   </div>
 </div>
+<script>
+  (function() {
+    var timer = setTimeout(function() {
+      var s = document.getElementById('splashScreen');
+      if (s && !s.classList.contains('hidden')) {
+        s.classList.add('hidden');
+        setTimeout(function() { s.style.display = 'none'; }, 450);
+      }
+    }, 1800);
+    window.addEventListener('load', function() {
+      setTimeout(function() {
+        var s = document.getElementById('splashScreen');
+        if (s && !s.classList.contains('hidden')) {
+          s.classList.add('hidden');
+          setTimeout(function() { s.style.display = 'none'; }, 450);
+        }
+      }, 500);
+    });
+  })();
+</script>
 
 <div class="app">
 <!-- Barra de aviso no topo -->

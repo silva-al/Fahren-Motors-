@@ -42,7 +42,7 @@
 <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet"/>
 
-<link href="styles.css?v=mw0aanbk" rel="stylesheet"/>
+<link href="styles.css?v=mw0anhx3" rel="stylesheet"/>
 
   <style>
     .fp-whatsapp-float {
@@ -80,6 +80,26 @@
     <div class="splash-status" id="splashStatus">Carregando catálogo...</div>
   </div>
 </div>
+<script>
+  (function() {
+    var timer = setTimeout(function() {
+      var s = document.getElementById('splashScreen');
+      if (s && !s.classList.contains('hidden')) {
+        s.classList.add('hidden');
+        setTimeout(function() { s.style.display = 'none'; }, 450);
+      }
+    }, 1800);
+    window.addEventListener('load', function() {
+      setTimeout(function() {
+        var s = document.getElementById('splashScreen');
+        if (s && !s.classList.contains('hidden')) {
+          s.classList.add('hidden');
+          setTimeout(function() { s.style.display = 'none'; }, 450);
+        }
+      }, 500);
+    });
+  })();
+</script>
 
 <div class="app">
 <!-- Barra de aviso no topo -->
@@ -893,4 +913,4 @@
 <div id="toastContainer"></div>
 <script defer="True" src="vendor/qrcode.js"></script>
 <script defer="True" src="https://sdk.mercadopago.com/js/v2"></script>
-<script defer="True" src="loja.js?v=mw0aanbk"></script></body></html>
+<script defer="True" src="loja.js?v=mw0anhx3"></script></body></html>
