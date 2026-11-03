@@ -218,21 +218,25 @@
     </div>
 
     <div class="vf-plate-row" id="vfPlateRow" style="display:none;margin-top:10px;">
-      <div class="vf-plate-input-wrap">
-        <span class="vf-plate-flag">🇧🇷 BRASIL</span>
-        <input type="text" id="vfPlacaInput" placeholder="Ex: BRA2E19" maxlength="8" autocomplete="off" />
+      <div class="vf-plate-input-container">
+        <div class="vf-plate-input-wrap">
+          <span class="vf-plate-flag">🇧🇷 BRASIL</span>
+          <input type="text" id="vfPlacaInput" placeholder="Ex: BRA2E19" maxlength="8" autocomplete="off" />
+        </div>
+        <button type="button" id="vfBuscarPlacaBtn" class="vehicle-finder-btn">BUSCAR PELA PLACA</button>
       </div>
-      <button type="button" id="vfBuscarPlacaBtn" class="vehicle-finder-btn">BUSCAR PELA PLACA</button>
-    </div>
 
-    <div class="active-garage-bar" id="activeGarageBar" style="display:none;">
-      <div class="active-garage-info">
-        <span class="active-garage-icon">✔</span>
-        <div>
-          <strong id="activeGarageTitle">Honda Civic 2020</strong>
-          <small>Mostrando peças compatíveis com seu carro</small>
+      <div class="vf-plate-samples">
+        <span class="vf-samples-label">💡 Placas de teste (clique em qualquer uma para testar):</span>
+        <div class="vf-samples-chips">
+          <button type="button" class="vf-chip" data-plate="BRA2E19">🚘 BRA2E19 (T-Cross)</button>
+          <button type="button" class="vf-chip" data-plate="GOL2021">🚘 GOL2021 (Gol 1.0)</button>
+          <button type="button" class="vf-chip" data-plate="CIV2020">🚘 CIV2020 (Civic Touring)</button>
+          <button type="button" class="vf-chip" data-plate="ONX2023">🚘 ONX2023 (Onix Plus)</button>
+          <button type="button" class="vf-chip" data-plate="COR2022">🚘 COR2022 (Corolla XEi)</button>
         </div>
       </div>
+    </div>
       <button type="button" id="activeGarageClearBtn" class="btn-clear-garage" title="Trocar veículo">Trocar Veículo ✕</button>
     </div>
   </div>

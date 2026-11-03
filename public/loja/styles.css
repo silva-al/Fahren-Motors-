@@ -5934,3 +5934,96 @@ body.tema-claro .fp-footer-copy-line {
     text-align: center;
   }
 }
+
+
+/* --- TABS NÍTIDAS E VIBRANTES DO VEHICLE FINDER --- */
+.vf-tabs {
+  display: flex !important;
+  gap: 12px !important;
+  margin-bottom: 18px !important;
+  justify-content: center !important;
+}
+.vf-tab-btn {
+  background: #171a20 !important;
+  border: 2px solid #ffffff !important;
+  color: #ffffff !important;
+  font-size: 14px !important;
+  font-weight: 800 !important;
+  padding: 10px 22px !important;
+  border-radius: 25px !important;
+  cursor: pointer !important;
+  transition: all 0.2s ease !important;
+  letter-spacing: 0.3px !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.5) !important;
+  opacity: 1 !important;
+}
+.vf-tab-btn:hover {
+  background: #252830 !important;
+  border-color: #ffffff !important;
+  color: #ffffff !important;
+  transform: translateY(-1px) !important;
+}
+.vf-tab-btn.active {
+  background: #ed1c24 !important;
+  border-color: #ed1c24 !important;
+  color: #ffffff !important;
+  box-shadow: 0 4px 18px rgba(237, 28, 36, 0.5) !important;
+}
+.vf-plate-row {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  align-items: center;
+  max-width: 580px;
+  margin: 0 auto;
+}
+.vf-plate-input-container {
+  display: flex;
+  width: 100%;
+  gap: 10px;
+}
+.vf-plate-samples {
+  width: 100%;
+  margin-top: 6px;
+  padding-top: 12px;
+  border-top: 1px solid rgba(255, 255, 255, 0.12);
+  text-align: center;
+}
+.vf-samples-label {
+  display: block;
+  font-size: 13px;
+  font-weight: 800;
+  color: #ffffff !important;
+  margin-bottom: 8px;
+  letter-spacing: 0.3px;
+}
+.vf-samples-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: center;
+}
+.vf-chip {
+  background: rgba(255, 255, 255, 0.1) !important;
+  border: 1px solid rgba(255, 255, 255, 0.35) !important;
+  color: #ffffff !important;
+  font-size: 12px !important;
+  font-weight: 800 !important;
+  padding: 7px 14px !important;
+  border-radius: 8px !important;
+  cursor: pointer !important;
+  transition: all 0.2s ease !important;
+  font-family: var(--font-mono, monospace) !important;
+}
+.vf-chip:hover {
+  background: #ed1c24 !important;
+  border-color: #ed1c24 !important;
+  color: #ffffff !important;
+  transform: translateY(-2px) !important;
+  box-shadow: 0 4px 12px rgba(237, 28, 36, 0.4) !important;
+}
+@media (max-width: 760px) {
+  .vf-plate-input-container {
+    flex-direction: column;
+  }
+}

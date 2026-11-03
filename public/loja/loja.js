@@ -2292,20 +2292,195 @@ init();
     }
   })();
 
-  // Localizador de veículo — ainda não há dados de veículo/compatibilidade no catálogo,
-  // então por enquanto ele leva o cliente para o catálogo já com os termos escolhidos na busca.
-  const vfBtn = document.getElementById('vfBuscarBtn');
-  vfBtn?.addEventListener('click', () => {
-    const vals = ['vfMontadora', 'vfModelo', 'vfAno', 'vfMotor']
-      .map((id) => document.getElementById(id)?.value)
-      .filter(Boolean);
-    show('pecas');
-    const catInput = document.getElementById('catalogSearch');
-    if (catInput) {
-      catInput.value = vals.join(' ');
-      if (typeof loadCatalog === 'function') loadCatalog();
+    // ========================================================
+  // WIDGET INTERATIVO DE VEÍCULOS & GARAGEM FAHREN MOTORS
+  // ========================================================
+  (function setupVehicleFinder() {
+    const montadoraSelect = document.getElementById('vfMontadora');
+    const modeloSelect = document.getElementById('vfModelo');
+    const anoSelect = document.getElementById('vfAno');
+    const motorSelect = document.getElementById('vfMotor');
+    const buscarBtn = document.getElementById('vfBuscarBtn');
+
+    const tabModel = document.getElementById('vfTabModel');
+    const tabPlate = document.getElementById('vfTabPlate');
+    const rowModel = document.getElementById('vfModelRow');
+    const rowPlate = document.getElementById('vfPlateRow');
+    const placaInput = document.getElementById('vfPlacaInput');
+    const buscarPlacaBtn = document.getElementById('vfBuscarPlacaBtn');
+
+    // Botões de limpar garagem
+    document.getElementById('activeGarageClearBtn')?.addEventListener('click', clearActiveVehicle);
+    document.getElementById('activeGarageClearBtnCatalog')?.addEventListener('click', clearActiveVehicle);
+    updateGarageUI();
+
+    // 1. ALTERNAR ABAS (Por Modelo vs Por Placa)
+    function switchTab(mode) {
+      if (mode === 'plate') {
+        tabPlate?.classList.add('active');
+        tabModel?.classList.remove('active');
+        if (rowModel) rowModel.style.display = 'none';
+        if (rowPlate) rowPlate.style.display = 'flex';
+        setTimeout(() => placaInput?.focus(), 80);
+      } else {
+        tabModel?.classList.add('active');
+        tabPlate?.classList.remove('active');
+        if (rowModel) rowModel.style.display = 'flex';
+        if (rowPlate) rowPlate.style.display = 'none';
+      }
     }
-  });
+
+    tabModel?.addEventListener('click', (e) => {
+      e.preventDefault();
+      switchTab('model');
+    });
+
+    tabPlate?.addEventListener('click', (e) => {
+      e.preventDefault();
+      switchTab('plate');
+    });
+
+    // 2. POPULAÇÃO DINÂMICA AO SELECIONAR A MONTADORA
+    montadoraSelect?.addEventListener('change', () => {
+      const brand = montadoraSelect.value;
+      const data = (typeof VEHICLE_CATALOG !== 'undefined') ? VEHICLE_CATALOG[brand] : null;
+
+      if (modeloSelect) {
+        modeloSelect.innerHTML = '<option value="">Selecione o Modelo</option>';
+        if (data && data.models) {
+          data.models.forEach(m => {
+            const opt = document.createElement('option');
+            opt.value = m;
+            opt.textContent = m;
+            modeloSelect.appendChild(opt);
+          });
+          modeloSelect.disabled = false;
+        } else {
+          modeloSelect.disabled = true;
+        }
+      }
+
+      if (anoSelect) {
+        anoSelect.innerHTML = '<option value="">Selecione o Ano</option>';
+        for (let y = 2026; y >= 2005; y--) {
+          const opt = document.createElement('option');
+          opt.value = String(y);
+          opt.textContent = String(y);
+          anoSelect.appendChild(opt);
+        }
+        anoSelect.disabled = !brand;
+      }
+
+      if (motorSelect) {
+        motorSelect.innerHTML = '<option value="">Selecione o Motor</option>';
+        if (data && data.engines) {
+          data.engines.forEach(eng => {
+            const opt = document.createElement('option');
+            opt.value = eng;
+            opt.textContent = eng;
+            motorSelect.appendChild(opt);
+          });
+          motorSelect.disabled = false;
+        } else {
+          motorSelect.disabled = true;
+        }
+      }
+    });
+
+    // 3. BUSCA POR MODELO / ANO
+    buscarBtn?.addEventListener('click', (e) => {
+      e.preventDefault();
+      const brand = montadoraSelect?.value || '';
+      const model = modeloSelect?.value || '';
+      const year = anoSelect?.value || '';
+      const engine = motorSelect?.value || '';
+
+      if (!brand && !model) {
+        showToast('Selecione pelo menos a Montadora e o Modelo.');
+        return;
+      }
+
+      const vehicle = { brand, model, year, engine };
+      setActiveVehicle(vehicle);
+
+      show('pecas');
+      const catInput = document.getElementById('catalogSearch');
+      if (catInput) {
+        catInput.value = model || brand;
+        if (typeof loadCatalog === 'function') loadCatalog();
+      }
+      showToast('Veículo salvo! Exibindo peças para seu ' + (model || brand) + '.');
+    });
+
+    // 4. CONSULTA POR PLACA (Real / Teste)
+    async function executePlateConsult(plateToSearch) {
+      const plate = (plateToSearch || placaInput?.value || '').trim();
+      if (!plate) {
+        showToast('Digite ou clique em uma placa de teste.');
+        return;
+      }
+
+      if (placaInput) placaInput.value = plate.toUpperCase();
+      if (buscarPlacaBtn) {
+        buscarPlacaBtn.disabled = true;
+        buscarPlacaBtn.textContent = 'CONSULTANDO...';
+      }
+
+      try {
+        const res = await fetch('/api/vehicles/plate/' + encodeURIComponent(plate));
+        const data = await res.json();
+        if (!res.ok || !data.vehicle) {
+          throw new Error(data.error || 'Veículo não encontrado.');
+        }
+
+        const v = data.vehicle;
+        const vehicle = {
+          brand: v.brand,
+          model: v.model,
+          year: String(v.modelYear || v.year || ''),
+          engine: v.engine || '',
+          plate: v.plate || plate
+        };
+
+        setActiveVehicle(vehicle);
+        show('pecas');
+        const catInput = document.getElementById('catalogSearch');
+        if (catInput) {
+          catInput.value = v.model || v.brand;
+          if (typeof loadCatalog === 'function') loadCatalog();
+        }
+        showToast('Veículo identificado: ' + v.brand + ' ' + v.model + ' (' + vehicle.year + ')!');
+      } catch (err) {
+        showToast(err.message || 'Erro ao consultar placa.');
+      } finally {
+        if (buscarPlacaBtn) {
+          buscarPlacaBtn.disabled = false;
+          buscarPlacaBtn.textContent = 'BUSCAR PELA PLACA';
+        }
+      }
+    }
+
+    buscarPlacaBtn?.addEventListener('click', (e) => {
+      e.preventDefault();
+      executePlateConsult();
+    });
+
+    placaInput?.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        executePlateConsult();
+      }
+    });
+
+    // 5. CLIQUE RÁPIDO NOS CHIPS DE PLACAS DE TESTE
+    document.querySelectorAll('.vf-chip').forEach(chip => {
+      chip.addEventListener('click', (e) => {
+        e.preventDefault();
+        const p = chip.dataset.plate;
+        if (p) executePlateConsult(p);
+      });
+    });
+  })();
 
   // Atalho "Informe seu veículo" leva para o localizador de veículo da home
   document.getElementById('qaVehicle')?.addEventListener('click', () => {
