@@ -9894,7 +9894,20 @@ body:not(.tema-claro) .order-date-text {
 /* ===================================================================
    3. PADRONIZAÇÃO COMPACTA DE TODOS OS MODAIS (SEM CORTES / ALTURA 85VH)
    =================================================================== */
-.modal-overlay {
+/* Modais Ocultos - Regra Absoluta */
+.modal-overlay.hidden,
+div.modal-overlay.hidden,
+div.hidden,
+.hidden {
+  display: none !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
+  opacity: 0 !important;
+  z-index: -9999 !important;
+}
+
+/* Modais Abertos (somente quando não tiverem a classe .hidden) */
+.modal-overlay:not(.hidden) {
   position: fixed !important;
   top: 0 !important;
   left: 0 !important;
@@ -9907,6 +9920,11 @@ body:not(.tema-claro) .order-date-text {
   box-sizing: border-box !important;
   z-index: 9999 !important;
   overflow: hidden !important;
+  visibility: visible !important;
+  pointer-events: auto !important;
+  opacity: 1 !important;
+  background: rgba(0, 0, 0, 0.75) !important;
+  backdrop-filter: blur(4px) !important;
 }
 
 .modal-card,

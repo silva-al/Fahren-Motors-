@@ -5695,3 +5695,16 @@ function initProductCombobox(cfg) {
 let stockOpComboboxInstance = null;
 let invComboboxInstance = null;
 let noComboboxInstance = null;
+
+
+// Fechar qualquer modal ao clicar no fundo (backdrop / overlay)
+document.addEventListener('click', (e) => {
+  if (e.target && e.target.classList && e.target.classList.contains('modal-overlay')) {
+    e.target.classList.add('hidden');
+  }
+});
+
+// Garante que nenhum modal abra automaticamente na inicialização da página
+document.addEventListener('DOMContentLoaded', () => {
+  document.querySelectorAll('.modal-overlay').forEach(m => m.classList.add('hidden'));
+});
