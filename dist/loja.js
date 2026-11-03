@@ -2167,15 +2167,37 @@ function renderFallbackCardForm(amounts, container, statusEl) {
 }
 
 // ---------- Carrinho ----------
+function getCartItemImage(i) {
+  if (i && i.image) return i.image;
+  if (typeof CATALOG_FALLBACK_PRODUCTS !== 'undefined') {
+    const found = CATALOG_FALLBACK_PRODUCTS.find(p => String(p.id) === String(i && i.productId));
+    if (found && found.photoUrl) return normalizeLojaPhoto(found.photoUrl);
+  }
+  if (i && i.category && typeof CATEGORY_IMAGES !== 'undefined' && CATEGORY_IMAGES[i.category]) {
+    return CATEGORY_IMAGES[i.category];
+  }
+  return 'images/categorias/filtros.jpg';
+}
+
 function addToCart(productId, productsList, quantity = 1, triggerBtn = null) {
-  const product = productsList.find(p => String(p.id) === String(productId));
+  const product = (productsList || []).find(p => String(p.id) === String(productId));
   if (!product || !product.inStock) return;
   const qty = Math.max(1, parseInt(quantity, 10) || 1);
+  const rawImg = product.photoUrl || (typeof CATEGORY_IMAGES !== 'undefined' ? CATEGORY_IMAGES[product.category] : '');
+  const image = rawImg ? normalizeLojaPhoto(rawImg) : (product.image || '');
   const existing = cart.find(i => String(i.productId) === String(productId));
   if (existing) {
     existing.quantity += qty;
+    if (!existing.image && image) existing.image = image;
   } else {
-    cart.push({ productId: product.id, name: product.name, price: product.price, quantity: qty });
+    cart.push({
+      productId: product.id,
+      name: product.name,
+      price: product.price,
+      quantity: qty,
+      category: product.category || '',
+      image: image || ''
+    });
   }
   saveCart();
 
@@ -2198,10 +2220,17 @@ function renderCart() {
   updateCartBadge();
   const el = document.getElementById('cartContent');
   if (!cart.length) {
-    el.innerHTML = '<p style="color:var(--fp-9da2aa)">Seu carrinho está vazio. Adicione peças pelo catálogo para continuar.</p><button class="btn" data-go="pecas">VER PEÇAS</button>';
+    el.innerHTML = `
+      <div class="empty-cart-card">
+        <div class="empty-cart-icon">🛒</div>
+        <h3 class="empty-cart-title">Seu carrinho está vazio</h3>
+        <p class="empty-cart-text">Explore nosso catálogo completo com mais de 3.000 peças automotivas com garantia e entrega rápida.</p>
+        <button type="button" class="btn btn-empty-cart" data-go="pecas">VER CATÁLOGO DE PEÇAS</button>
+      </div>`;
     el.querySelector('[data-go]')?.addEventListener('click', () => show('pecas'));
     return;
   }
+  const totalItems = cart.reduce((sum, i) => sum + i.quantity, 0);
   const subtotal = cart.reduce((sum, i) => sum + i.price * i.quantity, 0);
   const pixTotal = subtotal * (1 - PIX_DISCOUNT_RATE);
   const pixSavings = subtotal - pixTotal;
@@ -2210,28 +2239,69 @@ function renderCart() {
 
   el.innerHTML = `
     <div class="cart-items">
-      ${cart.map(i => `
-        <div class="cart-row" data-id="${i.productId}" style="display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid rgba(255,255,255,.08);flex-wrap:wrap">
-          <div style="flex:1;min-width:180px"><b>${i.name}</b><div style="color:var(--fp-9da2aa);font-size:13px">${money(i.price)} un.</div></div>
-          <div style="display:flex;align-items:center;gap:4px;background:var(--fp-0c0e11);padding:3px 6px;border-radius:6px;border:1px solid var(--fp-282b30)">
-            <button class="qty-minus" style="background:var(--fp-202226);color:var(--fp-fff);border:0;border-radius:4px;width:26px;height:26px;cursor:pointer;font-weight:bold;font-size:14px" title="Diminuir">−</button>
-            <span style="min-width:28px;text-align:center;font-weight:800;font-size:14px">${i.quantity}</span>
-            <button class="qty-plus" style="background:var(--fp-202226);color:var(--fp-fff);border:0;border-radius:4px;width:26px;height:26px;cursor:pointer;font-weight:bold;font-size:14px" title="Aumentar">+</button>
+      ${cart.map(i => {
+        const itemImg = getCartItemImage(i);
+        return `
+        <div class="cart-row" data-id="${i.productId}">
+          <div class="cart-item-thumb">
+            <img src="${itemImg}" alt="${i.name}" loading="lazy" onerror="this.onerror=null; this.src='images/categorias/filtros.jpg';" />
           </div>
-          <div style="min-width:90px;text-align:right;font-weight:700">${money(i.price * i.quantity)}</div>
-          <button class="remove-item" style="background:none;color:#e06a6a;border:0;cursor:pointer;font-size:13px;padding:4px 6px">Remover</button>
-        </div>`).join('')}
+          <div class="cart-item-info">
+            <b class="cart-item-title" title="${i.name}">${i.name}</b>
+            <div class="cart-item-unit">${money(i.price)} un.</div>
+            <div class="cart-item-actions">
+              <div class="cart-qty-pill">
+                <button type="button" class="qty-minus" title="Diminuir quantidade">−</button>
+                <span class="qty-value">${i.quantity}</span>
+                <button type="button" class="qty-plus" title="Aumentar quantidade">+</button>
+              </div>
+              <button type="button" class="remove-item" title="Remover item">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>
+                <span>Remover</span>
+              </button>
+            </div>
+          </div>
+          <div class="cart-item-subtotal">
+            <span class="subtotal-label">Subtotal:</span>
+            <span class="subtotal-amount">${money(i.price * i.quantity)}</span>
+          </div>
+        </div>`;
+      }).join('')}
     </div>
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-top:16px;font-size:18px">
-      <b>Total</b><b>${money(subtotal)}</b>
+
+    <div class="cart-summary-box">
+      <div class="cart-summary-line">
+        <span>Subtotal (${totalItems} ${totalItems === 1 ? 'item' : 'itens'})</span>
+        <b>${money(subtotal)}</b>
+      </div>
+      <div class="cart-summary-line pix-discount">
+        <span>Desconto no Pix (-4%)</span>
+        <b class="text-pix-green">- ${money(pixSavings)}</b>
+      </div>
+      <div class="cart-summary-line total-line">
+        <div class="total-title-wrap">
+          <b>Total a pagar</b>
+          <small>no Pix com aprovação imediata</small>
+        </div>
+        <div class="total-val-wrap">
+          <b class="pix-highlight-price">${money(pixTotal)}</b>
+          <span class="card-alt-text">ou ${money(subtotal)} em até 12x</span>
+        </div>
+      </div>
     </div>
 
     <div class="payment-select" style="margin-top:22px">
-      <p style="color:var(--fp-9da2aa);font-size:13px;margin:0 0 10px">Escolha a forma de pagamento:</p>
+      <div class="payment-select-header">
+        <span class="payment-select-title">Forma de pagamento</span>
+        <span class="payment-select-badge">🔒 Pagamento 100% Seguro</span>
+      </div>
       <label class="payment-option selected">
         <input checked name="paymentMethod" type="radio" value="pix"/>
         <span class="payment-option-body">
-          <b>Pix (4% de Desconto)</b>
+          <span class="payment-option-top">
+            <b>Pix (4% de Desconto)</b>
+            <span class="payment-badge-discount">-4% PIX</span>
+          </span>
           <small>Aprovação imediata via QR Code ou Copia e Cola • Economize ${money(pixSavings)}</small>
         </span>
         <span class="payment-option-price">${money(pixTotal)}</span>
@@ -2239,7 +2309,10 @@ function renderCart() {
       <label class="payment-option">
         <input name="paymentMethod" type="radio" value="cartao"/>
         <span class="payment-option-body">
-          <b>Cartão de Crédito em até 12x sem juros</b>
+          <span class="payment-option-top">
+            <b>Cartão de Crédito</b>
+            <span class="payment-badge-installments">Até 12x</span>
+          </span>
           <small>Em até 12x de ${money(installment)} sem juros</small>
         </span>
         <span class="payment-option-price">${money(subtotal)}</span>
@@ -2247,7 +2320,9 @@ function renderCart() {
       <label class="payment-option">
         <input name="paymentMethod" type="radio" value="retirada"/>
         <span class="payment-option-body">
-          <b>Pagar na Retirada / Entrega</b>
+          <span class="payment-option-top">
+            <b>Pagar na Retirada ou Entrega</b>
+          </span>
           <small>Pague no cartão ou dinheiro quando receber suas peças</small>
         </span>
         <span class="payment-option-price">${money(subtotal)}</span>
@@ -2256,9 +2331,10 @@ function renderCart() {
 
     <div id="paymentInfoPanel"></div>
 
-    <button class="btn" id="checkoutBtn" style="width:100%;margin-top:16px">FINALIZAR PEDIDO</button>
+    <button class="btn" id="checkoutBtn" style="width:100%;margin-top:18px">FINALIZAR PEDIDO</button>
     <div class="fp-error" id="checkoutError" style="display:none;margin-top:10px"></div>
   `;
+
   el.querySelectorAll('.cart-row').forEach(row => {
     const id = row.dataset.id;
     row.querySelector('.qty-plus').onclick = () => { changeQty(id, 1); };
@@ -2286,23 +2362,46 @@ function renderPaymentInfo(method, amounts, scroll) {
     const code = buildPixCode(amounts.pixTotal);
     const qrSvg = buildPixQrSvg(code);
     panel.innerHTML = `
-      <div class="panel payment-panel">
+      <div class="panel payment-panel pix-panel">
         <div class="kicker">PAGAMENTO VIA PIX (4% DE DESCONTO)</div>
-        <p style="margin:8px 0 14px;color:var(--fp-c7c9cd)">Total no Pix: <b style="color:#39c979">${money(amounts.pixTotal)}</b></p>
-        ${qrSvg ? `<div class="pix-qr-box">${qrSvg}</div><p style="text-align:center;color:var(--fp-9da2aa);font-size:12px;margin:10px 0 18px">Escaneie com a câmera do app do seu banco</p>` : ''}
-        <label style="display:block;font-size:12px;font-weight:800;color:var(--fp-aeb2b8);margin-bottom:7px;text-transform:uppercase">Ou use o Pix Copia e Cola</label>
-        <textarea id="pixCode" readonly style="width:100%;min-height:80px;padding:12px;border-radius:10px;border:1px solid var(--fp-34373d);background:var(--fp-0c0e11);color:var(--fp-fff);font-size:12px;resize:none">${code}</textarea>
-        <button class="btn dark" id="copyPixBtn" style="width:100%;margin-top:10px" type="button">COPIAR CÓDIGO PIX</button>
-        <p class="form-help">Escaneie o QR Code ou copie o código e cole na opção "Pix Copia e Cola" do app do seu banco. Depois de pagar, finalize o pedido abaixo — a loja confirma o pagamento em seguida.</p>
+        <p class="pix-total-note">Total no Pix: <b class="pix-total-green">${money(amounts.pixTotal)}</b> <span class="pix-savings-badge">Economia de ${money(amounts.pixSavings)}</span></p>
+        ${qrSvg ? `<div class="pix-qr-box">${qrSvg}</div><p class="pix-qr-caption">Escaneie o QR Code com a câmera do app do seu banco</p>` : ''}
+        <label class="pix-cpc-label">Ou use o Pix Copia e Cola:</label>
+        <textarea id="pixCode" readonly rows="2">${code}</textarea>
+        <button class="btn btn-copy-pix" id="copyPixBtn" type="button">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+          <span>COPIAR CÓDIGO PIX</span>
+        </button>
+        <p class="form-help pix-instructions">
+          Copie o código acima e cole na opção "Pix Copia e Cola" do aplicativo do seu banco. Em seguida, clique em <b>Finalizar Pedido</b> abaixo para registrar a compra.
+        </p>
       </div>`;
     const copyBtn = document.getElementById('copyPixBtn');
-    copyBtn.onclick = () => {
-      const codeEl = document.getElementById('pixCode');
-      codeEl.select();
-      const done = () => { copyBtn.textContent = 'CÓDIGO COPIADO ✓'; setTimeout(() => { copyBtn.textContent = 'COPIAR CÓDIGO PIX'; }, 2000); };
-      if (navigator.clipboard?.writeText) navigator.clipboard.writeText(code).then(done).catch(() => { try { document.execCommand('copy'); done(); } catch { /* segue sem copiar */ } });
-      else { try { document.execCommand('copy'); done(); } catch { /* segue sem copiar */ } }
-    };
+    if (copyBtn) {
+      copyBtn.onclick = () => {
+        const codeEl = document.getElementById('pixCode');
+        if (codeEl) codeEl.select();
+        const done = () => {
+          copyBtn.classList.add('copied');
+          copyBtn.innerHTML = `
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+            <span>✓ CÓDIGO COPIADO!</span>`;
+          setTimeout(() => {
+            copyBtn.classList.remove('copied');
+            copyBtn.innerHTML = `
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+              <span>COPIAR CÓDIGO PIX</span>`;
+          }, 2500);
+        };
+        if (navigator.clipboard?.writeText) {
+          navigator.clipboard.writeText(code).then(done).catch(() => {
+            try { document.execCommand('copy'); done(); } catch (_) {}
+          });
+        } else {
+          try { document.execCommand('copy'); done(); } catch (_) {}
+        }
+      };
+    }
   } else if (method === 'cartao') {
     panel.innerHTML = `
       <div class="panel payment-panel">
