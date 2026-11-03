@@ -2013,26 +2013,30 @@ function renderOrdersTable(orders) {
         <td class="order-col-date">
           <div class="order-date-text">${formatDate(o.createdAt)}</div>
         </td>
-        <td class="order-col-status">
-          <div class="status-badge-wrap ${o.status}">
-            <span class="status-dot"></span>
-            <select class="order-status-badge-select ${o.status}" data-order-status="${o.id}">
-              <option value="novo" ${o.status === 'novo' ? 'selected' : ''}>Novo</option>
-              <option value="em_preparacao" ${o.status === 'em_preparacao' ? 'selected' : ''}>Em preparação</option>
-              <option value="pronto" ${o.status === 'pronto' ? 'selected' : ''}>Pronto</option>
-              <option value="entregue" ${o.status === 'entregue' ? 'selected' : ''}>Entregue</option>
-              <option value="cancelado" ${o.status === 'cancelado' ? 'selected' : ''}>Cancelado</option>
-            </select>
+        <td class="order-col-status-actions" style="text-align:right">
+          <div class="status-actions-cell-stack">
+            <!-- DANFE e EXCLUIR lado a lado em cima do STATUS -->
+            <div class="actions-top-row">
+              <button class="order-action-btn btn-danfe-action" onclick="openDanfeForOrder(${o.id})" title="Imprimir DANFE / Nota Fiscal">
+                <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.2"><polyline points="6 9 6 2 18 2 18 9"></polyline><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg>
+                <span>DANFE</span>
+              </button>
+              <button class="order-action-btn btn-delete-action" onclick="deleteExpedicaoOrder(${o.id})" title="Excluir Pedido">
+                <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+              </button>
+            </div>
+            <!-- STATUS logo abaixo -->
+            <div class="status-badge-wrap ${o.status}">
+              <span class="status-dot"></span>
+              <select class="order-status-badge-select ${o.status}" data-order-status="${o.id}">
+                <option value="novo" ${o.status === 'novo' ? 'selected' : ''}>Novo</option>
+                <option value="em_preparacao" ${o.status === 'em_preparacao' ? 'selected' : ''}>Em preparação</option>
+                <option value="pronto" ${o.status === 'pronto' ? 'selected' : ''}>Pronto</option>
+                <option value="entregue" ${o.status === 'entregue' ? 'selected' : ''}>Entregue</option>
+                <option value="cancelado" ${o.status === 'cancelado' ? 'selected' : ''}>Cancelado</option>
+              </select>
+            </div>
           </div>
-        </td>
-        <td class="order-col-actions" style="text-align:right;white-space:nowrap">
-          <button class="order-action-btn btn-danfe-action" onclick="openDanfeForOrder(${o.id})" title="Imprimir DANFE / Nota Fiscal">
-            <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.2"><polyline points="6 9 6 2 18 2 18 9"></polyline><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg>
-            <span>DANFE</span>
-          </button>
-          <button class="order-action-btn btn-delete-action" onclick="deleteExpedicaoOrder(${o.id})" title="Excluir Pedido">
-            <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
-          </button>
         </td>
       </tr>
     `;
@@ -2291,6 +2295,7 @@ document.getElementById('noAddItemBtn')?.addEventListener('click', () => {
 
   // Reseta campos de adição
   if (select) select.value = '';
+  if (noComboboxInstance) noComboboxInstance.setProduct(null);
   if (qtyInput) qtyInput.value = '1';
   if (priceInput) priceInput.value = '';
   renderNewOrderItemsTable();
@@ -3860,21 +3865,34 @@ function openStockOperationModal(type = 'entrada', prodId = null) {
   currentOpType = type;
   selectOpType(type);
 
-  // Popula o select de produtos
+  // Popula o select oculto com as opções para submissão
   const select = document.getElementById('stockOpProductSelect');
   if (select) {
-    select.innerHTML = '<option value="">Selecione uma peça do armazém...</option>' +
+    select.innerHTML = '<option value="">Selecione uma peça...</option>' +
       allProducts.map(p => {
-        return `<option value="${p.id}" data-qty="${p.stockQty || 0}" data-loc="${getProductLocation(p)}">${p.name} (${p.code || 'S/SKU'}) — Saldo: ${p.stockQty || 0} un.</option>`;
+        return `<option value="${p.id}" data-qty="${p.stockQty || 0}" data-loc="${getProductLocation(p)}">${p.name} (${p.code || 'S/SKU'})</option>`;
       }).join('');
+  }
 
-    if (prodId) {
-      select.value = String(prodId);
-      onStockOpProductChange();
-    } else {
-      select.value = '';
-      document.getElementById('stockOpInfoCard')?.classList.add('hidden');
-    }
+  // Inicializa ou atualiza o Combobox com busca instantânea
+  if (!stockOpComboboxInstance) {
+    stockOpComboboxInstance = initProductCombobox({
+      containerId: 'stockOpCombobox',
+      inputId: 'stockOpSearchInput',
+      dropdownId: 'stockOpDropdown',
+      clearBtnId: 'stockOpClearBtn',
+      hiddenSelectId: 'stockOpProductSelect',
+      onSelect: (p) => {
+        onStockOpProductChange();
+      }
+    });
+  }
+
+  if (prodId) {
+    stockOpComboboxInstance.setProduct(prodId);
+  } else {
+    stockOpComboboxInstance.setProduct(null);
+    document.getElementById('stockOpInfoCard')?.classList.add('hidden');
   }
 
   const qtyInput = document.getElementById('stockOpQty');
@@ -3897,6 +3915,8 @@ window.closeStockOperationModal = closeStockOperationModal;
 
 function selectOpType(type) {
   currentOpType = type;
+  
+  // Atualiza classes ativas de todas as pills
   document.querySelectorAll('#opTypePills .op-pill-btn').forEach(b => {
     b.classList.toggle('active', b.dataset.type === type);
   });
@@ -3907,11 +3927,25 @@ function selectOpType(type) {
   }
 
   const title = document.getElementById('stockOpModalTitle');
-  if (title) {
-    if (type === 'entrada') title.textContent = 'Nova Entrada de Estoque (+)';
-    else if (type === 'saida') title.textContent = 'Nova Saída de Estoque (−)';
-    else if (type === 'transferencia') title.textContent = 'Transferência de Localização (⇄)';
-    else if (type === 'ajuste') title.textContent = 'Ajuste Manual de Estoque';
+  const btn = document.getElementById('btnSubmitStockOp');
+  const qtyLabel = document.getElementById('stockOpQtyLabel');
+
+  if (type === 'entrada') {
+    if (title) title.textContent = 'Nova Entrada de Estoque (+)';
+    if (btn) btn.innerHTML = '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg> Confirmar Entrada (+)';
+    if (qtyLabel) qtyLabel.textContent = 'QUANTIDADE A ENTRAR NO ARMAZÉM (+)';
+  } else if (type === 'saida') {
+    if (title) title.textContent = 'Nova Saída de Estoque (-)';
+    if (btn) btn.innerHTML = '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg> Confirmar Saída (-)';
+    if (qtyLabel) qtyLabel.textContent = 'QUANTIDADE A RETIRAR DO ESTOQUE (-)';
+  } else if (type === 'transferencia') {
+    if (title) title.textContent = 'Transferência de Localização (⇄)';
+    if (btn) btn.innerHTML = '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg> Confirmar Transferência';
+    if (qtyLabel) qtyLabel.textContent = 'QUANTIDADE A TRANSFERIR';
+  } else if (type === 'ajuste') {
+    if (title) title.textContent = 'Ajuste Manual de Saldo';
+    if (btn) btn.innerHTML = '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg> Confirmar Ajuste de Saldo';
+    if (qtyLabel) qtyLabel.textContent = 'NOVO SALDO / QUANTIDADE AJUSTADA';
   }
 }
 window.selectOpType = selectOpType;
@@ -4120,20 +4154,43 @@ function renderInventoryTable(items) {
 function openNewInventoryModal(prodId = null) {
   const targetId = prodId || (allProducts[0] ? allProducts[0].id : null);
   const p = allProducts.find(x => String(x.id) === String(targetId));
-  if (!p) return;
 
-  document.getElementById('invModalProdId').value = p.id;
-  document.getElementById('invModalProdName').textContent = p.name;
-  document.getElementById('invModalProdSku').textContent = `SKU: ${p.code || 'S/SKU'}`;
-  document.getElementById('invModalSystemQty').textContent = `${p.stockQty || 0} un.`;
-  document.getElementById('invModalLocation').textContent = getProductLocation(p);
-
-  const countedInput = document.getElementById('invModalCountedQty');
-  if (countedInput) {
-    countedInput.value = String(p.stockQty || 0);
+  // Inicializa o Combobox no modal de inventário
+  if (!invComboboxInstance) {
+    invComboboxInstance = initProductCombobox({
+      containerId: 'invCombobox',
+      inputId: 'invSearchInput',
+      dropdownId: 'invDropdown',
+      clearBtnId: 'invClearBtn',
+      onSelect: (selectedP) => {
+        if (!selectedP) return;
+        document.getElementById('invModalProdId').value = selectedP.id;
+        document.getElementById('invModalProdName').textContent = selectedP.name;
+        document.getElementById('invModalProdSku').textContent = `SKU: ${selectedP.code || 'S/SKU'}`;
+        document.getElementById('invModalSystemQty').textContent = `${selectedP.stockQty || 0} un.`;
+        document.getElementById('invModalLocation').textContent = getProductLocation(selectedP);
+        calcInvDiscrepancy();
+      }
+    });
   }
 
+  if (p) {
+    invComboboxInstance.setProduct(p);
+    document.getElementById('invModalProdId').value = p.id;
+    document.getElementById('invModalProdName').textContent = p.name;
+    document.getElementById('invModalProdSku').textContent = `SKU: ${p.code || 'S/SKU'}`;
+    document.getElementById('invModalSystemQty').textContent = `${p.stockQty || 0} un.`;
+    document.getElementById('invModalLocation').textContent = getProductLocation(p);
+  }
+
+  const countInput = document.getElementById('invModalCountedQty');
+  if (countInput) countInput.value = p ? (p.stockQty || 0) : 0;
+
+  const notesInput = document.getElementById('invModalNotes');
+  if (notesInput) notesInput.value = '';
+
   calcInvDiscrepancy();
+
   document.getElementById('inventoryCountModal')?.classList.remove('hidden');
 }
 window.openNewInventoryModal = openNewInventoryModal;
@@ -5480,3 +5537,142 @@ document.getElementById('cpPhotoFile')?.addEventListener('change', async (e) => 
 initAdminSyncChannel();
 
 
+
+
+// ===================================================================
+// SISTEMA UNIVERSAL DE BUSCA RÁPIDA DE PEÇAS (COMBOBOX AUTOCOMPLETE)
+// ===================================================================
+function initProductCombobox(cfg) {
+  const container = document.getElementById(cfg.containerId);
+  const input = document.getElementById(cfg.inputId);
+  const dropdown = document.getElementById(cfg.dropdownId);
+  const clearBtn = document.getElementById(cfg.clearBtnId);
+  const hiddenSelect = cfg.hiddenSelectId ? document.getElementById(cfg.hiddenSelectId) : null;
+
+  if (!container || !input || !dropdown) return null;
+
+  let selectedProd = null;
+
+  function renderList(query = '') {
+    const q = query.trim().toLowerCase();
+    const activeProducts = allProducts.filter(p => p.active !== false);
+    
+    let matches = activeProducts;
+    if (q) {
+      matches = activeProducts.filter(p => {
+        const nameMatch = (p.name || '').toLowerCase().includes(q);
+        const codeMatch = (p.code || '').toLowerCase().includes(q);
+        const catMatch = (p.category || '').toLowerCase().includes(q);
+        const locMatch = getProductLocation(p).toLowerCase().includes(q);
+        return nameMatch || codeMatch || catMatch || locMatch;
+      });
+    }
+
+    if (!matches.length) {
+      dropdown.innerHTML = `<div class="combobox-empty">Nenhuma peça encontrada com "<strong>${query}</strong>"</div>`;
+      dropdown.classList.remove('hidden');
+      return;
+    }
+
+    // Limita a exibição a 30 itens para fluidez máxima
+    const displayList = matches.slice(0, 30);
+    dropdown.innerHTML = displayList.map(p => {
+      const photo = getProductPhoto(p);
+      const loc = getProductLocation(p);
+      const isSelected = selectedProd && String(selectedProd.id) === String(p.id);
+      const priceHtml = cfg.showPrice ? `<span class="combobox-item-price">${money(p.price)}</span>` : '';
+
+      return `
+        <div class="combobox-item ${isSelected ? 'selected' : ''}" data-prod-id="${p.id}">
+          <img src="${photo}" alt="" class="combobox-thumb" onerror="this.src='/images/categorias/freios.jpg';"/>
+          <div class="combobox-item-body">
+            <div class="combobox-item-title">${p.name}</div>
+            <div class="combobox-item-meta">
+              <span class="combobox-badge-sku">${p.code || 'S/SKU'}</span>
+              <span class="combobox-meta-stock">Saldo: <strong>${p.stockQty || 0} un.</strong></span>
+              <span class="combobox-meta-loc">Local: <strong>${loc}</strong></span>
+            </div>
+          </div>
+          ${priceHtml}
+        </div>
+      `;
+    }).join('');
+
+    dropdown.classList.remove('hidden');
+
+    dropdown.querySelectorAll('.combobox-item').forEach(item => {
+      item.onclick = (e) => {
+        e.stopPropagation();
+        const pId = item.dataset.prodId;
+        const p = allProducts.find(x => String(x.id) === String(pId));
+        if (p) selectProduct(p);
+      };
+    });
+  }
+
+  function selectProduct(p) {
+    selectedProd = p;
+    input.value = p ? `${p.name} (${p.code || 'S/SKU'})` : '';
+    if (clearBtn) clearBtn.classList.toggle('hidden', !p);
+    dropdown.classList.add('hidden');
+
+    if (hiddenSelect) {
+      hiddenSelect.value = p ? String(p.id) : '';
+      hiddenSelect.dispatchEvent(new Event('change'));
+    }
+
+    if (typeof cfg.onSelect === 'function') {
+      cfg.onSelect(p);
+    }
+  }
+
+  input.onfocus = () => {
+    renderList(input.value);
+  };
+
+  input.oninput = () => {
+    if (clearBtn) clearBtn.classList.toggle('hidden', !input.value);
+    renderList(input.value);
+  };
+
+  input.onkeydown = (e) => {
+    if (e.key === 'Escape') {
+      dropdown.classList.add('hidden');
+    }
+  };
+
+  if (clearBtn) {
+    clearBtn.onclick = (e) => {
+      e.stopPropagation();
+      selectProduct(null);
+      input.value = '';
+      input.focus();
+      renderList('');
+    };
+  }
+
+  // Fecha ao clicar fora
+  document.addEventListener('click', (e) => {
+    if (!container.contains(e.target)) {
+      dropdown.classList.add('hidden');
+    }
+  });
+
+  return {
+    setProduct: (prodOrId) => {
+      if (!prodOrId) {
+        selectProduct(null);
+        return;
+      }
+      const p = typeof prodOrId === 'object' ? prodOrId : allProducts.find(x => String(x.id) === String(prodOrId));
+      selectProduct(p);
+    },
+    refresh: () => {
+      if (input === document.activeElement) renderList(input.value);
+    }
+  };
+}
+
+let stockOpComboboxInstance = null;
+let invComboboxInstance = null;
+let noComboboxInstance = null;

@@ -37,7 +37,7 @@
   <link
     href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@500;700&display=swap"
     rel="stylesheet" />
-  <link href="/admin/admin.css?v=20261103_modern_1" rel="stylesheet" />
+  <link href="/admin/admin.css?v=20261103_v2" rel="stylesheet" />
   <!-- Vercel Web Analytics & Speed Insights -->
   <script>
     window.va = window.va || function () { (window.vaq = window.vaq || []).push(arguments); };
@@ -980,8 +980,7 @@
                         <th class="col-th-total">TOTAL</th>
                         <th class="col-th-pay">PAGAMENTO</th>
                         <th class="col-th-date">DATA/HORA</th>
-                        <th class="col-th-status">STATUS</th>
-                        <th class="col-th-actions" style="text-align:right">AÇÕES</th>
+                        <th class="col-th-status-actions" style="text-align:right">STATUS & AÇÕES</th>
                       </tr>
                     </thead>
                     <tbody id="ordersTableBody">
@@ -2908,10 +2907,26 @@
 
         <!-- Seleção de Produto -->
         <div class="field" style="margin-top:16px;">
-          <label class="stock-field-label">SELECIONE O PRODUTO / PEÇA</label>
-          <select id="stockOpProductSelect" class="stock-modal-dark-input" onchange="onStockOpProductChange()">
-            <option value="">Selecione uma peça...</option>
-          </select>
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+            <label class="stock-field-label" style="margin:0;">SELECIONE O PRODUTO / PEÇA</label>
+            <span style="font-size:11px;color:var(--text-muted);font-weight:600;">Digite o nome ou SKU para filtrar</span>
+          </div>
+          <div class="wms-search-combobox" id="stockOpCombobox">
+            <div class="combobox-input-wrap">
+              <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" class="combobox-search-icon">
+                <circle cx="11" cy="11" r="8"></circle>
+                <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+              </svg>
+              <input type="text" id="stockOpSearchInput" class="stock-modal-dark-input combobox-input" 
+                placeholder="🔍 Digite para buscar peça (ex: freio, bosch, filtro)..." 
+                autocomplete="off" />
+              <button type="button" class="combobox-clear-btn hidden" id="stockOpClearBtn" title="Limpar busca">✕</button>
+            </div>
+            <div class="combobox-dropdown hidden" id="stockOpDropdown"></div>
+            <select id="stockOpProductSelect" style="display:none;" onchange="onStockOpProductChange()">
+              <option value="">Selecione uma peça...</option>
+            </select>
+          </div>
         </div>
 
         <!-- Info do Produto Selecionado -->
@@ -2924,7 +2939,7 @@
 
         <!-- Quantidade -->
         <div class="field" style="margin-top:14px;">
-          <label class="stock-field-label">QUANTIDADE DA OPERAÇÃO</label>
+          <label class="stock-field-label" id="stockOpQtyLabel">QUANTIDADE A ENTRAR NO ARMAZÉM (+)</label>
           <div class="stock-stepper">
             <button type="button" class="btn-stepper" onclick="stepOpQty(-1)">−</button>
             <input type="number" id="stockOpQty" value="1" min="1" step="1" />
@@ -3084,6 +3099,28 @@
       </div>
       <div class="modal-body">
         <input type="hidden" id="invModalProdId" />
+
+        <!-- Campo de Busca de Peça para Inventário -->
+        <div class="field" style="margin-bottom:14px;">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+            <label class="stock-field-label" style="margin:0;">SELECIONE OU BUSQUE A PEÇA PARA CONTAGEM</label>
+            <span style="font-size:11px;color:var(--text-muted);font-weight:600;">Digite para filtrar</span>
+          </div>
+          <div class="wms-search-combobox" id="invCombobox">
+            <div class="combobox-input-wrap">
+              <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" class="combobox-search-icon">
+                <circle cx="11" cy="11" r="8"></circle>
+                <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+              </svg>
+              <input type="text" id="invSearchInput" class="stock-modal-dark-input combobox-input" 
+                placeholder="🔍 Digite para buscar peça para inventário..." 
+                autocomplete="off" />
+              <button type="button" class="combobox-clear-btn hidden" id="invClearBtn" title="Limpar">✕</button>
+            </div>
+            <div class="combobox-dropdown hidden" id="invDropdown"></div>
+          </div>
+        </div>
+
         <div class="stock-info-header">
           <h4 id="invModalProdName" style="margin:0;font-size:1rem;color:var(--text-primary);">Nome da Peça</h4>
           <span id="invModalProdSku" class="stock-sku-badge">SKU</span>
@@ -3367,10 +3404,23 @@
           </h4>
           <div style="display: grid; grid-template-columns: 2fr 1fr 1fr auto; gap: 10px; align-items: flex-end;">
             <div class="field" style="margin: 0;">
-              <label>Selecione a Peça *</label>
-              <select id="noProductSelect" class="wms-input-clean" style="width: 100%; height: 38px;">
-                <option value="">Selecione uma peça...</option>
-              </select>
+              <label>Selecione ou Digite a Peça *</label>
+              <div class="wms-search-combobox" id="noCombobox">
+                <div class="combobox-input-wrap">
+                  <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" class="combobox-search-icon">
+                    <circle cx="11" cy="11" r="8"></circle>
+                    <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                  </svg>
+                  <input type="text" id="noSearchInput" class="wms-input-clean combobox-input" 
+                    placeholder="🔍 Digite a peça ou código..." 
+                    style="width: 100%; height: 38px; padding-left: 32px;" autocomplete="off" />
+                  <button type="button" class="combobox-clear-btn hidden" id="noClearBtn" title="Limpar">✕</button>
+                </div>
+                <div class="combobox-dropdown hidden" id="noDropdown"></div>
+                <select id="noProductSelect" style="display:none;">
+                  <option value="">Selecione uma peça...</option>
+                </select>
+              </div>
             </div>
             <div class="field" style="margin: 0;">
               <label>Quantidade</label>
@@ -3465,7 +3515,7 @@
     <span id="wmsToastMsg">Sistema atualizado com sucesso!</span>
   </div>
 
-  <script src="/admin/admin.js?v=20261103_modern_1"></script>
+  <script src="/admin/admin.js?v=20261103_v2"></script>
 </body>
 
 </html>

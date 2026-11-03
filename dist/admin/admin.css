@@ -2113,7 +2113,7 @@ html.has-admin-session #mainScreen {
   }
 
   .danfe-sheet {
-    min-width: 760px !important;
+    min-width: 0 !important;
     /* Preserva proporções e texto legível da NFe sem amassar */
     margin: 0 auto !important;
     box-shadow: 0 4px 18px rgba(0, 0, 0, 0.5) !important;
@@ -8200,8 +8200,10 @@ body:not(.tema-claro) .rack-svg-caption {
 
 .orders-table {
   width: 100% !important;
-  min-width: 860px !important;
+  max-width: 100% !important;
+  min-width: 0 !important;
   border-collapse: collapse !important;
+  table-layout: auto !important;
 }
 
 /* 5. ALTO CONTRASTE DARK MODE - TEXTOS, ITENS E CLIENTE 100% LEGÍVEIS */
@@ -9024,4 +9026,427 @@ body.tema-claro .recent-cust-avatar {
   font-weight: 800 !important;
   color: #4ade80 !important;
   margin-bottom: 2px !important;
+}
+
+
+/* ===================================================================
+   1. AÇÕES E DANFE EMPILHADOS SOBRE O STATUS (ELIMINAÇÃO DE OVERFLOW)
+   =================================================================== */
+.order-col-status-actions,
+.col-th-status-actions {
+  text-align: right !important;
+  width: 135px !important;
+  min-width: 125px !important;
+  white-space: nowrap !important;
+  vertical-align: middle !important;
+}
+
+.status-actions-cell-stack {
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: flex-end !important;
+  gap: 5px !important;
+}
+
+.actions-top-row {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 5px !important;
+}
+
+.btn-danfe-action {
+  background: #ed1c24 !important;
+  color: #ffffff !important;
+  border: 1px solid #dc2626 !important;
+  padding: 4px 8px !important;
+  font-size: 10.5px !important;
+  font-weight: 700 !important;
+  border-radius: 6px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 4px !important;
+  cursor: pointer !important;
+  box-shadow: 0 2px 5px rgba(237, 28, 36, 0.25) !important;
+  transition: all 0.15s ease !important;
+}
+
+.btn-danfe-action:hover {
+  background: #c8131a !important;
+  transform: translateY(-1px) !important;
+}
+
+.btn-delete-action {
+  background: rgba(239, 68, 68, 0.12) !important;
+  color: #ef4444 !important;
+  border: 1px solid rgba(239, 68, 68, 0.25) !important;
+  padding: 4px 6px !important;
+  border-radius: 6px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  cursor: pointer !important;
+  transition: all 0.15s ease !important;
+}
+
+.btn-delete-action:hover {
+  background: rgba(239, 68, 68, 0.25) !important;
+  transform: translateY(-1px) !important;
+}
+
+/* ===================================================================
+   2. SISTEMA VISUAL DE COMBOBOX COM AUTOCOMPLETE / FILTRO DE PEÇAS
+   =================================================================== */
+.wms-search-combobox {
+  position: relative !important;
+  width: 100% !important;
+}
+
+.combobox-input-wrap {
+  position: relative !important;
+  display: flex !important;
+  align-items: center !important;
+  width: 100% !important;
+}
+
+.combobox-search-icon {
+  position: absolute !important;
+  left: 11px !important;
+  color: #94a3b8 !important;
+  pointer-events: none !important;
+  z-index: 2 !important;
+}
+
+.combobox-input {
+  width: 100% !important;
+  padding-left: 34px !important;
+  padding-right: 32px !important;
+  font-size: 13px !important;
+  font-weight: 600 !important;
+  box-sizing: border-box !important;
+  transition: all 0.2s ease !important;
+}
+
+.combobox-clear-btn {
+  position: absolute !important;
+  right: 8px !important;
+  background: rgba(255, 255, 255, 0.1) !important;
+  border: none !important;
+  color: #94a3b8 !important;
+  font-size: 12px !important;
+  width: 20px !important;
+  height: 20px !important;
+  border-radius: 50% !important;
+  cursor: pointer !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  transition: all 0.15s ease !important;
+}
+
+.combobox-clear-btn:hover {
+  background: #ed1c24 !important;
+  color: #ffffff !important;
+}
+
+body.tema-claro .combobox-clear-btn {
+  background: #e2e8f0 !important;
+  color: #64748b !important;
+}
+
+/* Menu Dropdown Suspenso */
+.combobox-dropdown {
+  position: absolute !important;
+  top: calc(100% + 4px) !important;
+  left: 0 !important;
+  right: 0 !important;
+  background: #14171f !important;
+  border: 1px solid rgba(255, 255, 255, 0.15) !important;
+  border-radius: 10px !important;
+  max-height: 250px !important;
+  overflow-y: auto !important;
+  z-index: 1000 !important;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6) !important;
+  padding: 4px !important;
+  scrollbar-width: thin !important;
+}
+
+body.tema-claro .combobox-dropdown {
+  background: #ffffff !important;
+  border-color: #cbd5e1 !important;
+  box-shadow: 0 10px 30px rgba(15, 23, 42, 0.12) !important;
+}
+
+.combobox-item {
+  display: flex !important;
+  align-items: center !important;
+  gap: 10px !important;
+  padding: 8px 10px !important;
+  border-radius: 6px !important;
+  cursor: pointer !important;
+  transition: background 0.15s ease !important;
+}
+
+.combobox-item:hover,
+.combobox-item.selected {
+  background: rgba(237, 28, 36, 0.12) !important;
+}
+
+body.tema-claro .combobox-item:hover,
+body.tema-claro .combobox-item.selected {
+  background: #f1f5f9 !important;
+}
+
+.combobox-thumb {
+  width: 32px !important;
+  height: 32px !important;
+  border-radius: 6px !important;
+  object-fit: cover !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  flex-shrink: 0 !important;
+  aspect-ratio: 1 !important;
+}
+
+body.tema-claro .combobox-thumb {
+  border-color: #e2e8f0 !important;
+}
+
+.combobox-item-body {
+  flex: 1 !important;
+  min-width: 0 !important;
+}
+
+.combobox-item-title {
+  font-size: 12.5px !important;
+  font-weight: 700 !important;
+  color: var(--text-primary) !important;
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+}
+
+.combobox-item-meta {
+  display: flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+  font-size: 11px !important;
+  color: var(--text-muted) !important;
+  margin-top: 2px !important;
+  flex-wrap: wrap !important;
+}
+
+.combobox-badge-sku {
+  font-family: monospace !important;
+  background: rgba(255, 255, 255, 0.08) !important;
+  padding: 1px 5px !important;
+  border-radius: 4px !important;
+  font-size: 10px !important;
+  color: #cbd5e1 !important;
+}
+
+body.tema-claro .combobox-badge-sku {
+  background: #f1f5f9 !important;
+  color: #475569 !important;
+}
+
+.combobox-meta-stock strong {
+  color: #22c55e !important;
+}
+
+.combobox-meta-loc strong {
+  color: #60a5fa !important;
+}
+
+.combobox-item-price {
+  font-size: 12.5px !important;
+  font-weight: 800 !important;
+  color: #4ade80 !important;
+  white-space: nowrap !important;
+}
+
+body.tema-claro .combobox-item-price {
+  color: #16a34a !important;
+}
+
+.combobox-empty {
+  padding: 14px 12px !important;
+  font-size: 12px !important;
+  color: #94a3b8 !important;
+  text-align: center !important;
+}
+
+
+/* ===================================================================
+   1. MODAL DE OPERAÇÕES COMPACTO (REDUÇÃO DE TAMANHO PEDIDA PELO USUÁRIO)
+   =================================================================== */
+#stockOperationModal .modal-card {
+  max-width: 470px !important;
+  width: 92% !important;
+  margin: 20px auto !important;
+  border-radius: 14px !important;
+  box-shadow: 0 15px 45px rgba(0, 0, 0, 0.45) !important;
+}
+
+#stockOperationModal .modal-header {
+  padding: 12px 16px !important;
+}
+
+#stockOperationModal .modal-body {
+  padding: 14px 16px !important;
+}
+
+#stockOperationModal .modal-footer {
+  padding: 12px 16px !important;
+}
+
+#stockOperationModal .field {
+  margin-top: 10px !important;
+  margin-bottom: 0 !important;
+}
+
+#stockOperationModal .stock-field-label {
+  font-size: 11px !important;
+  margin-bottom: 4px !important;
+}
+
+#stockOperationModal .stock-modal-dark-input {
+  height: 36px !important;
+  padding: 6px 10px !important;
+  font-size: 12.5px !important;
+  border-radius: 8px !important;
+}
+
+#stockOperationModal .stock-stepper {
+  height: 36px !important;
+}
+
+#stockOperationModal .btn-stepper {
+  width: 36px !important;
+  height: 36px !important;
+  font-size: 14px !important;
+}
+
+#stockOperationModal #stockOpQty {
+  height: 36px !important;
+  font-size: 14px !important;
+  font-weight: 800 !important;
+}
+
+/* ===================================================================
+   2. BOTÕES DE ENTRADA, SAÍDA, TRANSFERÊNCIA E AJUSTE 100% REATIVOS
+   =================================================================== */
+.op-type-toggle-pills {
+  display: grid !important;
+  grid-template-columns: repeat(4, 1fr) !important;
+  gap: 6px !important;
+}
+
+.op-pill-btn {
+  padding: 7px 6px !important;
+  font-size: 11px !important;
+  font-weight: 700 !important;
+  border-radius: 8px !important;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 4px !important;
+  cursor: pointer !important;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
+  border: 1.5px solid rgba(255, 255, 255, 0.12) !important;
+  background: #12151d !important;
+  color: #94a3b8 !important;
+}
+
+body.tema-claro .op-pill-btn {
+  background: #f8fafc !important;
+  border-color: #cbd5e1 !important;
+  color: #475569 !important;
+}
+
+.op-pill-btn:hover {
+  border-color: #94a3b8 !important;
+  transform: translateY(-1px) !important;
+}
+
+/* Estados Ativos com Cores Distintas em AMBOS os temas */
+.op-pill-btn.active,
+body.tema-claro .op-pill-btn.active {
+  color: #ffffff !important;
+  font-weight: 800 !important;
+  transform: translateY(-1.5px) !important;
+}
+
+.op-pill-btn.active svg,
+body.tema-claro .op-pill-btn.active svg {
+  stroke: #ffffff !important;
+}
+
+.op-pill-btn[data-type="entrada"].active,
+body.tema-claro .op-pill-btn[data-type="entrada"].active {
+  background: #16a34a !important;
+  border-color: #15803d !important;
+  box-shadow: 0 4px 12px rgba(22, 163, 74, 0.35) !important;
+}
+
+.op-pill-btn[data-type="saida"].active,
+body.tema-claro .op-pill-btn[data-type="saida"].active {
+  background: #dc2626 !important;
+  border-color: #b91c1c !important;
+  box-shadow: 0 4px 12px rgba(220, 38, 38, 0.35) !important;
+}
+
+.op-pill-btn[data-type="transferencia"].active,
+body.tema-claro .op-pill-btn[data-type="transferencia"].active {
+  background: #2563eb !important;
+  border-color: #1d4ed8 !important;
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.35) !important;
+}
+
+.op-pill-btn[data-type="ajuste"].active,
+body.tema-claro .op-pill-btn[data-type="ajuste"].active {
+  background: #7c3aed !important;
+  border-color: #6d28d9 !important;
+  box-shadow: 0 4px 12px rgba(124, 58, 237, 0.35) !important;
+}
+
+/* ===================================================================
+   3. SIDEBAR FIXA E ESTÁTICA AO DESCER O DASHBOARD / QUALQUER TELA
+   =================================================================== */
+@media (min-width: 769px) {
+  .wms-sidebar {
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    bottom: 0 !important;
+    width: 260px !important;
+    height: 100vh !important;
+    z-index: 100 !important;
+    display: flex !important;
+    flex-direction: column !important;
+    overflow: hidden !important;
+    box-sizing: border-box !important;
+  }
+
+  .sidebar-brand {
+    flex-shrink: 0 !important;
+  }
+
+  .sidebar-nav {
+    flex: 1 !important;
+    overflow-y: auto !important;
+    scrollbar-width: thin !important;
+  }
+
+  .sidebar-footer {
+    flex-shrink: 0 !important;
+    margin-top: auto !important;
+  }
+
+  .wms-main {
+    margin-left: 260px !important;
+    width: calc(100% - 260px) !important;
+    max-width: calc(100% - 260px) !important;
+    min-height: 100vh !important;
+    box-sizing: border-box !important;
+  }
 }
