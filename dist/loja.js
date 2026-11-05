@@ -2992,9 +2992,12 @@ init();
         }
       }
 
-      if (anoSelect) {
+            if (anoSelect) {
         anoSelect.innerHTML = '<option value="">Ano</option>';
-        for (let y = 2026; y >= 2005; y--) {
+        const currentYear = new Date().getFullYear();
+        const maxYear = currentYear + 1; // Inclui modelo do ano seguinte (ex: 2027)
+        const minYear = 1990; // Ano inicial solicitado pelo usuário
+        for (let y = maxYear; y >= minYear; y--) {
           const opt = document.createElement('option');
           opt.value = String(y);
           opt.textContent = String(y);

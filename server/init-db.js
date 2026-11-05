@@ -252,15 +252,7 @@ async function main() {
       await db.query(
         `INSERT INTO products (name, code, category, description, compatibility, price_cents, stock_qty, photo_url, active)
          VALUES ($1, $2, $3, $4, $5, $6, $7, $8, true)
-         ON CONFLICT (code) DO UPDATE SET
-           name = EXCLUDED.name,
-           category = EXCLUDED.category,
-           description = EXCLUDED.description,
-           compatibility = EXCLUDED.compatibility,
-           price_cents = EXCLUDED.price_cents,
-           stock_qty = EXCLUDED.stock_qty,
-           photo_url = EXCLUDED.photo_url,
-           active = true;`,
+         ON CONFLICT (code) DO NOTHING;`,
         [p.name, p.code, p.category, p.description, p.compatibility || '', p.price_cents, p.stock_qty, p.photo_url]
       );
     }

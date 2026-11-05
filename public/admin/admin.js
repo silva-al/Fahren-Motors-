@@ -1,3 +1,15 @@
+
+// Cache de renderização de abas para troca instantânea (0ms) sem travamentos
+const _wmsTabRenderCache = {
+  productsCount: -1,
+  ordersCount: -1,
+  lastAlertsFetch: 0,
+  lastOperationsFetch: 0,
+  lastMovementsFetch: 0,
+  lastInventoryFetch: 0,
+  initializedPanes: new Set(),
+};
+
 // ===================================================================
 // FAHREN MOTORS — PAINEL DE GESTÃO WMS & MÓDULO FISCAL / FINANCEIRO
 // ===================================================================
@@ -121,6 +133,19 @@ window.initAdminSyncChannel = initAdminSyncChannel;
 
 function money(v) {
   return Number(v || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+}
+
+
+function formatDateOnly(isoStr) {
+  if (!isoStr) return '-';
+  const d = new Date(isoStr);
+  return d.toLocaleDateString('pt-BR');
+}
+
+function formatTimeOnly(isoStr) {
+  if (!isoStr) return '';
+  const d = new Date(isoStr);
+  return d.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
 }
 
 function formatDate(isoStr) {
@@ -922,6 +947,9 @@ function renderProductsTable(products, activeFilter = null) {
           <span class="prod-sku-code" style="font-weight:700;font-family:monospace">${p.code || 'S/CÓD'}</span>
         </td>
         <td><span class="cat-pill-badge">${p.category || 'Geral'}</span></td>
+        <td>
+          <strong class="prod-price-text" style="color:var(--text-primary);font-weight:800;font-size:13px">${money(p.price)}</strong>
+        </td>
         <td>
           <div style="display:flex;align-items:center;gap:4px">
             <div class="stock-control-cell">
@@ -1874,10 +1902,13 @@ function getPaymentBadgeHtml(methodLabel) {
   if (str.includes('cart') || str.includes('créd') || str.includes('deb')) {
     return `<span class="order-pay-badge pay-card"><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"></rect><line x1="1" y1="10" x2="23" y2="10"></line></svg> CARTÃO</span>`;
   }
-  if (str.includes('dinheiro') || str.includes('especie')) {
+  if (str.includes('dinheiro') || str.includes('especie') || str.includes('balcao')) {
     return `<span class="order-pay-badge pay-money"><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="2" y="6" width="20" height="12" rx="2"></rect><circle cx="12" cy="12" r="2"></circle></svg> DINHEIRO</span>`;
   }
-  return `<span class="order-pay-badge pay-other">${methodLabel || 'OUTRO'}</span>`;
+  if (str.includes('retirada') || str.includes('entrega')) {
+    return `<span class="order-pay-badge pay-retirada" title="${methodLabel || 'Retirada ou Entrega'}"><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path><line x1="3" y1="6" x2="21" y2="6"></line></svg> RETIRADA</span>`;
+  }
+  return `<span class="order-pay-badge pay-other" title="${methodLabel || 'OUTRO'}">${methodLabel || 'OUTRO'}</span>`;
 }
 
 function updateOrdersKpisAndSummary() {
@@ -2001,7 +2032,7 @@ function renderOrdersTable(orders) {
   tbody.innerHTML = orders.map(o => {
     const items = o.items || [];
     const itemsHtml = items.length
-      ? items.map(i => `<div class="order-item-row"><span class="order-item-qty">${i.quantity}x</span> <span class="order-item-title">${i.name}</span></div>`).join('')
+      ? items.map(i => `<div class="order-item-row"><span class="order-item-qty">${i.quantity}x</span> <span class="order-item-title">${i.name}</span>${i.location ? `<span class="order-item-loc-tag">📍 ${i.location}</span>` : ''}</div>`).join('')
       : '<span style="color:var(--text-muted);font-size:12px">Nenhum item informado</span>';
 
     const payBadge = getPaymentBadgeHtml(o.paymentMethodLabel);
@@ -2030,7 +2061,10 @@ function renderOrdersTable(orders) {
           ${payBadge}
         </td>
         <td class="order-col-date">
-          <div class="order-date-text">${formatDate(o.createdAt)}</div>
+          <div class="order-date-text">
+            <span class="order-date-day">${formatDateOnly(o.createdAt)}</span>
+            <span class="order-date-time">${formatTimeOnly(o.createdAt)}</span>
+          </div>
         </td>
         <td class="order-col-status-actions" style="text-align:right">
           <div class="status-actions-cell-stack">

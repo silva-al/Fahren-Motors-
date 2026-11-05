@@ -8578,3 +8578,57 @@ body:not(.tema-claro) .cart-item-thumb {
     padding: 3px !important;
   }
 }
+
+
+/* =========================================================================
+   CORREÇÃO IMAGEM 3: FOTOS DE PRODUTOS MAIORES, PREENCHENDO O CARD SEM BORDAS VAZIAS
+   ========================================================================= */
+.cart-item-thumb {
+  width: 125px !important;
+  min-width: 125px !important;
+  max-width: 125px !important;
+  height: 125px !important;
+  min-height: 125px !important;
+  max-height: 125px !important;
+  aspect-ratio: 1 / 1 !important;
+  border-radius: 14px !important;
+  overflow: hidden !important;
+  background: #090a0d !important;
+  border: 1.5px solid #e2e8f0 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  flex-shrink: 0 !important;
+  padding: 0 !important; /* Elimina o espaço vazio interno */
+  box-sizing: border-box !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
+}
+
+body.tema-claro .cart-item-thumb {
+  background: #f8fafc !important;
+  border-color: #cbd5e1 !important;
+  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.06) !important;
+}
+
+.cart-item-thumb img {
+  width: 100% !important;
+  height: 100% !important;
+  max-width: 100% !important;
+  max-height: 100% !important;
+  object-fit: cover !important; /* Preenche com destaque o card inteiro */
+  object-position: center !important;
+  display: block !important;
+  border-radius: 12px !important;
+  background: transparent !important;
+}
+
+@media (max-width: 600px) {
+  .cart-item-thumb {
+    width: 105px !important;
+    min-width: 105px !important;
+    max-width: 105px !important;
+    height: 105px !important;
+    min-height: 105px !important;
+    max-height: 105px !important;
+  }
+}

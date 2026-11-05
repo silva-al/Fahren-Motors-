@@ -6,7 +6,14 @@ const { requireRole } = require('../middleware/auth');
 const router = express.Router();
 
 function toCents(reais) {
-  return Math.round(Number(reais) * 100);
+  if (reais === null || reais === undefined || reais === '') return 0;
+  if (typeof reais === 'string') {
+    const clean = reais.replace(/[^\d.,-]/g, '').replace(',', '.');
+    const val = parseFloat(clean);
+    return isNaN(val) ? 0 : Math.round(val * 100);
+  }
+  const num = Number(reais);
+  return isNaN(num) ? 0 : Math.round(num * 100);
 }
 function toReais(cents) {
   return Math.round(cents) / 100;
@@ -264,7 +271,7 @@ router.put('/:id', requireRole('admin'), async (req, res) => {
         category ?? null,
         description ?? null,
         compatibility ?? null,
-        price !== undefined ? toCents(price) : null,
+        (price !== undefined && price !== null && price !== '') ? toCents(price) : null,
         stockQty !== undefined ? stockQty : null,
         photoUrl ?? null,
         location ?? null,

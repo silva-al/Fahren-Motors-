@@ -10917,3 +10917,227 @@ th.col-th-status-actions,
     border: 1px solid #94a3b8 !important;
   }
 }
+
+
+/* ===================================================================
+   DESIGN SYSTEM (TAILWIND-DESIGN-SYSTEM): TABELA DE PEDIDOS POLIDA
+   =================================================================== */
+
+.orders-table {
+  width: 100% !important;
+  min-width: 880px !important;
+  border-collapse: separate !important;
+  border-spacing: 0 !important;
+}
+
+.orders-table th {
+  padding: 12px 12px !important;
+  font-size: 11px !important;
+  font-weight: 800 !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.6px !important;
+  white-space: nowrap !important;
+  text-align: center !important;
+  border-bottom: 1.5px solid var(--panel-border, #e2e8f0) !important;
+}
+
+.orders-table td {
+  padding: 12px 10px !important;
+  vertical-align: middle !important;
+  box-sizing: border-box !important;
+  text-align: center !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06) !important;
+}
+
+body.tema-claro .orders-table td {
+  border-bottom: 1px solid #f1f5f9 !important;
+}
+
+/* Larguras Proporcionadas sem quebra ou elipse */
+.col-th-id, .order-col-id {
+  width: 95px !important;
+  min-width: 95px !important;
+  white-space: nowrap !important;
+}
+
+.col-th-customer, .order-col-customer {
+  min-width: 150px !important;
+  text-align: left !important;
+}
+
+.col-th-items, .order-col-items {
+  min-width: 220px !important;
+  text-align: left !important;
+}
+
+.col-th-total, .order-col-total {
+  min-width: 100px !important;
+  white-space: nowrap !important;
+  text-align: center !important;
+}
+
+.col-th-pay, .order-col-pay {
+  min-width: 130px !important;
+  white-space: nowrap !important;
+  text-align: center !important;
+}
+
+.col-th-date, .order-col-date {
+  min-width: 110px !important;
+  white-space: nowrap !important;
+  text-align: center !important;
+}
+
+.col-th-status-actions, .order-col-status-actions {
+  min-width: 175px !important;
+  white-space: nowrap !important;
+  text-align: center !important;
+}
+
+/* Data em Cima e Hora Embaixo */
+.order-date-text {
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 2px !important;
+  line-height: 1.25 !important;
+}
+
+.order-date-day {
+  font-weight: 700 !important;
+  color: var(--text-primary, #0f172a) !important;
+  font-size: 11.5px !important;
+  white-space: nowrap !important;
+}
+
+body:not(.tema-claro) .order-date-day {
+  color: #ffffff !important;
+}
+
+.order-date-time {
+  font-size: 11px !important;
+  color: var(--text-muted, #64748b) !important;
+  font-weight: 600 !important;
+  white-space: nowrap !important;
+}
+
+body:not(.tema-claro) .order-date-time {
+  color: #94a3b8 !important;
+}
+
+/* Badge de Pagamento com Retirada / Balcão */
+.order-pay-badge.pay-retirada {
+  background: rgba(249, 115, 22, 0.12) !important;
+  color: #ea580c !important;
+  border: 1px solid rgba(249, 115, 22, 0.35) !important;
+}
+
+body:not(.tema-claro) .order-pay-badge.pay-retirada {
+  background: rgba(249, 115, 22, 0.18) !important;
+  color: #fb923c !important;
+  border-color: rgba(249, 115, 22, 0.4) !important;
+}
+
+/* Célula de Status & Ações Organizada */
+.status-actions-cell-stack {
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 7px !important;
+}
+
+.status-actions-cell-stack .actions-top-row {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 6px !important;
+}
+
+.status-badge-wrap {
+  min-width: 125px !important;
+  display: inline-flex !important;
+  justify-content: center !important;
+}
+
+.order-item-loc-tag {
+  font-size: 10.5px !important;
+  font-weight: 700 !important;
+  color: #38bdf8 !important;
+  background: rgba(56, 189, 248, 0.12) !important;
+  padding: 1px 6px !important;
+  border-radius: 4px !important;
+  border: 1px solid rgba(56, 189, 248, 0.25) !important;
+  margin-left: 6px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  vertical-align: middle !important;
+}
+
+/* Preço do Produto na Tabela de Estoque */
+.prod-price-text {
+  color: var(--text-primary, #0f172a) !important;
+  font-weight: 800 !important;
+  font-size: 13px !important;
+  white-space: nowrap !important;
+}
+
+body:not(.tema-claro) .prod-price-text {
+  color: #ffffff !important;
+}
+
+/* ===================================================================
+   MODAL DANFE / DACCE COM RESPIRO SUPERIOR (NÃO ENCOSTA NO TOPO)
+   =================================================================== */
+
+#danfeModal.modal-overlay,
+#dacceModal.modal-overlay {
+  align-items: flex-start !important;
+  justify-content: center !important;
+  overflow-y: auto !important;
+  padding: 38px 16px 60px 16px !important;
+}
+
+#danfeModal .modal-danfe-container,
+#dacceModal .modal-danfe-container {
+  margin: 0 auto 50px auto !important;
+  width: 100% !important;
+  max-width: 960px !important;
+  box-shadow: 0 25px 70px rgba(0, 0, 0, 0.85) !important;
+  border-radius: 14px !important;
+  overflow: visible !important;
+}
+
+#danfeModal .modal-danfe-actions,
+#dacceModal .modal-danfe-actions {
+  position: sticky !important;
+  top: 0 !important;
+  z-index: 25 !important;
+  background: #121418 !important;
+  border-bottom: 1px solid var(--panel-border, #292c31) !important;
+  border-top-left-radius: 14px !important;
+  border-top-right-radius: 14px !important;
+  padding: 14px 22px !important;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25) !important;
+}
+
+body.tema-claro #danfeModal .modal-danfe-actions,
+body.tema-claro #dacceModal .modal-danfe-actions {
+  background: #ffffff !important;
+  border-bottom: 1px solid #e2e8f0 !important;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.08) !important;
+}
+
+#danfeModal .danfe-scroll-viewport,
+#dacceModal .danfe-scroll-viewport {
+  padding: 16px 20px 24px 20px !important;
+  background: #0f1115 !important;
+  border-bottom-left-radius: 14px !important;
+  border-bottom-right-radius: 14px !important;
+}
+
+body.tema-claro #danfeModal .danfe-scroll-viewport,
+body.tema-claro #dacceModal .danfe-scroll-viewport {
+  background: #f1f5f9 !important;
+}

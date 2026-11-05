@@ -20,27 +20,19 @@ async function syncCatalog(force = false) {
     await db.query(`ALTER TABLE products ADD COLUMN IF NOT EXISTS active BOOLEAN NOT NULL DEFAULT true;`);
     await db.query(`ALTER TABLE customers ADD COLUMN IF NOT EXISTS cpf_cnpj TEXT;`);
 
-    // 2. Verifica quantas peças ativas existem no banco
-    const countRes = await db.query(`SELECT count(*)::int AS count FROM products WHERE active = true;`);
-    const currentCount = (countRes.rows[0] && countRes.rows[0].count) || 0;
+    // 2. Verifica se o banco de dados já possui qualquer peça cadastrada
+    const countRes = await db.query(`SELECT count(*)::int AS count FROM products;`);
+    const totalCount = (countRes.rows[0] && countRes.rows[0].count) || 0;
 
-    // Se tiver menos de 10 peças ou for forçado, faz o upsert do catálogo oficial
-    if (currentCount < 10 || force) {
+    // Só realiza a inserção inicial se o banco estiver 100% vazio e sem nenhuma peça,
+    // garantindo que peças excluídas ou editadas pelo usuário NUNCA voltem sozinhas.
+    if (totalCount === 0 || force) {
       console.log(`[SyncCatalog] Sincronizando catálogo oficial (${INITIAL_PRODUCTS.length} peças)...`);
       for (const p of INITIAL_PRODUCTS) {
         await db.query(
           `INSERT INTO products (name, code, category, description, compatibility, price_cents, stock_qty, photo_url, location, active)
            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, true)
-           ON CONFLICT (code) DO UPDATE SET
-             name = COALESCE(products.name, EXCLUDED.name),
-             category = COALESCE(products.category, EXCLUDED.category),
-             description = COALESCE(products.description, EXCLUDED.description),
-             compatibility = COALESCE(products.compatibility, EXCLUDED.compatibility),
-             price_cents = COALESCE(products.price_cents, EXCLUDED.price_cents),
-             stock_qty = products.stock_qty,
-             photo_url = COALESCE(products.photo_url, EXCLUDED.photo_url),
-             location = COALESCE(products.location, EXCLUDED.location),
-             active = true;`,
+           ON CONFLICT (code) DO NOTHING;`,
           [p.name, p.code, p.category, p.description, p.compatibility || '', p.price_cents, p.stock_qty, p.photo_url, p.location || null]
         );
       }
