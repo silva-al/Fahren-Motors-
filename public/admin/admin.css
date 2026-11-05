@@ -1423,7 +1423,7 @@ html.has-admin-session #mainScreen {
 /* CABEÇALHO PRINCIPAL (3 COLUNAS ESPAÇOSAS) */
 .nf-header-main {
   display: grid;
-  grid-template-columns: 2.3fr 1.1fr 2.4fr;
+  grid-template-columns: 1.85fr 1.05fr 2.85fr;
   border: 1px solid #000;
   box-sizing: border-box;
   min-height: 106px;
@@ -1541,8 +1541,8 @@ html.has-admin-session #mainScreen {
 .nf-barcode-svg-wrap svg,
 .danfe-barcode-svg {
   width: 100%;
-  max-width: 325px;
-  height: 54px;
+  max-width: 350px;
+  height: 58px;
   display: block;
   margin: 0 auto;
   shape-rendering: crispEdges;
@@ -1585,30 +1585,46 @@ html.has-admin-session #mainScreen {
 
 .nf-cell {
   flex: 1;
-  padding: 3px 6px;
-  min-height: 27px;
+  padding: 4px 6px;
+  min-height: 30px;
   font-size: 8.8px;
   box-sizing: border-box;
-  text-align: center;
+  display: flex !important;
+  flex-direction: column !important;
+  justify-content: center !important;
+  align-items: center !important;
+  text-align: center !important;
 }
 
 .nf-label {
-  display: block;
-  font-size: 6.5px;
-  font-weight: bold;
-  color: #000;
-  text-transform: uppercase;
-  letter-spacing: 0.15px;
-  line-height: 1.05;
-  margin-bottom: 2px;
-  text-align: center;
+  display: block !important;
+  font-size: 6.8px !important;
+  font-weight: bold !important;
+  color: #000 !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.15px !important;
+  line-height: 1.15 !important;
+  margin: 0 0 2px 0 !important;
+  text-align: center !important;
+  width: 100% !important;
+}
+
+.nf-cell span,
+.nf-cell strong,
+.nf-val {
+  font-size: 8.8px !important;
+  color: #000 !important;
+  line-height: 1.2 !important;
+  text-align: center !important;
+  width: 100% !important;
+  display: block !important;
 }
 
 .nf-section-title {
   background: #e6e6e6;
   font-weight: bold;
   font-size: 7.5px;
-  padding: 2.5px 6px;
+  padding: 3px 6px;
   border: 1px solid #000;
   border-bottom: none;
   text-transform: uppercase;
@@ -1620,13 +1636,17 @@ html.has-admin-session #mainScreen {
 
 /* CÁLCULO DO IMPOSTO CENTRALIZADO */
 .nf-calc-imposto .nf-cell {
-  text-align: center;
-  padding: 3px 6px;
-  min-height: 27px;
+  text-align: center !important;
+  padding: 4px 6px !important;
+  min-height: 30px !important;
+  display: flex !important;
+  flex-direction: column !important;
+  justify-content: center !important;
+  align-items: center !important;
 }
 
 .nf-calc-imposto .nf-label {
-  text-align: center;
+  text-align: center !important;
 }
 
 /* TABELA DE PRODUTOS COM BORDA VERTICAL CONTÍNUA E CENTRALIZADA */

@@ -3435,7 +3435,7 @@ window.openDanfeForOrder = (orderId) => {
       </div>
       <div class="nf-header-barcode">
         <div class="nf-barcode-svg-wrap">
-          ${generateCode128Svg(rawKey, 52)}
+          ${generateCode128Svg(rawKey, 58)}
         </div>
         <div class="nf-key-label">CHAVE DE ACESSO</div>
         <div class="nf-key-text">${nf.accessKey}</div>
@@ -3730,7 +3730,7 @@ function getDanfeStandalonePrintCss() {
     .nf-canhoto-num { font-size: 10.5px !important; font-weight: bold !important; white-space: nowrap !important; margin-top: 3px !important; }
     .nf-canhoto-serie { font-size: 8.5px !important; margin-top: 1px !important; }
     .nf-cut-line { border-top: 1px dashed #000 !important; margin: 4px 0 5px 0 !important; }
-    .nf-header-main { display: grid !important; grid-template-columns: 2.3fr 1.1fr 2.4fr !important; border: 1px solid #000 !important; box-sizing: border-box !important; min-height: 104px !important; page-break-inside: avoid !important; }
+    .nf-header-main { display: grid !important; grid-template-columns: 1.85fr 1.05fr 2.85fr !important; border: 1px solid #000 !important; box-sizing: border-box !important; min-height: 106px !important; page-break-inside: avoid !important; }
     .nf-header-emitente { padding: 6px 10px !important; display: flex !important; flex-direction: column !important; justify-content: center !important; text-align: center !important; }
     .nf-emitente-sub { font-size: 6.8px !important; font-weight: bold !important; color: #222 !important; text-transform: uppercase !important; margin-bottom: 3px !important; }
     .nf-emitente-brand { font-size: 13px !important; font-weight: 900 !important; color: #000 !important; text-transform: uppercase !important; letter-spacing: 0.6px !important; margin-bottom: 3px !important; }
@@ -3745,16 +3745,17 @@ function getDanfeStandalonePrintCss() {
     .nf-danfe-sub { font-size: 8px !important; line-height: 1.25 !important; }
     .nf-header-barcode { display: flex !important; flex-direction: column !important; align-items: center !important; justify-content: center !important; padding: 4px 6px !important; text-align: center !important; background: #ffffff !important; }
     .nf-barcode-svg-wrap { width: 100% !important; text-align: center !important; margin-bottom: 2px !important; display: flex !important; justify-content: center !important; align-items: center !important; background: #ffffff !important; }
-    .nf-barcode-svg-wrap svg, .danfe-barcode-svg { width: 100% !important; max-width: 78mm !important; height: 54px !important; display: block !important; margin: 0 auto !important; shape-rendering: crispEdges !important; }
+    .nf-barcode-svg-wrap svg, .danfe-barcode-svg { width: 100% !important; max-width: 96mm !important; height: 58px !important; display: block !important; margin: 0 auto !important; shape-rendering: crispEdges !important; }
     .nf-key-label { font-size: 6.8px !important; font-weight: bold !important; text-transform: uppercase !important; letter-spacing: 0.2px !important; }
     .nf-key-text { font-family: 'Courier New', Courier, monospace !important; font-size: 8.2px !important; font-weight: bold !important; letter-spacing: 0.5px !important; white-space: nowrap !important; margin: 2px 0 3px 0 !important; }
     .nf-consulta-box { font-size: 6.4px !important; line-height: 1.2 !important; color: #000 !important; border-top: 1px solid #000 !important; width: 100% !important; padding-top: 3px !important; margin-top: 2px !important; }
     .nf-row { display: flex !important; border: 1px solid #000 !important; border-top: none !important; box-sizing: border-box !important; text-align: center !important; page-break-inside: avoid !important; }
-    .nf-cell { flex: 1 !important; padding: 3px 6px !important; min-height: 25px !important; font-size: 8.8px !important; box-sizing: border-box !important; text-align: center !important; border-right: 1px solid #000 !important; }
+    .nf-cell { flex: 1 !important; padding: 4px 6px !important; min-height: 30px !important; font-size: 8.8px !important; box-sizing: border-box !important; display: flex !important; flex-direction: column !important; justify-content: center !important; align-items: center !important; text-align: center !important; border-right: 1px solid #000 !important; }
     .nf-cell:last-child { border-right: none !important; }
-    .nf-label { display: block !important; font-size: 6.5px !important; font-weight: bold !important; color: #000 !important; text-transform: uppercase !important; letter-spacing: 0.15px !important; line-height: 1.05 !important; margin-bottom: 2px !important; text-align: center !important; }
-    .nf-val { font-size: 8.8px !important; font-weight: 700 !important; color: #000 !important; }
-    .nf-section-title { background: #e6e6e6 !important; font-weight: bold !important; font-size: 7.5px !important; padding: 2.5px 6px !important; border: 1px solid #000 !important; border-bottom: none !important; text-transform: uppercase !important; letter-spacing: 0.25px !important; margin-top: 4px !important; box-sizing: border-box !important; text-align: center !important; page-break-inside: avoid !important; }
+    .nf-label { display: block !important; font-size: 6.8px !important; font-weight: bold !important; color: #000 !important; text-transform: uppercase !important; letter-spacing: 0.15px !important; line-height: 1.15 !important; margin: 0 0 2px 0 !important; text-align: center !important; width: 100% !important; }
+    .nf-cell span, .nf-cell strong, .nf-val { font-size: 8.8px !important; color: #000 !important; line-height: 1.2 !important; text-align: center !important; width: 100% !important; display: block !important; }
+    .nf-section-title { background: #e6e6e6 !important; font-weight: bold !important; font-size: 7.5px !important; padding: 3px 6px !important; border: 1px solid #000 !important; border-bottom: none !important; text-transform: uppercase !important; letter-spacing: 0.25px !important; margin-top: 4px !important; box-sizing: border-box !important; text-align: center !important; page-break-inside: avoid !important; }
+    .nf-calc-imposto .nf-cell { text-align: center !important; padding: 4px 6px !important; min-height: 30px !important; display: flex !important; flex-direction: column !important; justify-content: center !important; align-items: center !important; }
     .nf-products-container { position: relative !important; border: 1px solid #000 !important; border-top: none !important; min-height: 160px !important; display: flex !important; flex-direction: column !important; }
     .nf-products-table { width: 100% !important; border-collapse: collapse !important; font-size: 8.5px !important; table-layout: fixed !important; flex: 1 !important; }
     .nf-products-table th { background: #e6e6e6 !important; border-bottom: 1px solid #000 !important; border-right: 1px solid #000 !important; padding: 3.5px 3px !important; text-align: center !important; font-size: 6.5px !important; font-weight: bold !important; text-transform: uppercase !important; line-height: 1.1 !important; }
