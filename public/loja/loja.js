@@ -1938,6 +1938,10 @@ function initProductViewer() {
   let lbScale = 1.0;
   let lbPanX = 0;
   let lbPanY = 0;
+  let targetScale = 1.0;
+  let targetPanX = 0;
+  let targetPanY = 0;
+  let isZoomAnimating = false;
   let lbDragging = false;
   let lbStartX = 0;
   let lbStartY = 0;
@@ -1954,6 +1958,38 @@ function initProductViewer() {
     }
   }
 
+  function syncZoomTargets() {
+    targetScale = lbScale;
+    targetPanX = lbPanX;
+    targetPanY = lbPanY;
+    isZoomAnimating = false;
+  }
+
+  // Loop de animação contínua (Lerp 60/120 FPS) para zoom fluido sem travamento
+  function runZoomSpringLoop() {
+    if (!isZoomAnimating) return;
+
+    const lerpFactor = 0.22;
+    const dScale = targetScale - lbScale;
+    const dPanX = targetPanX - lbPanX;
+    const dPanY = targetPanY - lbPanY;
+
+    if (Math.abs(dScale) < 0.001 && Math.abs(dPanX) < 0.2 && Math.abs(dPanY) < 0.2) {
+      lbScale = targetScale;
+      lbPanX = targetPanX;
+      lbPanY = targetPanY;
+      updateLbTransform();
+      isZoomAnimating = false;
+      return;
+    }
+
+    lbScale += dScale * lerpFactor;
+    lbPanX += dPanX * lerpFactor;
+    lbPanY += dPanY * lerpFactor;
+    updateLbTransform();
+    requestAnimationFrame(runZoomSpringLoop);
+  }
+
   function openLightbox() {
     if (modal) {
       modal.style.display = 'flex';
@@ -1962,6 +1998,7 @@ function initProductViewer() {
       lbScale = 1.0;
       lbPanX = 0;
       lbPanY = 0;
+      syncZoomTargets();
       updateLbTransform();
       try {
         window.history.pushState({ modal: 'lightbox', depth: navDepth + 1 }, '');
@@ -1974,6 +2011,7 @@ function initProductViewer() {
     document.documentElement.style.overflow = '';
     document.body.style.overflow = '';
     lbDragging = false;
+    isZoomAnimating = false;
     lbViewport?.classList.remove('is-dragging');
     if (shouldPopHistory && window.history.state && window.history.state.modal === 'lightbox') {
       try {
@@ -1988,35 +2026,31 @@ function initProductViewer() {
     e.preventDefault();
     e.stopPropagation();
 
-    // Fator de zoom proporcional contínuo sem saltos bruscos
-    const zoomRatio = e.deltaY < 0 ? 1.12 : (1 / 1.12);
-    const newScale = Math.min(5.0, Math.max(1.0, lbScale * zoomRatio));
+    // Normalização calibrada para resposta suave em mouse com fio e touchpads
+    const rawDelta = e.deltaY;
+    const zoomRatio = rawDelta < 0 ? 1.15 : (1 / 1.15);
+    const newTarget = Math.min(5.0, Math.max(1.0, targetScale * zoomRatio));
 
-    if (newScale === 1.0) {
-      lbPanX = 0;
-      lbPanY = 0;
+    if (newTarget === 1.0) {
+      targetPanX = 0;
+      targetPanY = 0;
     } else if (lbViewport) {
-      // Ponto focal centralizado na posição do ponteiro do mouse
       const rect = lbViewport.getBoundingClientRect();
       const originX = e.clientX - rect.left - rect.width / 2;
       const originY = e.clientY - rect.top - rect.height / 2;
-      const k = 1 - (newScale / lbScale);
-      lbPanX += (originX - lbPanX) * k;
-      lbPanY += (originY - lbPanY) * k;
+      const k = 1 - (newTarget / targetScale);
+      targetPanX += (originX - targetPanX) * k;
+      targetPanY += (originY - targetPanY) * k;
     }
 
-    lbScale = newScale;
+    targetScale = newTarget;
 
-    if (!lbRafPending) {
-      lbRafPending = true;
-      requestAnimationFrame(() => {
-        updateLbTransform();
-        lbRafPending = false;
-      });
+    if (!isZoomAnimating) {
+      isZoomAnimating = true;
+      requestAnimationFrame(runZoomSpringLoop);
     }
   };
 
-  lbViewport?.addEventListener('wheel', handleLbWheelZoom, { passive: false });
   modal?.addEventListener('wheel', handleLbWheelZoom, { passive: false });
 
   // Swipe para navegar fotos no Lightbox em tela cheia no mobile
@@ -2073,6 +2107,7 @@ function initProductViewer() {
   lbZoomIn?.addEventListener('click', () => {
     if (lbScale < 5.0) {
       lbScale = Math.min(5.0, Math.round((lbScale + 0.1) * 10) / 10);
+      syncZoomTargets();
       updateLbTransform();
     }
   });
@@ -2080,6 +2115,7 @@ function initProductViewer() {
   lbZoomOut?.addEventListener('click', () => {
     if (lbScale > 1.0) {
       lbScale = Math.max(1.0, Math.round((lbScale - 0.1) * 10) / 10);
+      syncZoomTargets();
       updateLbTransform();
     }
   });
@@ -2088,6 +2124,7 @@ function initProductViewer() {
     lbScale = 1.0;
     lbPanX = 0;
     lbPanY = 0;
+    syncZoomTargets();
     updateLbTransform();
   });
 
@@ -2095,6 +2132,7 @@ function initProductViewer() {
   if (lbViewport) {
     lbViewport.addEventListener('mousedown', (e) => {
       e.preventDefault();
+      syncZoomTargets();
       lbDragging = true;
       lbStartX = e.clientX - lbPanX;
       lbStartY = e.clientY - lbPanY;

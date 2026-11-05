@@ -416,4 +416,36 @@ it('deve conter o modal de tela cheia (lightbox) com controles de zoom e fechar'
       expect(resFaturado.success).toBe(true);
     });
   });
+
+  describe('Fiscal DANFE - Modulo 11 & Code 128C Validation', () => {
+    function calculateNfAccessKeyDv(key43) {
+      const digits = String(key43).replace(/\D/g, '').slice(0, 43);
+      if (digits.length !== 43) return '0';
+      let sum = 0;
+      let weight = 2;
+      for (let i = digits.length - 1; i >= 0; i--) {
+        sum += parseInt(digits[i], 10) * weight;
+        weight = weight === 9 ? 2 : weight + 1;
+      }
+      const remainder = sum % 11;
+      const dv = (remainder === 0 || remainder === 1) ? 0 : 11 - remainder;
+      return String(dv);
+    }
+
+    it('deve calcular corretamente o Digito Verificador Modulo 11 da Chave de Acesso SEFAZ', () => {
+      const key43 = '3526094778431700012055001000000008110000136';
+      const dv = calculateNfAccessKeyDv(key43);
+      expect(dv).toBe('9');
+      const fullKey = key43 + dv;
+      expect(fullKey.length).toBe(44);
+    });
+
+    it('deve gerar chave de 44 digitos com formato padrao SEFAZ', () => {
+      const rawKey43 = '3526094778431700012055001000000001110000187';
+      const dv = calculateNfAccessKeyDv(rawKey43);
+      expect(dv).toMatch(/^[0-9]$/);
+      const fullKey = rawKey43 + dv;
+      expect(fullKey.length).toBe(44);
+    });
+  });
 });

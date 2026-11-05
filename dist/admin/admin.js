@@ -2786,8 +2786,22 @@ function getIssuedNfsMap() {
   }
 }
 
+function calculateNfAccessKeyDv(key43) {
+  const digits = String(key43).replace(/\D/g, '').slice(0, 43);
+  if (digits.length !== 43) return '0';
+  let sum = 0;
+  let weight = 2;
+  for (let i = digits.length - 1; i >= 0; i--) {
+    sum += parseInt(digits[i], 10) * weight;
+    weight = weight === 9 ? 2 : weight + 1;
+  }
+  const remainder = sum % 11;
+  const dv = (remainder === 0 || remainder === 1) ? 0 : 11 - remainder;
+  return String(dv);
+}
+
 function generateNfAccessKey(orderId) {
-  // Gera chave de acesso formatada NFe de 44 dígitos
+  // Gera chave de acesso oficial NFe de 44 dígitos com Dígito Verificador Módulo 11 SEFAZ
   const year = '26';
   const month = '09';
   const cnpjClean = '47784317000120';
@@ -2796,9 +2810,9 @@ function generateNfAccessKey(orderId) {
   const numNf = String(orderId).padStart(9, '0');
   const typeEmis = '1';
   const codeNum = String(10000000 + Number(orderId) * 17).slice(-8);
-  const rawKey = `35${year}${month}${cnpjClean}${model}${serie}${numNf}${typeEmis}${codeNum}`;
-  const dv = '7';
-  const fullKey = rawKey + dv;
+  const rawKey43 = `35${year}${month}${cnpjClean}${model}${serie}${numNf}${typeEmis}${codeNum}`;
+  const dv = calculateNfAccessKeyDv(rawKey43);
+  const fullKey = rawKey43 + dv;
   // Formata com espaços a cada 4 dígitos
   return fullKey.match(/.{1,4}/g).join(' ');
 }
@@ -3243,8 +3257,8 @@ function generateCode128Svg(codeText, height = 52) {
   sequence.push(checksum);
   sequence.push(106); // Stop
 
-  // Quiet Zone de 10 módulos brancos de cada lado (obrigatório pelas normas GS1 e SEFAZ para leitura ótica)
-  const quietZone = 10;
+  // Quiet Zone de segurança (mínimo de 18 módulos no DANFE para leitura ótica imediata sem interferência de bordas)
+  const quietZone = isDanfe ? 18 : 10;
   let totalDataModules = 0;
   sequence.forEach(code => {
     const pattern = patterns[code];
@@ -3269,7 +3283,7 @@ function generateCode128Svg(codeText, height = 52) {
   });
 
   const svgStyle = isDanfe
-    ? 'width:76mm;max-width:100%;height:' + height + 'px;display:block;margin:0 auto;background:#ffffff;'
+    ? 'width:100%;max-width:325px;height:' + height + 'px;display:block;margin:0 auto;background:#ffffff;'
     : 'width:100%;max-width:' + Math.max(180, totalWidth * 1.5) + 'px;height:' + height + 'px;display:block;margin:0 auto;background:#ffffff;';
 
   let svg = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ' + totalWidth + ' ' + height + '" ' +
@@ -3362,7 +3376,15 @@ window.openDanfeForOrder = (orderId) => {
   const emissaoFull = formatDate(nf.issuedAt);
   const emissaoHora = formatDate(nf.issuedAt).slice(11);
   const nfNumFull = `000.${String(nf.nfNumber).padStart(6, '0')}`;
-  const rawKey = nf.accessKey.replace(/\s+/g, '');
+  let rawKey = (nf.accessKey || '').replace(/\s+/g, '');
+  if (rawKey.length === 44) {
+    const key43 = rawKey.slice(0, 43);
+    const validDv = calculateNfAccessKeyDv(key43);
+    if (rawKey[43] !== validDv) {
+      rawKey = key43 + validDv;
+      nf.accessKey = rawKey.match(/.{1,4}/g).join(' ');
+    }
+  }
   const totalQtd = items.reduce((a, i) => a + (Number(i.quantity) || 1), 0);
 
   sheet.innerHTML = `
@@ -3721,9 +3743,9 @@ function getDanfeStandalonePrintCss() {
     .nf-tp-emis-digit { border: 1px solid #000 !important; padding: 2px 7px !important; font-size: 11px !important; font-weight: bold !important; line-height: 1 !important; }
     .nf-danfe-num { font-size: 10.5px !important; font-weight: bold !important; white-space: nowrap !important; margin-top: 1px !important; }
     .nf-danfe-sub { font-size: 8px !important; line-height: 1.25 !important; }
-    .nf-header-barcode { display: flex !important; flex-direction: column !important; align-items: center !important; justify-content: center !important; padding: 5px 6px !important; text-align: center !important; background: #ffffff !important; }
-    .nf-barcode-svg-wrap { width: 100% !important; text-align: center !important; margin-bottom: 2px !important; display: flex !important; justify-content: center !important; align-items: center !important; }
-    .nf-barcode-svg-wrap svg, .danfe-barcode-svg { width: 76mm !important; max-width: 100% !important; height: 52px !important; display: block !important; margin: 0 auto !important; shape-rendering: crispEdges !important; }
+    .nf-header-barcode { display: flex !important; flex-direction: column !important; align-items: center !important; justify-content: center !important; padding: 4px 6px !important; text-align: center !important; background: #ffffff !important; }
+    .nf-barcode-svg-wrap { width: 100% !important; text-align: center !important; margin-bottom: 2px !important; display: flex !important; justify-content: center !important; align-items: center !important; background: #ffffff !important; }
+    .nf-barcode-svg-wrap svg, .danfe-barcode-svg { width: 100% !important; max-width: 78mm !important; height: 54px !important; display: block !important; margin: 0 auto !important; shape-rendering: crispEdges !important; }
     .nf-key-label { font-size: 6.8px !important; font-weight: bold !important; text-transform: uppercase !important; letter-spacing: 0.2px !important; }
     .nf-key-text { font-family: 'Courier New', Courier, monospace !important; font-size: 8.2px !important; font-weight: bold !important; letter-spacing: 0.5px !important; white-space: nowrap !important; margin: 2px 0 3px 0 !important; }
     .nf-consulta-box { font-size: 6.4px !important; line-height: 1.2 !important; color: #000 !important; border-top: 1px solid #000 !important; width: 100% !important; padding-top: 3px !important; margin-top: 2px !important; }

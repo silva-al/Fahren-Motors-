@@ -1540,9 +1540,9 @@ html.has-admin-session #mainScreen {
 
 .nf-barcode-svg-wrap svg,
 .danfe-barcode-svg {
-  width: 76mm;
-  max-width: 100%;
-  height: 52px;
+  width: 100%;
+  max-width: 325px;
+  height: 54px;
   display: block;
   margin: 0 auto;
   shape-rendering: crispEdges;
