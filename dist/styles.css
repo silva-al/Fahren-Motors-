@@ -8467,13 +8467,14 @@ body:not(.tema-claro) .cart-item-subtotal .subtotal-amount {
   align-items: center !important;
   justify-content: center !important;
   text-align: center !important;
-  margin: 0 auto !important;
+  margin: 32px auto 0 !important;
+  padding-top: 20px !important;
 }
 
 body:not(.screen-is-inicio) .fp-footer-legal {
-  border-top: none !important;
-  margin-top: 0 !important;
-  padding-top: 14px !important;
+  border-top: 1px solid rgba(255, 255, 255, 0.08) !important;
+  margin-top: 32px !important;
+  padding-top: 20px !important;
   display: flex !important;
   flex-direction: column !important;
   align-items: center !important;
@@ -8898,15 +8899,21 @@ body:not(.screen-is-inicio) .fp-footer-legal,
 body.screen-is-inicio .fp-footer-legal {
   width: 100% !important;
   max-width: 860px !important;
-  margin: 0 auto !important;
-  padding: 0 !important;
-  border: none !important;
+  margin: 36px auto 0 !important;
+  padding: 24px 16px 0 !important;
+  border-top: 1px solid rgba(255, 255, 255, 0.08) !important;
   display: flex !important;
   flex-direction: column !important;
   align-items: center !important;
   justify-content: center !important;
   text-align: center !important;
-  gap: 12px !important;
+  gap: 14px !important;
+}
+
+body.tema-claro .fp-footer-legal,
+body.tema-claro:not(.screen-is-inicio) .fp-footer-legal,
+body.tema-claro.screen-is-inicio .fp-footer-legal {
+  border-top: 1px solid #e2e8f0 !important;
 }
 
 .fp-footer-brand-line {
@@ -8943,6 +8950,13 @@ body.tema-claro .fp-footer-copy-line {
 @media (max-width: 768px) {
   .fp-footer-inner {
     padding: 28px 20px 115px 20px !important;
+  }
+  .fp-footer-grid {
+    margin-bottom: 24px !important;
+  }
+  .fp-footer-legal {
+    margin-top: 32px !important;
+    padding-top: 24px !important;
   }
   .fp-footer-brand-line {
     font-size: 12px !important;
