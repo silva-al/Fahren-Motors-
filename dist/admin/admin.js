@@ -3155,7 +3155,7 @@ window.openDacceForOrder = (orderId) => {
           <div style="font-family:monospace;font-size:12px;font-weight:700;letter-spacing:0.5px">${nf.accessKey || rawKey}</div>
         </div>
         <div style="width:220px">
-          ${generateCode128Svg(rawKey, 34)}
+          ${generateCode128Svg(rawKey, 34, 'cce-barcode-svg')}
         </div>
       </div>
 
@@ -3226,36 +3226,44 @@ function generateCode128Svg(codeText, height = 52, customClass = '') {
     [1,1,4,1,3,1],[3,1,1,1,4,1],[4,1,1,1,3,1],[2,1,1,4,1,2],[2,1,1,2,1,4],[2,1,1,2,3,2],[2,3,3,1,1,1,2]
   ];
 
-  const cleanText = String(codeText || '').trim();
-  const digitsOnly = cleanText.replace(/\D/g, '');
-  const isNumeric = cleanText.length >= 4 && cleanText.length % 2 === 0 && digitsOnly === cleanText;
-  const isDanfe = isNumeric && digitsOnly.length === 44;
+  const rawInput = String(codeText || '').trim();
+  const digitsOnly = rawInput.replace(/\D/g, '');
+  const isDanfe = digitsOnly.length === 44;
+  const isSubsetC = isDanfe || (digitsOnly.length >= 4 && digitsOnly.length % 2 === 0 && digitsOnly.length === rawInput.length);
 
   let sequence = [];
   let checksum = 0;
 
-  if (isNumeric) {
+  if (isSubsetC) {
     const startCode = 105; // Code 128 Subset C (Padrão Oficial SEFAZ / DANFE)
     checksum = startCode;
     sequence.push(startCode);
     let pos = 1;
-    for (let i = 0; i < digitsOnly.length; i += 2) {
-      const val = parseInt(digitsOnly.substr(i, 2), 10);
+    const targetDigits = isDanfe ? digitsOnly : rawInput;
+    for (let i = 0; i < targetDigits.length; i += 2) {
+      const val = parseInt(targetDigits.substr(i, 2), 10);
       sequence.push(val);
       checksum += val * pos;
       pos++;
     }
   } else {
-    const text = cleanText;
+    // Subset B (Padrão WMS para SKUs alfanuméricos como 'BRD0288')
     const startCode = 104; // Subset B
     checksum = startCode;
     sequence.push(startCode);
-    for (let i = 0; i < text.length; i++) {
-      const charCode = text.charCodeAt(i) - 32;
+    const sanitized = rawInput.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+    let pos = 1;
+    for (let i = 0; i < sanitized.length; i++) {
+      const charCode = sanitized.charCodeAt(i) - 32;
       if (charCode >= 0 && charCode <= 95) {
         sequence.push(charCode);
-        checksum += charCode * (i + 1);
+        checksum += charCode * pos;
+        pos++;
       }
+    }
+    if (sequence.length === 1) {
+      sequence.push(16);
+      checksum += 16 * 1;
     }
   }
 
@@ -5121,7 +5129,7 @@ function generateLabelHtmlForFormat(product, format, isPrint = false) {
         </div>
         <div class="label-barcodes-container compact">
           <div class="label-barcode-left">
-            <div class="barcode-svg-render">${generateCode128Svg(barcodeText, bcHeight)}</div>
+            <div class="barcode-svg-render">${generateCode128Svg(barcodeText, bcHeight, 'label-barcode-svg')}</div>
             <span class="barcode-num-text compact">${barcodeText}</span>
           </div>
           <div class="label-qrcode-right compact">
@@ -5166,7 +5174,7 @@ function generateLabelHtmlForFormat(product, format, isPrint = false) {
         </div>
         <div class="label-barcodes-container grande">
           <div class="label-barcode-left">
-            <div class="barcode-svg-render">${generateCode128Svg(barcodeText, bcHeight)}</div>
+            <div class="barcode-svg-render">${generateCode128Svg(barcodeText, bcHeight, 'label-barcode-svg')}</div>
             <span class="barcode-num-text grande">${barcodeText}</span>
           </div>
           <div class="label-qrcode-right grande">
@@ -5213,7 +5221,7 @@ function generateLabelHtmlForFormat(product, format, isPrint = false) {
       </div>
       <div class="label-barcodes-container">
         <div class="label-barcode-left">
-          <div class="barcode-svg-render">${generateCode128Svg(barcodeText, bcHeight)}</div>
+          <div class="barcode-svg-render">${generateCode128Svg(barcodeText, bcHeight, 'label-barcode-svg')}</div>
           <span class="barcode-num-text">${barcodeText}</span>
         </div>
         <div class="label-qrcode-right">
