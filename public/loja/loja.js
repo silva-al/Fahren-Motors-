@@ -315,8 +315,13 @@ window.addEventListener('popstate', e => {
 });
 
 backBtn?.addEventListener('click', () => {
-  if (navDepth > 0) window.history.back();
-  else show('inicio');
+  if (currentScreenId === 'produto') {
+    show('pecas');
+  } else if (navDepth > 0) {
+    window.history.back();
+  } else {
+    show('pecas');
+  }
 });
 
 // Tecla ESC para voltar de telas, fechar zoom ou cancelar
@@ -334,10 +339,12 @@ window.addEventListener('keydown', (e) => {
       return;
     }
     if (currentScreenId && currentScreenId !== 'inicio' && currentScreenId !== 'welcome') {
-      if (navDepth > 0) {
+      if (currentScreenId === 'produto') {
+        show('pecas');
+      } else if (navDepth > 0) {
         window.history.back();
       } else {
-        show('inicio');
+        show('pecas');
       }
     }
   }

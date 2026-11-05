@@ -3648,6 +3648,109 @@ window.addEventListener('beforeprint', () => {
   if (v2) v2.scrollTop = 0;
 });
 
+function getDanfeStandalonePrintCss() {
+  return `
+    @page {
+      size: A4 portrait;
+      margin: 4mm 5mm;
+    }
+    *, *::before, *::after {
+      box-sizing: border-box !important;
+      -webkit-print-color-adjust: exact !important;
+      print-color-adjust: exact !important;
+    }
+    html, body {
+      margin: 0 !important;
+      padding: 0 !important;
+      background: #ffffff !important;
+      color: #000000 !important;
+      font-family: Arial, Helvetica, sans-serif !important;
+      width: 100% !important;
+      height: auto !important;
+      overflow: visible !important;
+    }
+    .danfe-sheet {
+      background: #ffffff !important;
+      color: #000000 !important;
+      font-family: Arial, Helvetica, sans-serif !important;
+      padding: 0 !important;
+      margin: 0 auto !important;
+      border: 1px solid #000000 !important;
+      border-radius: 0 !important;
+      box-shadow: none !important;
+      font-size: 9px !important;
+      line-height: 1.25 !important;
+      width: 100% !important;
+      max-width: 200mm !important;
+      height: auto !important;
+      box-sizing: border-box !important;
+      page-break-before: avoid !important;
+      break-before: avoid !important;
+      page-break-inside: auto !important;
+      break-inside: auto !important;
+      page-break-after: avoid !important;
+      break-after: avoid !important;
+    }
+    .nf-canhoto { display: flex !important; border: 1px solid #000 !important; box-sizing: border-box !important; page-break-inside: avoid !important; }
+    .nf-canhoto-left { flex: 5.2 !important; display: flex !important; flex-direction: column !important; }
+    .nf-canhoto-text { font-size: 7.2px !important; line-height: 1.3 !important; padding: 4px 7px !important; border-bottom: 1px solid #000 !important; text-transform: uppercase !important; }
+    .nf-canhoto-bottom { display: flex !important; flex: 1 !important; min-height: 38px !important; }
+    .nf-canhoto-data { flex: 1.3 !important; border-right: 1px solid #000 !important; padding: 4px 7px !important; }
+    .nf-canhoto-assinatura { flex: 3.7 !important; padding: 4px 7px !important; }
+    .nf-canhoto-right { flex: 1.2 !important; border-left: 1px solid #000 !important; display: flex !important; flex-direction: column !important; align-items: center !important; justify-content: center !important; text-align: center !important; padding: 6px 8px !important; }
+    .nf-canhoto-nfe { font-size: 16px !important; font-weight: 900 !important; line-height: 1 !important; }
+    .nf-canhoto-num { font-size: 10.5px !important; font-weight: bold !important; white-space: nowrap !important; margin-top: 3px !important; }
+    .nf-canhoto-serie { font-size: 8.5px !important; margin-top: 1px !important; }
+    .nf-cut-line { border-top: 1px dashed #000 !important; margin: 4px 0 5px 0 !important; }
+    .nf-header-main { display: grid !important; grid-template-columns: 2.3fr 1.1fr 2.4fr !important; border: 1px solid #000 !important; box-sizing: border-box !important; min-height: 104px !important; page-break-inside: avoid !important; }
+    .nf-header-emitente { padding: 6px 10px !important; display: flex !important; flex-direction: column !important; justify-content: center !important; text-align: center !important; }
+    .nf-emitente-sub { font-size: 6.8px !important; font-weight: bold !important; color: #222 !important; text-transform: uppercase !important; margin-bottom: 3px !important; }
+    .nf-emitente-brand { font-size: 13px !important; font-weight: 900 !important; color: #000 !important; text-transform: uppercase !important; letter-spacing: 0.6px !important; margin-bottom: 3px !important; }
+    .nf-emitente-info { font-size: 7.8px !important; line-height: 1.35 !important; color: #000 !important; }
+    .nf-header-danfe { border-left: 1px solid #000 !important; border-right: 1px solid #000 !important; text-align: center !important; padding: 6px 6px !important; display: flex !important; flex-direction: column !important; align-items: center !important; justify-content: center !important; }
+    .nf-danfe-word { font-size: 18px !important; font-weight: 900 !important; letter-spacing: 0.5px !important; line-height: 1 !important; }
+    .nf-danfe-desc { font-size: 6.8px !important; line-height: 1.15 !important; text-align: center !important; margin-top: 2px !important; }
+    .nf-tp-emis-box { display: flex !important; align-items: center !important; justify-content: center !important; gap: 7px !important; margin: 4px 0 !important; }
+    .nf-tp-emis-text { font-size: 7.2px !important; font-weight: bold !important; line-height: 1.15 !important; text-align: left !important; }
+    .nf-tp-emis-digit { border: 1px solid #000 !important; padding: 2px 7px !important; font-size: 11px !important; font-weight: bold !important; line-height: 1 !important; }
+    .nf-danfe-num { font-size: 10.5px !important; font-weight: bold !important; white-space: nowrap !important; margin-top: 1px !important; }
+    .nf-danfe-sub { font-size: 8px !important; line-height: 1.25 !important; }
+    .nf-header-barcode { display: flex !important; flex-direction: column !important; align-items: center !important; justify-content: center !important; padding: 6px 8px !important; text-align: center !important; }
+    .nf-barcode-svg-wrap { width: 100% !important; max-width: 320px !important; margin-bottom: 3px !important; }
+    .nf-barcode-svg-wrap svg { width: 100% !important; height: 42px !important; display: block !important; }
+    .nf-key-label { font-size: 6.8px !important; font-weight: bold !important; text-transform: uppercase !important; letter-spacing: 0.2px !important; }
+    .nf-key-text { font-family: 'Courier New', Courier, monospace !important; font-size: 8.2px !important; font-weight: bold !important; letter-spacing: 0.5px !important; white-space: nowrap !important; margin: 2px 0 3px 0 !important; }
+    .nf-consulta-box { font-size: 6.4px !important; line-height: 1.2 !important; color: #000 !important; border-top: 1px solid #000 !important; width: 100% !important; padding-top: 3px !important; margin-top: 2px !important; }
+    .nf-row { display: flex !important; border: 1px solid #000 !important; border-top: none !important; box-sizing: border-box !important; text-align: center !important; page-break-inside: avoid !important; }
+    .nf-cell { flex: 1 !important; padding: 3px 6px !important; min-height: 25px !important; font-size: 8.8px !important; box-sizing: border-box !important; text-align: center !important; border-right: 1px solid #000 !important; }
+    .nf-cell:last-child { border-right: none !important; }
+    .nf-label { display: block !important; font-size: 6.5px !important; font-weight: bold !important; color: #000 !important; text-transform: uppercase !important; letter-spacing: 0.15px !important; line-height: 1.05 !important; margin-bottom: 2px !important; text-align: center !important; }
+    .nf-val { font-size: 8.8px !important; font-weight: 700 !important; color: #000 !important; }
+    .nf-section-title { background: #e6e6e6 !important; font-weight: bold !important; font-size: 7.5px !important; padding: 2.5px 6px !important; border: 1px solid #000 !important; border-bottom: none !important; text-transform: uppercase !important; letter-spacing: 0.25px !important; margin-top: 4px !important; box-sizing: border-box !important; text-align: center !important; page-break-inside: avoid !important; }
+    .nf-products-container { position: relative !important; border: 1px solid #000 !important; border-top: none !important; min-height: 160px !important; display: flex !important; flex-direction: column !important; }
+    .nf-products-table { width: 100% !important; border-collapse: collapse !important; font-size: 8.5px !important; table-layout: fixed !important; flex: 1 !important; }
+    .nf-products-table th { background: #e6e6e6 !important; border-bottom: 1px solid #000 !important; border-right: 1px solid #000 !important; padding: 3.5px 3px !important; text-align: center !important; font-size: 6.5px !important; font-weight: bold !important; text-transform: uppercase !important; line-height: 1.1 !important; }
+    .nf-products-table th:last-child { border-right: none !important; }
+    .nf-products-table td { padding: 4px 4px !important; border-right: 1px solid #000 !important; border-bottom: none !important; text-align: center !important; font-size: 8.5px !important; vertical-align: top !important; line-height: 1.2 !important; color: #000 !important; background: #fff !important; }
+    .nf-products-table td:last-child { border-right: none !important; }
+    .nf-products-table tr.nf-item-row td { border-bottom: 1px solid #ddd !important; }
+    .nf-products-table tr.nf-empty-filler td { height: 100% !important; border-bottom: none !important; }
+    .nf-dados-adicionais .nf-cell { font-size: 7.5px !important; line-height: 1.35 !important; min-height: 48px !important; padding: 4px 7px !important; text-align: left !important; }
+    .nf-footer-line { display: flex !important; justify-content: center !important; gap: 30px !important; align-items: center !important; font-size: 6.8px !important; color: #555 !important; padding: 3px 0 0 0 !important; margin-top: 2px !important; text-align: center !important; page-break-inside: avoid !important; }
+    .nf-watermark-overlay, .no-print, .danfe-mobile-tip { display: none !important; }
+
+    /* DACCE - Carta de Correção */
+    .dacce-sheet { background:#fff !important; color:#000 !important; font-family:Arial,sans-serif !important; border:1px solid #000 !important; margin:0 auto !important; width:100% !important; max-width:200mm !important; }
+    .dacce-header { text-align:center !important; border-bottom:1px solid #000 !important; padding:10px !important; }
+    .dacce-title { font-size:16px !important; font-weight:900 !important; }
+    .dacce-sub { font-size:9px !important; margin-top:4px !important; }
+    .dacce-grid { display:grid !important; grid-template-columns:1fr 1fr !important; border-bottom:1px solid #000 !important; }
+    .dacce-field { padding:6px 10px !important; border-right:1px solid #000 !important; }
+    .dacce-field:last-child { border-right:none !important; }
+    .dacce-body { padding:12px !important; font-size:10px !important; line-height:1.4 !important; min-height:200px !important; }
+  `;
+}
+
 window.printDanfeDocument = function() {
   const content = document.getElementById('danfePrintArea')?.innerHTML;
   if (!content) {
@@ -3655,19 +3758,36 @@ window.printDanfeDocument = function() {
     return;
   }
   
-  // Abre janela pop-up dedicada e 100% limpa (sem interferência de modais, sidebars ou scroll)
-  const printWin = window.open('', '_blank', 'width=950,height=1200');
-  if (!printWin) {
-    window.scrollTo(0, 0);
-    const dm = document.getElementById('danfeModal');
-    if (dm) dm.scrollTop = 0;
-    window.print();
-    return;
-  }
+  // Impressão isolada via iframe invisível: 0% de bloqueio de popup, 100% alinhado ao topo (sem scroll residual)
+  let iframe = document.getElementById('danfe-print-frame');
+  if (iframe) iframe.remove();
+  
+  iframe = document.createElement('iframe');
+  iframe.id = 'danfe-print-frame';
+  iframe.style.position = 'fixed';
+  iframe.style.top = '-9999px';
+  iframe.style.left = '-9999px';
+  iframe.style.width = '1000px';
+  iframe.style.height = '1400px';
+  iframe.style.border = '0';
+  iframe.style.opacity = '0';
+  iframe.style.pointerEvents = 'none';
+  document.body.appendChild(iframe);
 
-  printWin.document.open();
-  printWin.document.write('<!DOCTYPE html><html lang="pt-BR"><head><meta charset="utf-8"><title>DANFE - Fahren Motors</title><link rel="stylesheet" href="/admin/admin.css?v=20261105_v9"><style>@page{size:A4 portrait;margin:4mm 5mm;}*{-webkit-print-color-adjust:exact !important;print-color-adjust:exact !important;box-sizing:border-box !important;}html,body{margin:0 !important;padding:0 !important;background:#ffffff !important;color:#000000 !important;width:100% !important;height:auto !important;min-height:0 !important;overflow:visible !important;}.danfe-sheet{margin:0 auto !important;padding:0 !important;box-shadow:none !important;border:1px solid #000000 !important;width:100% !important;max-width:200mm !important;height:auto !important;page-break-before:avoid !important;break-before:avoid !important;page-break-inside:auto !important;break-inside:auto !important;page-break-after:avoid !important;break-after:avoid !important;background:#ffffff !important;}.nf-watermark-overlay,.no-print{display:none !important;}</style></head><body><div class="danfe-sheet">' + content + '</div><script>window.onload=function(){setTimeout(function(){window.focus();window.print();setTimeout(function(){window.close();},500);},250);};<\/script></body></html>');
-  printWin.document.close();
+  const doc = iframe.contentWindow.document;
+  doc.open();
+  doc.write('<!DOCTYPE html><html lang="pt-BR"><head><meta charset="utf-8"><title>DANFE - Fahren Motors</title><style>' + getDanfeStandalonePrintCss() + '</style></head><body><div class="danfe-sheet">' + content + '</div></body></html>');
+  doc.close();
+
+  setTimeout(() => {
+    try {
+      iframe.contentWindow.focus();
+      iframe.contentWindow.print();
+    } catch (e) {
+      console.warn('Fallback impressão direta:', e);
+      window.print();
+    }
+  }, 250);
 };
 
 window.printDacceDocument = function() {
@@ -3677,18 +3797,35 @@ window.printDacceDocument = function() {
     return;
   }
   
-  const printWin = window.open('', '_blank', 'width=950,height=1200');
-  if (!printWin) {
-    window.scrollTo(0, 0);
-    const dcm = document.getElementById('dacceModal');
-    if (dcm) dcm.scrollTop = 0;
-    window.print();
-    return;
-  }
+  let iframe = document.getElementById('danfe-print-frame');
+  if (iframe) iframe.remove();
+  
+  iframe = document.createElement('iframe');
+  iframe.id = 'danfe-print-frame';
+  iframe.style.position = 'fixed';
+  iframe.style.top = '-9999px';
+  iframe.style.left = '-9999px';
+  iframe.style.width = '1000px';
+  iframe.style.height = '1400px';
+  iframe.style.border = '0';
+  iframe.style.opacity = '0';
+  iframe.style.pointerEvents = 'none';
+  document.body.appendChild(iframe);
 
-  printWin.document.open();
-  printWin.document.write('<!DOCTYPE html><html lang="pt-BR"><head><meta charset="utf-8"><title>DACCE - Carta de Correção - Fahren Motors</title><link rel="stylesheet" href="/admin/admin.css?v=20261105_v9"><style>@page{size:A4 portrait;margin:4mm 5mm;}*{-webkit-print-color-adjust:exact !important;print-color-adjust:exact !important;box-sizing:border-box !important;}html,body{margin:0 !important;padding:0 !important;background:#ffffff !important;color:#000000 !important;width:100% !important;height:auto !important;min-height:0 !important;overflow:visible !important;}.danfe-sheet,.dacce-sheet{margin:0 auto !important;padding:0 !important;box-shadow:none !important;border:1px solid #000000 !important;width:100% !important;max-width:200mm !important;height:auto !important;page-break-before:avoid !important;break-before:avoid !important;background:#ffffff !important;}.no-print{display:none !important;}</style></head><body><div class="danfe-sheet dacce-sheet">' + content + '</div><script>window.onload=function(){setTimeout(function(){window.focus();window.print();setTimeout(function(){window.close();},500);},250);};<\/script></body></html>');
-  printWin.document.close();
+  const doc = iframe.contentWindow.document;
+  doc.open();
+  doc.write('<!DOCTYPE html><html lang="pt-BR"><head><meta charset="utf-8"><title>DACCE - Carta de Correção - Fahren Motors</title><style>' + getDanfeStandalonePrintCss() + '</style></head><body><div class="danfe-sheet dacce-sheet">' + content + '</div></body></html>');
+  doc.close();
+
+  setTimeout(() => {
+    try {
+      iframe.contentWindow.focus();
+      iframe.contentWindow.print();
+    } catch (e) {
+      console.warn('Fallback impressão direta:', e);
+      window.print();
+    }
+  }, 250);
 };
 window.closeDanfeModal = () => {
   document.getElementById('danfeModal')?.classList.add('hidden');

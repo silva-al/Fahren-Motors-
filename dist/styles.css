@@ -9038,3 +9038,46 @@ body.tema-claro .fp-footer-copy-line {
   user-select: none !important;
   -webkit-user-select: none !important;
 }
+
+
+/* ==========================================================================
+   REMOÇÃO COMPLETA DO VEHICLE FINDER WIDGET
+   ========================================================================== */
+#vehicleFinderWidget, .vehicle-finder {
+  display: none !important;
+  height: 0 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  visibility: hidden !important;
+}
+
+/* ==========================================================================
+   WHATSAPP FLUTUANTE EM POSIÇÃO CORRETA (SEM COBRIR O CARRINHO NO MOBILE)
+   ========================================================================== */
+.fp-whatsapp-float {
+  width: 52px !important;
+  height: 52px !important;
+  right: 20px !important;
+  bottom: 24px !important;
+  z-index: 2147483647 !important;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4) !important;
+}
+
+.fp-whatsapp-float svg {
+  width: 28px !important;
+  height: 28px !important;
+}
+
+@media (max-width: 768px) {
+  .fp-whatsapp-float {
+    width: 48px !important;
+    height: 48px !important;
+    right: 16px !important;
+    bottom: 84px !important; /* Posicionado acima da barra mobile de navegação (60px) */
+    z-index: 2147483647 !important;
+  }
+  .fp-whatsapp-float svg {
+    width: 26px !important;
+    height: 26px !important;
+  }
+}
