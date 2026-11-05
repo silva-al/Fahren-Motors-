@@ -12048,9 +12048,6 @@ body.tema-claro .nf-watermark-overlay {
 
   .danfe-sheet * {
     color: #000000 !important;
-    font-variant-ligatures: none !important;
-    font-feature-settings: "liga" 0, "clig" 0, "calt" 0 !important;
-    text-rendering: geometricPrecision !important;
   }
 
   .nf-products-table th {

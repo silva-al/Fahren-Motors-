@@ -3275,7 +3275,7 @@ function generateCode128Svg(codeText, height = 52) {
     let isBar = true;
     for (let w of pattern) {
       if (isBar) {
-        rects += '<rect x="' + currentX + '" y="0" width="' + w + '" height="' + height + '" fill="#000000"/>';
+        rects += '<rect x="' + currentX + '" y="0" width="' + w + '" height="' + height + '" fill="#000000" shape-rendering="crispEdges"/>';
       }
       currentX += w;
       isBar = !isBar;
@@ -3283,90 +3283,20 @@ function generateCode128Svg(codeText, height = 52) {
   });
 
   const svgStyle = isDanfe
-    ? 'width:80mm;max-width:80mm;height:' + height + 'px;display:block;margin:0 auto;background:#ffffff;'
+    ? 'width:88mm;max-width:90mm;height:' + height + 'px;display:block;margin:0 auto;background:#ffffff;'
     : 'width:100%;max-width:' + Math.max(180, totalWidth * 1.5) + 'px;height:' + height + 'px;display:block;margin:0 auto;background:#ffffff;';
 
   let svg = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ' + totalWidth + ' ' + height + '" ' +
-            'preserveAspectRatio="xMidYMid meet" shape-rendering="crispEdges" class="danfe-barcode-svg" ' +
+            'preserveAspectRatio="none" shape-rendering="crispEdges" class="danfe-barcode-svg" ' +
             'style="' + svgStyle + '">';
-  svg += '<rect x="0" y="0" width="' + totalWidth + '" height="' + height + '" fill="#ffffff"/>';
+  svg += '<rect x="0" y="0" width="' + totalWidth + '" height="' + height + '" fill="#ffffff" shape-rendering="crispEdges"/>';
   svg += rects;
   svg += '</svg>';
   return svg;
 }
 
-// Renderizador ultra nítido via Canvas nativo para o DANFE (600 DPI sem anti-aliasing / zero borrão em papel e coletores)
-function generateDanfeBarcodeHtml(codeText, height = 48) {
-  const digitsOnly = String(codeText).replace(/\D/g, '');
-  if (digitsOnly.length === 44 && typeof document !== 'undefined' && document.createElement) {
-    try {
-      const patterns = [
-        [2,1,2,2,2,2],[2,2,2,1,2,2],[2,2,2,2,2,1],[1,2,1,2,2,3],[1,2,1,3,2,2],[1,3,1,2,2,2],[1,2,2,2,1,3],[1,2,2,3,1,2],[1,3,2,2,1,2],[2,2,1,2,1,3],
-        [2,2,1,3,1,2],[2,3,1,2,1,2],[1,1,2,2,3,2],[1,2,2,1,3,2],[1,2,2,2,3,1],[1,1,3,2,2,2],[1,2,3,1,2,2],[1,2,3,2,2,1],[2,2,3,2,1,1],[2,2,1,1,3,2],
-        [2,2,1,2,3,1],[2,1,3,2,1,2],[2,2,3,1,1,2],[3,1,2,1,3,1],[3,1,1,2,2,2],[3,2,1,1,2,2],[3,2,1,2,2,1],[3,1,2,2,1,2],[3,2,2,1,1,2],[3,2,2,2,1,1],
-        [2,1,2,1,2,3],[2,1,2,3,2,1],[2,3,2,1,2,1],[1,1,1,3,2,3],[1,3,1,1,2,3],[1,3,1,3,2,1],[1,1,2,3,1,3],[1,3,2,1,1,3],[1,3,2,3,1,1],[2,1,1,3,1,3],
-        [2,3,1,1,1,3],[2,3,1,3,1,1],[1,1,2,1,3,3],[1,1,2,3,3,1],[1,3,2,1,3,1],[1,1,3,1,2,3],[1,1,3,3,2,1],[1,3,3,1,2,1],[3,1,3,1,2,1],[2,1,1,3,3,1],
-        [2,3,1,1,3,1],[2,1,3,1,1,3],[2,1,3,3,1,1],[2,1,3,1,3,1],[3,1,1,1,2,3],[3,1,1,3,2,1],[3,3,1,1,2,1],[3,1,2,1,1,3],[3,1,2,3,1,1],[3,3,2,1,1,1],
-        [3,1,4,1,1,1],[2,2,1,4,1,1],[4,3,1,1,1,1],[1,1,1,2,2,4],[1,1,1,4,2,2],[1,2,1,1,2,4],[1,2,1,4,2,1],[1,4,1,1,2,2],[1,4,1,2,2,1],[1,1,2,2,1,4],
-        [1,1,2,4,1,2],[1,2,2,1,1,4],[1,2,2,4,1,1],[1,4,2,1,1,2],[1,4,2,2,1,1],[2,4,1,2,1,1],[2,2,1,1,1,4],[4,1,3,1,1,1],[2,4,1,1,1,2],[1,3,4,1,1,1],
-        [1,1,1,2,4,2],[1,2,1,1,4,2],[1,2,1,2,4,1],[1,1,4,2,1,2],[1,2,4,1,1,2],[1,2,4,2,1,1],[4,1,1,2,1,2],[4,2,1,1,1,2],[4,2,1,2,1,1],[2,1,2,1,4,1],
-        [2,1,4,1,2,1],[4,1,2,1,2,1],[1,1,1,1,4,3],[1,1,1,3,4,1],[1,3,1,1,4,1],[1,1,4,1,1,3],[1,1,4,3,1,1],[4,1,1,1,1,3],[4,1,1,3,1,1],[1,1,3,1,4,1],
-        [1,1,4,1,3,1],[3,1,1,1,4,1],[4,1,1,1,3,1],[2,1,1,4,1,2],[2,1,1,2,1,4],[2,1,1,2,3,2],[2,3,3,1,1,1,2]
-      ];
-      const startCode = 105;
-      let checksum = startCode;
-      const sequence = [startCode];
-      let pos = 1;
-      for (let i = 0; i < digitsOnly.length; i += 2) {
-        const val = parseInt(digitsOnly.substr(i, 2), 10);
-        sequence.push(val);
-        checksum += val * pos;
-        pos++;
-      }
-      checksum %= 103;
-      sequence.push(checksum);
-      sequence.push(106);
-
-      const quietZone = 20;
-      const scale = 3; // 3 pixels inteiros por módulo (951px) para padrão ótico de alta definição 600 DPI
-      let totalDataModules = 0;
-      sequence.forEach(code => {
-        const p = patterns[code];
-        if (p) totalDataModules += p.reduce((a, b) => a + b, 0);
-      });
-      const totalModules = totalDataModules + (quietZone * 2);
-      const canvasW = totalModules * scale;
-      const canvasH = height * scale;
-
-      const canvas = document.createElement('canvas');
-      canvas.width = canvasW;
-      canvas.height = canvasH;
-      const ctx = canvas.getContext('2d');
-      ctx.imageSmoothingEnabled = false;
-      ctx.fillStyle = '#ffffff';
-      ctx.fillRect(0, 0, canvasW, canvasH);
-      ctx.fillStyle = '#000000';
-
-      let curX = quietZone * scale;
-      sequence.forEach(code => {
-        const p = patterns[code];
-        if (!p) return;
-        let isBar = true;
-        for (let w of p) {
-          if (isBar) {
-            ctx.fillRect(curX, 0, w * scale, canvasH);
-          }
-          curX += w * scale;
-          isBar = !isBar;
-        }
-      });
-
-      const dataUrl = canvas.toDataURL('image/png');
-      return `<img src="${dataUrl}" class="danfe-barcode-img" alt="Código de Barras Chave de Acesso DANFE" style="width:80mm;max-width:80mm;height:${height}px;display:block;margin:0 auto;image-rendering:pixelated;image-rendering:-webkit-optimize-contrast;image-rendering:crisp-edges;" />`;
-    } catch (e) {
-      console.warn('Canvas barcode fallback:', e);
-    }
-  }
+// Renderizador vetorial ótico padrão SEFAZ para o DANFE (leitura imediata em coletores e impressoras)
+function generateDanfeBarcodeHtml(codeText, height = 54) {
   return generateCode128Svg(codeText, height);
 }
 
@@ -3430,7 +3360,7 @@ window.openDanfeForOrder = (orderId) => {
   if (!sheet) return;
 
   const addr = order.address || {};
-  const destName = nf.customerName || order.customerName || 'NF-E EMITIDA EM AMBIENTE DE HOMOLOGAÇÃO - SEM VALOR FISCAL';
+  const destName = nf.customerName || order.customerName || 'Consumidor Final';
   const destPhone = order.customerPhone || '(19) 99876-5432';
   const destCep = addr.cep || '13180-000';
   const destCity = addr.city || FISCAL_CONFIG.cidade;
@@ -3704,10 +3634,6 @@ window.openDanfeForOrder = (orderId) => {
           </tr>
         </tbody>
       </table>
-      <div class="nf-watermark-overlay">
-        SEM VALOR FISCAL<br/>
-        AMBIENTE DE HOMOLOGAÇÃO
-      </div>
     </div>
 
     <!-- DADOS ADICIONAIS -->
@@ -3761,9 +3687,6 @@ function getDanfeStandalonePrintCss() {
       box-sizing: border-box !important;
       -webkit-print-color-adjust: exact !important;
       print-color-adjust: exact !important;
-      font-variant-ligatures: none !important;
-      font-feature-settings: "liga" 0, "clig" 0, "calt" 0 !important;
-      text-rendering: geometricPrecision !important;
     }
     html, body {
       margin: 0 !important;
@@ -3771,9 +3694,6 @@ function getDanfeStandalonePrintCss() {
       background: #ffffff !important;
       color: #000000 !important;
       font-family: Arial, "Helvetica Neue", Helvetica, sans-serif !important;
-      font-variant-ligatures: none !important;
-      font-feature-settings: "liga" 0, "clig" 0, "calt" 0 !important;
-      text-rendering: geometricPrecision !important;
       width: 100% !important;
       height: auto !important;
       overflow: visible !important;
@@ -3782,9 +3702,6 @@ function getDanfeStandalonePrintCss() {
       background: #ffffff !important;
       color: #000000 !important;
       font-family: Arial, "Helvetica Neue", Helvetica, sans-serif !important;
-      font-variant-ligatures: none !important;
-      font-feature-settings: "liga" 0, "clig" 0, "calt" 0 !important;
-      text-rendering: geometricPrecision !important;
       padding: 0 !important;
       margin: 0 auto !important;
       border: 1px solid #000000 !important;
@@ -3809,7 +3726,7 @@ function getDanfeStandalonePrintCss() {
     .nf-canhoto-bottom { display: flex !important; flex: 1 !important; min-height: 38px !important; }
     .nf-canhoto-data { flex: 1.3 !important; border-right: 1px solid #000 !important; padding: 4px 7px !important; }
     .nf-canhoto-assinatura { flex: 3.7 !important; padding: 4px 7px !important; }
-    .nf-canhoto-assinatura .nf-label { letter-spacing: 0.3px !important; font-variant-ligatures: none !important; font-feature-settings: "liga" 0, "clig" 0 !important; }
+    .nf-canhoto-assinatura .nf-label { letter-spacing: 0.3px !important; }
     .nf-canhoto-right { flex: 1.2 !important; border-left: 1px solid #000 !important; display: flex !important; flex-direction: column !important; align-items: center !important; justify-content: center !important; text-align: center !important; padding: 6px 8px !important; }
     .nf-canhoto-nfe { font-size: 16px !important; font-weight: 900 !important; line-height: 1 !important; }
     .nf-canhoto-num { font-size: 10.5px !important; font-weight: bold !important; white-space: nowrap !important; margin-top: 3px !important; }
@@ -3830,8 +3747,8 @@ function getDanfeStandalonePrintCss() {
     .nf-danfe-sub { font-size: 8px !important; line-height: 1.25 !important; }
     .nf-header-barcode { display: flex !important; flex-direction: column !important; align-items: center !important; justify-content: center !important; padding: 4px 6px !important; text-align: center !important; background: #ffffff !important; }
     .nf-barcode-svg-wrap { width: 100% !important; text-align: center !important; margin-bottom: 2px !important; display: flex !important; justify-content: center !important; align-items: center !important; background: #ffffff !important; }
-    .nf-barcode-svg-wrap svg, .danfe-barcode-svg, .danfe-barcode-img { width: 80mm !important; max-width: 80mm !important; height: 48px !important; display: block !important; margin: 0 auto !important; shape-rendering: crispEdges !important; image-rendering: -webkit-optimize-contrast !important; image-rendering: crisp-edges !important; image-rendering: pixelated !important; }
-    .nf-key-label { font-size: 6.8px !important; font-weight: bold !important; text-transform: uppercase !important; letter-spacing: 0.5px !important; font-variant-ligatures: none !important; font-feature-settings: "liga" 0, "clig" 0 !important; text-align: center !important; }
+    .nf-barcode-svg-wrap svg, .danfe-barcode-svg { width: 88mm !important; max-width: 90mm !important; height: 54px !important; display: block !important; margin: 0 auto !important; shape-rendering: crispEdges !important; }
+    .nf-key-label { font-size: 6.8px !important; font-weight: bold !important; text-transform: uppercase !important; letter-spacing: 0.5px !important; text-align: center !important; }
     .nf-key-text { font-family: 'Courier New', Courier, monospace !important; font-size: 8.2px !important; font-weight: bold !important; letter-spacing: 0.5px !important; white-space: nowrap !important; margin: 2px 0 3px 0 !important; text-align: center !important; }
     .nf-consulta-box { font-size: 6.4px !important; line-height: 1.2 !important; color: #000 !important; border-top: 1px solid #000 !important; width: 100% !important; padding-top: 3px !important; margin-top: 2px !important; text-align: center !important; }
     .nf-row { display: flex !important; border: 1px solid #000 !important; border-top: none !important; box-sizing: border-box !important; text-align: center !important; page-break-inside: avoid !important; }
@@ -3842,10 +3759,10 @@ function getDanfeStandalonePrintCss() {
     .nf-section-title { background: #e6e6e6 !important; font-weight: bold !important; font-size: 7.5px !important; padding: 3px 6px !important; border: 1px solid #000 !important; border-bottom: none !important; text-transform: uppercase !important; letter-spacing: 0.25px !important; margin-top: 4px !important; box-sizing: border-box !important; text-align: center !important; page-break-inside: avoid !important; }
     .nf-calc-imposto .nf-cell { text-align: center !important; padding: 4px 6px !important; min-height: 30px !important; display: flex !important; flex-direction: column !important; justify-content: center !important; align-items: center !important; }
     .nf-products-container { position: relative !important; border: 1px solid #000 !important; border-top: none !important; min-height: 160px !important; display: flex !important; flex-direction: column !important; }
-    .nf-products-table { width: 100% !important; border-collapse: collapse !important; font-size: 8.5px !important; table-layout: fixed !important; flex: 1 !important; }
-    .nf-products-table th { background: #e6e6e6 !important; border-bottom: 1px solid #000 !important; border-right: 1px solid #000 !important; padding: 3.5px 3px !important; text-align: center !important; font-size: 6.5px !important; font-weight: bold !important; text-transform: uppercase !important; line-height: 1.1 !important; }
+    .nf-products-table { width: 100% !important; border-collapse: collapse !important; font-size: 8.5px !important; table-layout: fixed !important; flex: 1 !important; font-family: Arial, "Helvetica Neue", Helvetica, sans-serif !important; }
+    .nf-products-table th { background: #e6e6e6 !important; border-bottom: 1px solid #000 !important; border-right: 1px solid #000 !important; padding: 3.5px 3px !important; text-align: center !important; font-size: 6.8px !important; font-weight: bold !important; text-transform: uppercase !important; line-height: 1.15 !important; font-family: Arial, "Helvetica Neue", Helvetica, sans-serif !important; letter-spacing: 0.2px !important; }
     .nf-products-table th:last-child { border-right: none !important; }
-    .nf-products-table td { padding: 4px 4px !important; border-right: 1px solid #000 !important; border-bottom: none !important; text-align: center !important; font-size: 8.5px !important; vertical-align: top !important; line-height: 1.2 !important; color: #000 !important; background: #fff !important; }
+    .nf-products-table td { padding: 4px 4px !important; border-right: 1px solid #000 !important; border-bottom: none !important; text-align: center !important; font-size: 8.5px !important; vertical-align: middle !important; line-height: 1.2 !important; color: #000 !important; background: #fff !important; font-family: Arial, "Helvetica Neue", Helvetica, sans-serif !important; }
     .nf-products-table td:last-child { border-right: none !important; }
     .nf-products-table tr.nf-item-row td { border-bottom: 1px solid #ddd !important; }
     .nf-products-table tr.nf-empty-filler td { height: 100% !important; border-bottom: none !important; }

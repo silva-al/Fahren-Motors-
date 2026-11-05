@@ -765,29 +765,166 @@ const CATEGORY_IMAGES = {
   'Óleos e fluidos': 'images/categorias/oleos.jpg',
 };
 
-// Catálogo fallback oficial para exibição instantânea sem depender de tempo de rede
+// Catálogo oficial com peças reais cadastradas no WMS prontas para venda imediata
 const CATALOG_FALLBACK_PRODUCTS = [
-  { id: 1, name: 'Jogo de Pastilhas de Freio Dianteiras Bosch Cerâmica', code: 'BOSCH-0986-BR', category: 'Freios', description: 'Pastilhas de cerâmica de alta durabilidade, frenagem silenciosa.', compatibility: 'Volkswagen Gol, Voyage, Fox, Polo, Saveiro (2012 em diante)', price: 149.90, stockQty: 18, inStock: true, photoUrl: 'images/produtos/pastilha.jpg' },
-  { id: 2, name: 'Par de Discos de Freio Ventilados Dianteiros Fremax Carbon+', code: 'BD-5290-FRE', category: 'Freios', description: 'Discos com acabamento anti-corrosão Pintura Preta e liga de alto carbono.', compatibility: 'Toyota Corolla, Honda Civic, Chevrolet Cruze', price: 289.00, stockQty: 12, inStock: true, photoUrl: 'images/categorias/freios.jpg' },
-  { id: 3, name: 'Fluido de Freio DOT 4 LV Bosch Alta Performance 500ml', code: 'DOT4-BOSCH-500', category: 'Freios', description: 'Fluido de freio sintético de baixa viscosidade para ABS e ESP.', compatibility: 'Universal para sistemas hidráulicos DOT 4 / DOT 4 LV', price: 42.00, stockQty: 25, inStock: true, photoUrl: 'images/categorias/oleos.jpg' },
-  { id: 4, name: 'Par de Amortecedores Dianteiros Monroe Pressurizados OESpectrum', code: 'MON-SP089-PR', category: 'Suspensão', description: 'Tecnologia exclusiva Twin Technology com estabilidade superior.', compatibility: 'Chevrolet Onix, Prisma, Spin, Tracker (2013 a 2019)', price: 589.00, stockQty: 8, inStock: true, photoUrl: 'images/categorias/suspensao.jpg' },
-  { id: 5, name: 'Kit Batente, Coifa e Coxim do Amortecedor Dianteiro Axios', code: 'AXIOS-BT021', category: 'Suspensão', description: 'Kit de fixação superior da coluna com rolamento integrado.', compatibility: 'Hyundai HB20, HB20S, Creta 1.6', price: 89.90, stockQty: 20, inStock: true, photoUrl: 'images/categorias/suspensao.jpg' },
-  { id: 6, name: 'Par de Bieletas da Barra Estabilizadora Dianteira Nakata', code: 'NAK-BL4102', category: 'Suspensão', description: 'Bieletas reforçadas de articulação esférica selada anti-ruído.', compatibility: 'Honda Civic G9/G10, Fit, City', price: 115.00, stockQty: 15, inStock: true, photoUrl: 'images/categorias/suspensao.jpg' },
-  { id: 7, name: 'Jogo de 4 Velas de Ignição Iridium NGK Laser', code: 'NGK-ILZKR7B11', category: 'Elétrica e ignição', description: 'Eletrodo ultrafino de Iridium soldado a laser, partida imediata e economia.', compatibility: 'Honda Civic 1.8/2.0, Fit 1.5, HR-V, City i-VTEC Flex', price: 229.00, stockQty: 16, inStock: true, photoUrl: 'images/produtos/bobina_2.jpg' },
-  { id: 8, name: 'Bobina de Ignição Eletrônica Magneti Marelli Individual', code: 'MM-BI0048', category: 'Elétrica e ignição', description: 'Bobina tipo caneta com isolamento térmico de alta densidade.', compatibility: 'Volkswagen Gol, Fox, Voyage, Saveiro 1.6 MSI e EA211', price: 279.50, stockQty: 10, inStock: true, photoUrl: 'images/produtos/bobina.jpg' },
-  { id: 9, name: 'Motor de Partida / Arranque Remanufaturado Original Valeo 12V', code: 'VAL-MP1201', category: 'Elétrica e ignição', description: 'Motor de arranque de alto torque e partida suave certificado.', compatibility: 'Fiat Palio, Uno, Siena, Strada motores Fire 1.0 e 1.4', price: 460.00, stockQty: 5, inStock: true, photoUrl: 'images/categorias/eletrica.jpg' },
-  { id: 10, name: 'Kit Revisão 4 Filtros (Óleo + Ar + Combustível + Cabine) Mann-Filter', code: 'MANN-KIT4-VW', category: 'Filtros', description: 'Kit completo para revisão periódica com filtros de alta eficiência.', compatibility: 'Volkswagen Polo, Virtus, Nivus, T-Cross motores 1.0 200 TSI', price: 168.90, stockQty: 22, inStock: true, photoUrl: 'images/produtos/filtro.jpg' },
-  { id: 11, name: 'Filtro de Ar Condicionado / Cabine com Carvão Ativado Mahle', code: 'MAHLE-LAK855', category: 'Filtros', description: 'Filtro antialérgico com camada tripla de carvão ativado contra odores.', compatibility: 'Jeep Renegade, Compass, Fiat Toro, Argo, Cronos', price: 54.90, stockQty: 35, inStock: true, photoUrl: 'images/categorias/filtros.jpg' },
-  { id: 12, name: 'Filtro de Combustível Injeção Eletrônica Blindado Tecfil', code: 'TECFIL-GI50/7', category: 'Filtros', description: 'Corpo blindado em aço inox resistente à corrosão do etanol.', compatibility: 'Chevrolet Celta, Corsa, Montana, Agile, Astra Flex', price: 38.00, stockQty: 40, inStock: true, photoUrl: 'images/categorias/filtros.jpg' },
-  { id: 13, name: 'Kit Correia Dentada e Tensor Gates PowerGrip', code: 'GATES-KS104', category: 'Correias', description: 'Kit sincronizador mestre com correia de alta resistência térmica.', compatibility: 'Motores GM Família 1 - Onix, Prisma, Cobalt, Spin 1.0, 1.4 e 1.8', price: 195.50, stockQty: 14, inStock: true, photoUrl: 'images/categorias/correias.jpg' },
-  { id: 14, name: 'Correia do Alternador Poly-V Continental Contitech EPDM', code: 'CONT-6PK1825', category: 'Correias', description: 'Correia de acessórios em borracha EPDM anti-ruído de alta tração.', compatibility: 'Ford Ka, Fiesta, Ecosport motores 1.5 e 1.6 Sigma', price: 78.00, stockQty: 25, inStock: true, photoUrl: 'images/categorias/correias.jpg' },
-  { id: 15, name: 'Sonda Lambda Sensor de Oxigênio Pré-Catalisador Bosch Planar', code: 'BOSCH-025801', category: 'Sensores e injeção', description: 'Sensor aquecido de 4 fios com cerâmica de resposta rápida.', compatibility: 'Volkswagen, Fiat, Chevrolet e Ford motores 1.0 e 1.6 Flex', price: 310.00, stockQty: 9, inStock: true, photoUrl: 'images/categorias/sensores.jpg' },
-  { id: 16, name: 'Sensor de Rotação do Virabrequim Hall Magneti Marelli', code: 'MM-SR0109', category: 'Sensores e injeção', description: 'Sensor magnético de alta precisão para controle da injeção e ignição.', compatibility: 'Ford Ka 1.0 3C Ti-VCT, Ecosport, Fiesta Rocam', price: 139.00, stockQty: 12, inStock: true, photoUrl: 'images/categorias/sensores.jpg' },
-  { id: 17, name: 'Óleo de Motor 100% Sintético Motul 8100 X-cess 5W-40 1L', code: 'MOTUL-8100-5W40', category: 'Óleos e fluidos', description: 'Lubrificante sintético premium de alto desempenho.', compatibility: 'VW 502.00, MB 229.5, BMW LL-01, Porsche A40, Renault RN0710', price: 68.00, stockQty: 50, inStock: true, photoUrl: 'images/categorias/oleos.jpg' },
-  { id: 18, name: 'Aditivo de Radiador Concentrado Orgânico Tirreno Long Life 1L', code: 'TIRR-LL-ORG1', category: 'Óleos e fluidos', description: 'Fluido protetor anticorrosivo com tecnologia OAT.', compatibility: 'Universal para sistemas de arrefecimento nacionais e importados', price: 36.90, stockQty: 30, inStock: true, photoUrl: 'images/categorias/oleos.jpg' },
-  { id: 19, name: 'Par de Lâmpadas H7 Philips CrystalVision Ultra 4300K Branco Nobre', code: 'PHIL-H7-CVU', category: 'Iluminação', description: 'Efeito xênon elegante de 4300K com vidro de quartzo UV-Block.', compatibility: 'Encaixe universal H7 (Farol baixo ou alto)', price: 159.90, stockQty: 18, inStock: true, photoUrl: 'images/categorias/iluminacao.jpg' },
-  { id: 20, name: 'Kit Par de Lâmpadas LED Osram LEDriving H4 6000K Branco Frio', code: 'OSRAM-LED-H4', category: 'Iluminação', description: 'Linha de corte perfeita, dissipador em alumínio aeronáutico e 50% menos consumo.', compatibility: 'Encaixe universal H4 Farol Alto/Baixo Integrado (12V)', price: 349.00, stockQty: 7, inStock: true, photoUrl: 'images/categorias/iluminacao.jpg' }
+  {
+    id: 3298,
+    name: 'BARRA AXIAL ESQUERDA/DIREITA 175MM BRD0288 PERFECT',
+    code: 'BRD0288',
+    category: 'Suspensão',
+    description: 'Barra axial de direção reforçada 175mm Perfect com coifa e porca. Peça pronta para instalação imediata.',
+    compatibility: 'Linha automotiva nacional compatível',
+    price: 64.87,
+    stockQty: 1,
+    inStock: true,
+    photoUrl: '/api/uploads/img/19.jpg, /api/uploads/img/20.jpg',
+    photos: ['/api/uploads/img/19.jpg', '/api/uploads/img/20.jpg']
+  },
+  {
+    id: 3299,
+    name: 'BARRA AXIAL ESQUERDA/DIREITA GOL/FOX',
+    code: '680192',
+    category: 'Suspensão',
+    description: 'Barra axial de direção para Volkswagen Gol e Fox. Alta precisão e durabilidade certificada.',
+    compatibility: 'Volkswagen Gol, Fox, Voyage, Saveiro',
+    price: 51.89,
+    stockQty: 1,
+    inStock: true,
+    photoUrl: '/api/uploads/img/22.jpg',
+    photos: ['/api/uploads/img/22.jpg']
+  },
+  {
+    id: 3300,
+    name: 'BUCHA BARRA ESTABILIZADORA DIANTEIRA DIANTEIRA 20MM 2790 SAMPEL',
+    code: 'Sampel 2790',
+    category: 'Suspensão',
+    description: 'Bucha da barra estabilizadora dianteira 20mm Sampel em composto vulcanizado de alta resistência.',
+    compatibility: 'Compatibilidade conforme aplicação Sampel 2790',
+    price: 44.61,
+    stockQty: 2,
+    inStock: true,
+    photoUrl: '/api/uploads/img/23.jpg',
+    photos: ['/api/uploads/img/23.jpg']
+  },
+  {
+    id: 3301,
+    name: 'Corpo de borboleta do Renault Duster 2.0',
+    code: '20366',
+    category: 'Sensores e injeção',
+    description: 'Corpo de borboleta TBI eletrônico para Renault Duster 2.0. Peça pronta para venda e envio imediato.',
+    compatibility: 'Renault Duster 2.0 16V Hi-Flex',
+    price: 759.65,
+    stockQty: 1,
+    inStock: true,
+    photoUrl: '/api/uploads/img/28.jpg, /api/uploads/img/29.jpg',
+    photos: ['/api/uploads/img/28.jpg', '/api/uploads/img/29.jpg']
+  },
+  {
+    id: 3277,
+    name: 'DISCO FREIO DIANTEIRO VENTILADO 266MM 4 FUROS S/ CUBO HF750 HIPPER FREIOS',
+    code: 'HF750',
+    category: 'Freios',
+    description: 'Disco de freio dianteiro ventilado 266mm 4 furos sem cubo Hipper Freios. Excelente dissipação de calor.',
+    compatibility: 'Aplicações conforme especificação HF750',
+    price: 322.86,
+    stockQty: 1,
+    inStock: true,
+    photoUrl: '/api/uploads/img/24.jpg',
+    photos: ['/api/uploads/img/24.jpg']
+  },
+  {
+    id: 3278,
+    name: 'Fluido de Freio DOT 4  500ml',
+    code: 'DOT4-500',
+    category: 'Freios',
+    description: 'Fluido de freio sintético DOT 4 de alta performance para máxima segurança de frenagem.',
+    compatibility: 'Sistemas de freio a disco e tambor padrão DOT 4',
+    price: 32.87,
+    stockQty: 3,
+    inStock: true,
+    photoUrl: '/api/uploads/img/25.jpg',
+    photos: ['/api/uploads/img/25.jpg']
+  },
+  {
+    id: 3276,
+    name: 'Jogo de pastilhas de freio dianteiras Fiat',
+    code: '1BP30889AA',
+    category: 'Freios',
+    description: 'Jogo completo de pastilhas de freio dianteiras para veículos da linha Fiat.',
+    compatibility: 'Linha Fiat compatível',
+    price: 58.94,
+    stockQty: 1,
+    inStock: true,
+    photoUrl: '/api/uploads/img/26.jpg, /api/uploads/img/27.jpg',
+    photos: ['/api/uploads/img/26.jpg', '/api/uploads/img/27.jpg']
+  },
+  {
+    id: 3297,
+    name: 'PIVO SUSPENSAO DIANTEIRO INFERIOR ESQUERDO/DIREITO PVI1010 PERFECT',
+    code: 'pvi1010',
+    category: 'Suspensão',
+    description: 'Pivô de suspensão dianteiro inferior esquerdo/direito Perfect PVI1010 reforçado.',
+    compatibility: 'Linha automotiva nacional compatível',
+    price: 49.90,
+    stockQty: 1,
+    inStock: true,
+    photoUrl: '/api/uploads/img/16.jpg, /api/uploads/img/17.jpg, /api/uploads/img/18.jpg',
+    photos: ['/api/uploads/img/16.jpg', '/api/uploads/img/17.jpg', '/api/uploads/img/18.jpg']
+  },
+  {
+    id: 3296,
+    name: 'Terminal de direção Explorer Ranger',
+    code: 'N2120',
+    category: 'Suspensão',
+    description: 'Terminal de direção reforçado para Ford Explorer e Ranger.',
+    compatibility: 'Ford Ranger, Explorer',
+    price: 106.69,
+    stockQty: 2,
+    inStock: true,
+    photoUrl: '/api/uploads/img/14.jpg, /api/uploads/img/15.jpg',
+    photos: ['/api/uploads/img/14.jpg', '/api/uploads/img/15.jpg']
+  },
+  {
+    id: 3255,
+    name: 'Terminal de direção Gol',
+    code: 'N1027',
+    category: 'Suspensão',
+    description: 'Terminal de direção articulado para linha Volkswagen Gol.',
+    compatibility: 'Volkswagen Gol, Parati, Saveiro, Voyage',
+    price: 52.99,
+    stockQty: 1,
+    inStock: true,
+    photoUrl: '/api/uploads/img/12.jpg, /api/uploads/img/13.jpg',
+    photos: ['/api/uploads/img/12.jpg', '/api/uploads/img/13.jpg']
+  },
+  {
+    id: 3234,
+    name: 'Terminal de direção Gol',
+    code: 'N183',
+    category: 'Suspensão',
+    description: 'Terminal de direção para Volkswagen Gol com encaixe cônico de precisão.',
+    compatibility: 'Volkswagen Gol, Parati, Saveiro',
+    price: 58.37,
+    stockQty: 1,
+    inStock: true,
+    photoUrl: '/api/uploads/img/10.jpg, /api/uploads/img/11.jpg',
+    photos: ['/api/uploads/img/10.jpg', '/api/uploads/img/11.jpg']
+  }
 ];
+
+// Função para priorizar no topo da loja peças reais com fotos cadastradas
+function prioritizeRealProducts(list) {
+  if (!Array.isArray(list)) return [];
+  return list.slice().sort((a, b) => {
+    const aPhoto = a.photoUrl || (Array.isArray(a.photos) ? a.photos[0] : '') || '';
+    const bPhoto = b.photoUrl || (Array.isArray(b.photos) ? b.photos[0] : '') || '';
+    const aIsReal = aPhoto.includes('/api/uploads/') || aPhoto.includes('/uploads/');
+    const bIsReal = bPhoto.includes('/api/uploads/') || bPhoto.includes('/uploads/');
+    if (aIsReal && !bIsReal) return -1;
+    if (!aIsReal && bIsReal) return 1;
+    return 0;
+  });
+}
 
 function money(v) { return v.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }); }
 
@@ -1458,8 +1595,8 @@ async function openProductDetails(productId, cachedProduct = null, push = true) 
   const track = document.getElementById('gallerySlidesTrack');
   if (track) {
     track.innerHTML = photosToRender.map((pUrl, idx) => `
-      <div class="gallery-slide" data-slide-index="${idx}">
-        <div class="slide-img-wrap">
+      <div class="gallery-slide" data-slide-index="${idx}" style="cursor:zoom-in;">
+        <div class="slide-img-wrap" style="cursor:zoom-in;" title="Clique para ver a imagem inteira e dar zoom" onclick="if (typeof openLightbox === 'function') openLightbox();">
           <img ${idx === 0 ? 'id="detailMainImg"' : ''} src="${pUrl}" alt="${product.name} - Foto ${idx + 1}" loading="${idx === 0 ? 'eager' : 'lazy'}" draggable="false" onerror="this.onerror=null; this.src='images/categorias/filtros.jpg';" />
         </div>
       </div>
@@ -2020,38 +2157,62 @@ function initProductViewer() {
     }
   }
 
-  // Zoom contínuo ultra-fluido com a rodinha do mouse (Desktop)
+  // Zoom contínuo ultra-fluido e instantâneo (0ms delay) com a rodinha do mouse (Desktop)
   let lbRafPending = false;
   const handleLbWheelZoom = (e) => {
     e.preventDefault();
     e.stopPropagation();
 
-    // Normalização calibrada para resposta suave em mouse com fio e touchpads
-    const rawDelta = e.deltaY;
-    const zoomRatio = rawDelta < 0 ? 1.15 : (1 / 1.15);
-    const newTarget = Math.min(5.0, Math.max(1.0, targetScale * zoomRatio));
+    const zoomStep = 1.18;
+    const prevScale = lbScale;
+    let newScale = e.deltaY < 0 ? (prevScale * zoomStep) : (prevScale / zoomStep);
+    newScale = Math.min(6.0, Math.max(1.0, newScale));
 
-    if (newTarget === 1.0) {
-      targetPanX = 0;
-      targetPanY = 0;
+    if (newScale === prevScale) return;
+
+    if (newScale <= 1.01) {
+      lbScale = 1.0;
+      lbPanX = 0;
+      lbPanY = 0;
     } else if (lbViewport) {
       const rect = lbViewport.getBoundingClientRect();
       const originX = e.clientX - rect.left - rect.width / 2;
       const originY = e.clientY - rect.top - rect.height / 2;
-      const k = 1 - (newTarget / targetScale);
-      targetPanX += (originX - targetPanX) * k;
-      targetPanY += (originY - targetPanY) * k;
+      const k = 1 - (newScale / prevScale);
+      lbPanX += (originX - lbPanX) * k;
+      lbPanY += (originY - lbPanY) * k;
+      lbScale = newScale;
+    } else {
+      lbScale = newScale;
     }
 
-    targetScale = newTarget;
-
-    if (!isZoomAnimating) {
-      isZoomAnimating = true;
-      requestAnimationFrame(runZoomSpringLoop);
-    }
+    syncZoomTargets();
+    updateLbTransform();
   };
 
   modal?.addEventListener('wheel', handleLbWheelZoom, { passive: false });
+
+  // Duplo clique rápido no Lightbox para alternar zoom instantâneo (1.0x <-> 2.5x)
+  lbViewport?.addEventListener('dblclick', (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (lbScale > 1.2) {
+      lbScale = 1.0;
+      lbPanX = 0;
+      lbPanY = 0;
+    } else {
+      const rect = lbViewport.getBoundingClientRect();
+      const originX = e.clientX - rect.left - rect.width / 2;
+      const originY = e.clientY - rect.top - rect.height / 2;
+      const newScale = 2.5;
+      const k = 1 - newScale;
+      lbPanX = originX * k;
+      lbPanY = originY * k;
+      lbScale = newScale;
+    }
+    syncZoomTargets();
+    updateLbTransform();
+  });
 
   // Swipe para navegar fotos no Lightbox em tela cheia no mobile
   let lbTouchStartX = 0;
@@ -2100,6 +2261,25 @@ function initProductViewer() {
   document.getElementById('galleryZoomBtn')?.addEventListener('click', openLightbox);
   document.getElementById('detailMainImg')?.addEventListener('click', openLightbox);
   document.querySelector('.slide-img-wrap')?.addEventListener('click', openLightbox);
+
+  // Clique na foto principal da galeria abre imediatamente o Lightbox em tela cheia com zoom
+  const gallerySliderEl = document.getElementById('gallerySlider');
+  if (gallerySliderEl && !gallerySliderEl.__lbBound) {
+    gallerySliderEl.__lbBound = true;
+    gallerySliderEl.addEventListener('click', (e) => {
+      if (e.target.closest('#galleryPrevBtn, #galleryNextBtn, .gallery-nav-btn, .gallery-thumb, #galleryThumbsRow, .g-dot, #galleryDotsRow')) return;
+      openLightbox();
+    });
+  }
+
+  const galleryTrackEl = document.getElementById('gallerySlidesTrack');
+  if (galleryTrackEl && !galleryTrackEl.__lbBound) {
+    galleryTrackEl.__lbBound = true;
+    galleryTrackEl.addEventListener('click', (e) => {
+      if (e.target.closest('#galleryPrevBtn, #galleryNextBtn, .gallery-nav-btn')) return;
+      openLightbox();
+    });
+  }
   lbOverlay?.addEventListener('click', () => closeLightbox(true));
   lbClose?.addEventListener('click', () => closeLightbox(true));
 
@@ -2291,7 +2471,7 @@ async function loadCatalog() {
       });
     }
 
-    renderProducts(container, prods);
+    renderProducts(container, prioritizeRealProducts(prods));
   } catch (err) {
     container.innerHTML = `<p style="color:#e06a6a">Não foi possível carregar as peças agora. ${err.message}</p>`;
   }
@@ -3542,10 +3722,10 @@ init();
         rawEligible = (typeof CATALOG_FALLBACK_PRODUCTS !== 'undefined') ? CATALOG_FALLBACK_PRODUCTS.slice() : [];
       }
 
-      const allEligible = rawEligible.filter(p => {
+      const allEligible = prioritizeRealProducts(rawEligible.filter(p => {
         const v = typeof p.price === 'number' ? p.price : parseFloat(p.price) || 0;
         return v > 0 && p.inStock !== false;
-      });
+      }));
       if (!allEligible.length) return;
 
       // Seleciona ofertas destacadas garantindo variedade entre as categorias automotivas
@@ -3836,10 +4016,10 @@ init();
         rawList = (typeof CATALOG_FALLBACK_PRODUCTS !== 'undefined') ? CATALOG_FALLBACK_PRODUCTS.slice() : [];
       }
 
-      const eligible = rawList.filter((p) => {
+      const eligible = prioritizeRealProducts(rawList.filter((p) => {
         const v = typeof p.price === 'number' ? p.price : parseFloat(p.price) || 0;
         return v > 0 && p.inStock !== false;
-      });
+      }));
 
       // Intercala as categorias para que os três cards visíveis nunca
       // fiquem todos da mesma categoria.

@@ -149,7 +149,7 @@ router.get('/', async (req, res) => {
       clauses.push('stock_qty = 0');
     }
 
-    const sql = `SELECT * FROM products WHERE ${clauses.join(' AND ')} ORDER BY name ASC`;
+    const sql = `SELECT * FROM products WHERE ${clauses.join(' AND ')} ORDER BY (CASE WHEN photo_url LIKE '%/api/uploads/%' THEN 0 ELSE 1 END) ASC, name ASC`;
     const result = await db.query(sql, params);
     res.json({ products: result.rows.map(serialize) });
   } catch (err) {
@@ -201,7 +201,7 @@ router.get('/categories/featured', async (_req, res) => {
       SELECT id, name, code, category, description, compatibility, price_cents, stock_qty, photo_url, location, active
       FROM products
       WHERE active = true
-      ORDER BY updated_at DESC, id ASC
+      ORDER BY (CASE WHEN photo_url LIKE '%/api/uploads/%' THEN 0 ELSE 1 END) ASC, updated_at DESC, id ASC
       LIMIT 40
     `);
     const list = result.rows.map(serialize);
