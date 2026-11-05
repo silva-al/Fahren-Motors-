@@ -3500,7 +3500,7 @@
      MODAL DE NOVO PEDIDO (VENDA BALCÃO / MANUAL)
      ==================================================== -->
   <div class="modal-overlay hidden" id="newOrderModal">
-    <div class="modal-card modal-lg" style="max-width: 800px;">
+    <div class="modal-card modal-lg" style="max-width: 880px; width: 95%; box-sizing: border-box; overflow-x: hidden;">
       <div class="modal-header">
         <div class="modal-title-box">
           <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2">
@@ -3544,7 +3544,7 @@
           <h4 style="margin: 0 0 12px; font-size: 14px; font-weight: 700; color: var(--text-primary); display: flex; align-items: center; gap: 6px;">
             📦 Adicionar Peças ao Pedido
           </h4>
-          <div class="no-add-grid" style="display: grid; grid-template-columns: minmax(320px, 1fr) 95px 130px auto; gap: 12px; align-items: flex-end;">
+          <div class="no-add-grid">
             <div class="field" style="margin: 0;">
               <label>Selecione ou Digite a Peça *</label>
               <div class="wms-search-combobox" id="noCombobox">
@@ -3578,7 +3578,7 @@
           </div>
 
           <!-- TABELA DE ITENS INCLUÍDOS -->
-          <div style="margin-top: 14px; border: 1px solid var(--panel-border); border-radius: 8px; overflow: hidden;">
+          <div style="margin-top: 14px; border: 1px solid var(--panel-border); border-radius: 8px; overflow-x: auto; max-width: 100%; box-sizing: border-box;">
             <table class="wms-table" style="margin: 0;">
               <thead>
                 <tr>

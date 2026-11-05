@@ -5951,12 +5951,16 @@ window.printPickingList = function() {
       <head>
         <title>Romaneio de Separação WMS - Fahren Motors</title>
         <style>
-          body { font-family: sans-serif; font-size: 11pt; padding: 20px; color: #111; }
-          h2 { margin: 0 0 4px; font-size: 16pt; color: #1a365d; }
-          p { margin: 0 0 16px; color: #555; font-size: 9pt; }
-          table { width: 100%; border-collapse: collapse; margin-top: 10px; }
-          th, td { border: 1px solid #ccc; padding: 7px 10px; font-size: 9pt; text-align: left; }
-          th { background: #f0f4f8; font-weight: bold; }
+          @page { size: A4 portrait; margin: 12mm 10mm; }
+          body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif; font-size: 10pt; padding: 15px; color: #0f172a; background: #ffffff; }
+          h2 { margin: 0 0 4px; font-size: 16pt; color: #0f172a; font-weight: 800; border-bottom: 2px solid #e2e8f0; padding-bottom: 6px; }
+          p { margin: 4px 0 16px; color: #64748b; font-size: 9pt; }
+          table { width: 100%; border-collapse: collapse; margin-top: 10px; background: #ffffff; }
+          th, td { border: 1px solid #cbd5e1; padding: 8px 10px; font-size: 9pt; text-align: left; background: #ffffff; color: #0f172a; }
+          th { background: #f8fafc; font-weight: 700; color: #1e293b; border-bottom: 2px solid #94a3b8; }
+          tbody tr:nth-child(even) td { background: #fbfcfd; }
+          code { font-family: monospace; font-size: 9pt; color: #0f172a; }
+          span { color: #0f172a !important; background: transparent !important; border: none !important; }
         </style>
       </head>
       <body>
