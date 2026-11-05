@@ -1173,8 +1173,8 @@ function clearActiveVehicle() {
   if (tabPlate && tabModel) {
     tabPlate.classList.add('active');
     tabModel.classList.remove('active');
-    if (rowModel) rowModel.style.display = 'none';
-    if (rowPlate) rowPlate.style.display = 'flex';
+    if (rowModel) rowModel.style.display = 'flex';
+    if (rowPlate) rowPlate.style.display = 'none';
   }
 
   // 7. Rola suavemente até o localizador de veículo (sem abrir teclado virtual!)
@@ -2017,9 +2017,7 @@ function initProductViewer() {
   };
 
   lbViewport?.addEventListener('wheel', handleLbWheelZoom, { passive: false });
-  modal?.addEventListener('wheel', (e) => {
-    e.preventDefault();
-  }, { passive: false });
+  modal?.addEventListener('wheel', handleLbWheelZoom, { passive: false });
 
   // Swipe para navegar fotos no Lightbox em tela cheia no mobile
   let lbTouchStartX = 0;

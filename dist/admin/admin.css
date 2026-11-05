@@ -12464,47 +12464,7 @@ body.tema-claro .order-status-badge-select.novo {
 /* ===================================================================
    BADGE VISÍVEL DE BUILD / VERSÃO ATIVA NO TOPO DO PAINEL WMS
    =================================================================== */
-.wms-build-badge {
-  display: inline-flex !important;
-  align-items: center !important;
-  gap: 6px !important;
-  background: rgba(0, 230, 118, 0.12) !important;
-  border: 1px solid rgba(0, 230, 118, 0.35) !important;
-  color: #00e676 !important;
-  padding: 5px 11px !important;
-  border-radius: 8px !important;
-  font-size: 11.5px !important;
-  font-weight: 800 !important;
-  letter-spacing: 0.5px !important;
-  white-space: nowrap !important;
-  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace !important;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25) !important;
-}
 
-.wms-build-dot {
-  width: 7px !important;
-  height: 7px !important;
-  border-radius: 50% !important;
-  background: #00e676 !important;
-  box-shadow: 0 0 8px #00e676 !important;
-  display: inline-block !important;
-  animation: pulseGreen 2s infinite ease-in-out !important;
-}
-
-@keyframes pulseGreen {
-  0%, 100% { opacity: 1; transform: scale(1); }
-  50% { opacity: 0.35; transform: scale(0.85); }
-}
-
-body.tema-claro .wms-build-badge {
-  background: rgba(16, 185, 129, 0.12) !important;
-  border: 1px solid rgba(16, 185, 129, 0.4) !important;
-  color: #047857 !important;
-}
-body.tema-claro .wms-build-dot {
-  background: #10b981 !important;
-  box-shadow: 0 0 6px #10b981 !important;
-}
 
 /* ===================================================================
    OTIMIZAÇÃO DO ESPAÇO SUPERIOR DO CARD DE PEDIDOS E COLUNA LOCALIZAÇÃO
@@ -12551,4 +12511,53 @@ body.tema-claro .wms-build-dot {
   text-align: center !important;
   padding: 8px 8px 8px 4px !important;
   overflow: visible !important;
+}
+
+
+/* ===================================================================
+   STATUS NOVO: TOTALMENTE SEM CONTORNO / SEM BORDA — APENAS A PALAVRA NOVO
+   =================================================================== */
+.status-badge-wrap.novo,
+body:not(.tema-claro) .status-badge-wrap.novo,
+body.tema-claro .status-badge-wrap.novo {
+  background: transparent !important;
+  border: none !important;
+  outline: none !important;
+  box-shadow: none !important;
+  padding: 0 !important;
+  margin: 0 auto !important;
+}
+
+.status-badge-wrap.novo .status-dot {
+  display: none !important;
+  width: 0 !important;
+  height: 0 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+.status-badge-wrap.novo .order-status-badge-select,
+.order-status-badge-select.novo,
+body:not(.tema-claro) .order-status-badge-select.novo,
+body.tema-claro .order-status-badge-select.novo {
+  background: transparent !important;
+  border: none !important;
+  outline: none !important;
+  box-shadow: none !important;
+  color: #f59e0b !important;
+  font-size: 12px !important;
+  font-weight: 800 !important;
+  letter-spacing: 0.6px !important;
+  text-transform: uppercase !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  -webkit-appearance: none !important;
+  appearance: none !important;
+  cursor: pointer !important;
+  text-align: center !important;
+}
+
+body.tema-claro .status-badge-wrap.novo .order-status-badge-select,
+body.tema-claro .order-status-badge-select.novo {
+  color: #d97706 !important;
 }

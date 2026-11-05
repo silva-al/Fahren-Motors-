@@ -1795,7 +1795,7 @@ select option {
   margin: auto !important;
   display: block !important;
   transform-origin: center center;
-  transition: none !important; will-change: transform !important; transform: translateZ(0) !important;
+  transition: none !important; will-change: transform !important;
   pointer-events: none;
   filter: drop-shadow(0 12px 35px rgba(0, 0, 0, 0.85)) !important;
 }
@@ -9028,7 +9028,6 @@ body.tema-claro .fp-footer-copy-line {
 #lightboxImg {
   transition: none !important;
   will-change: transform !important;
-  transform: translateZ(0) !important;
   backface-visibility: hidden !important;
   -webkit-backface-visibility: hidden !important;
 }
@@ -9043,7 +9042,8 @@ body.tema-claro .fp-footer-copy-line {
 /* ==========================================================================
    REMOÇÃO COMPLETA DO VEHICLE FINDER WIDGET
    ========================================================================== */
-#vehicleFinderWidget, .vehicle-finder {
+/* Oculta apenas abas e busca por placa; Modelo e Ano permanecem visíveis */
+.vf-tabs, .vf-plate-row, #vfPlateRow {
   display: none !important;
   height: 0 !important;
   margin: 0 !important;
@@ -9080,4 +9080,21 @@ body.tema-claro .fp-footer-copy-line {
     width: 26px !important;
     height: 26px !important;
   }
+}
+
+/* Oculta busca por placa e placas de teste */
+.vf-tabs, .vf-plate-row, #vfPlateRow {
+  display: none !important;
+  height: 0 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  visibility: hidden !important;
+}
+
+
+/* Coloca o buscador de veículos (Modelo, Ano, Montadora) logo abaixo da pesquisa do topo */
+#inicio .vehicle-finder {
+  order: -1 !important;
+  margin-top: 12px !important;
+  margin-bottom: 14px !important;
 }

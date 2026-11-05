@@ -42,3 +42,4 @@ A técnica recomendada e à prova de falhas para sistemas ERP/WMS:
 3. [ ] Marca d'água (`.nf-watermark-overlay`) oculta na impressão oficial (`display: none !important`).
 4. [ ] Sem elementos de navegação, botões de ação ou modais visíveis.
 5. [ ] Altura total contida em no máximo 282mm para garantir 1 única página A4 no PDF.
+

@@ -3192,7 +3192,7 @@ function moneyNum(v) {
   return Number(v || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 }
 
-function generateCode128Svg(codeText, height = 36) {
+function generateCode128Svg(codeText, height = 44) {
   const patterns = [
     [2,1,2,2,2,2],[2,2,2,1,2,2],[2,2,2,2,2,1],[1,2,1,2,2,3],[1,2,1,3,2,2],[1,3,1,2,2,2],[1,2,2,2,1,3],[1,2,2,3,1,2],[1,3,2,2,1,2],[2,2,1,2,1,3],
     [2,2,1,3,1,2],[2,3,1,2,1,2],[1,1,2,2,3,2],[1,2,2,1,3,2],[1,2,2,2,3,1],[1,1,3,2,2,2],[1,2,3,1,2,2],[1,2,3,2,2,1],[2,2,3,2,1,1],[2,2,1,1,3,2],
@@ -3214,8 +3214,7 @@ function generateCode128Svg(codeText, height = 36) {
   let checksum = 0;
 
   if (isNumeric) {
-    // Code 128 Subset C (Par de dígitos = 1 símbolo) — SEFAZ / DANFE Padrão Oficial
-    const startCode = 105;
+    const startCode = 105; // Code 128 Subset C (Padrão Oficial SEFAZ / DANFE)
     checksum = startCode;
     sequence.push(startCode);
     let pos = 1;
@@ -3226,9 +3225,8 @@ function generateCode128Svg(codeText, height = 36) {
       pos++;
     }
   } else {
-    // Code 128 Subset B (Alfanumérico)
     const text = String(codeText);
-    const startCode = 104;
+    const startCode = 104; // Subset B
     checksum = startCode;
     sequence.push(startCode);
     for (let i = 0; i < text.length; i++) {
@@ -3255,9 +3253,18 @@ function generateCode128Svg(codeText, height = 36) {
     }
   });
 
-  const totalWidth = modules.length;
-  let svg = '<svg viewBox="0 0 ' + totalWidth + ' ' + height + '" preserveAspectRatio="none" style="width:100%;height:' + height + 'px;display:block;">';
-  let currentX = 0;
+  // Quiet Zone de 10 módulos brancos de cada lado (obrigatório pelas normas GS1 e SEFAZ para leitura ótica)
+  const quietZone = 10;
+  const totalWidth = modules.length + (quietZone * 2);
+
+  // SVG vetorial ultra-nítido com shape-rendering="crispEdges" para NUNCA borrar na impressão
+  let svg = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ' + totalWidth + ' ' + height + '" ' +
+            'shape-rendering="crispEdges" style="width:100%;max-width:320px;height:' + height + 'px;display:block;margin:0 auto;background:#ffffff;">';
+  
+  // Fundo branco sólido para garantir 100% de contraste
+  svg += '<rect x="0" y="0" width="' + totalWidth + '" height="' + height + '" fill="#ffffff" shape-rendering="crispEdges" />';
+
+  let currentX = quietZone;
   for (let i = 0; i < modules.length; i++) {
     if (modules[i] === 1) {
       let len = 1;
@@ -3265,7 +3272,7 @@ function generateCode128Svg(codeText, height = 36) {
         len++;
         i++;
       }
-      svg += '<rect x="' + currentX + '" y="0" width="' + len + '" height="' + height + '" fill="#000" />';
+      svg += '<rect x="' + currentX + '" y="0" width="' + len + '" height="' + height + '" fill="#000000" shape-rendering="crispEdges" />';
       currentX += len;
     } else {
       currentX++;
@@ -3717,7 +3724,7 @@ function getDanfeStandalonePrintCss() {
     .nf-danfe-sub { font-size: 8px !important; line-height: 1.25 !important; }
     .nf-header-barcode { display: flex !important; flex-direction: column !important; align-items: center !important; justify-content: center !important; padding: 6px 8px !important; text-align: center !important; }
     .nf-barcode-svg-wrap { width: 100% !important; max-width: 320px !important; margin-bottom: 3px !important; }
-    .nf-barcode-svg-wrap svg { width: 100% !important; height: 42px !important; display: block !important; }
+    .nf-barcode-svg-wrap svg { width: 100% !important; height: 44px !important; display: block !important; margin: 0 auto !important; shape-rendering: crispEdges !important; image-rendering: -webkit-optimize-contrast !important; image-rendering: pixelated !important; }
     .nf-key-label { font-size: 6.8px !important; font-weight: bold !important; text-transform: uppercase !important; letter-spacing: 0.2px !important; }
     .nf-key-text { font-family: 'Courier New', Courier, monospace !important; font-size: 8.2px !important; font-weight: bold !important; letter-spacing: 0.5px !important; white-space: nowrap !important; margin: 2px 0 3px 0 !important; }
     .nf-consulta-box { font-size: 6.4px !important; line-height: 1.2 !important; color: #000 !important; border-top: 1px solid #000 !important; width: 100% !important; padding-top: 3px !important; margin-top: 2px !important; }

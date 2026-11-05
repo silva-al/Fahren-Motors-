@@ -42,7 +42,7 @@
 <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet"/>
 
-<link href="styles.css?v=mw320ff8" rel="stylesheet"/>
+<link href="styles.css?v=mw32i5yd" rel="stylesheet"/>
 
   <style>
     .fp-whatsapp-float {
@@ -158,64 +158,8 @@
 
 <main>
 <section class="screen active" id="inicio">
-  <!-- Atalhos rápidos -->
-  <div class="quick-actions">
-    <button type="button" class="quick-action" id="qaVehicle">
-      <span class="qa-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 17h14M6.5 17V9.5L8 6h8l1.5 3.5V17"/><circle cx="8" cy="17" r="1.6"/><circle cx="16" cy="17" r="1.6"/></svg></span>
-      <span class="qa-text"><b>Informe seu veículo</b><small>Encontre a peça certa</small></span>
-      <svg class="qa-arrow" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m9 6 6 6-6 6"/></svg>
-    </button>
-    <a class="quick-action" id="qaStore" href="https://www.google.com/maps/search/?api=1&amp;query=Rua+Florian%C3%B3polis%2C+165+-+Residencial+Jo%C3%A3o+Luiz%2C+Hortol%C3%A2ndia+-+SP%2C+13186-492" target="_blank" rel="noopener">
-      <span class="qa-icon qa-icon-green"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg></span>
-      <span class="qa-text"><b>Rua Florianópolis, 165</b><small>Hortolândia/SP • Aberto das 08h às 18h</small></span>
-      <svg class="qa-arrow" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m9 6 6 6-6 6"/></svg>
-    </a>
-  </div>
-
-  <div class="hero-clean">
-    <!-- Banner Panorâmico em Alta Resolução Acima do Catálogo (Sem borda limitadora e proporções compactas) -->
-    <div class="hero-clean-visual">
-      <div class="hero-banner-container" id="heroBannerContainer" title="Peças em Destaque Fahren Motors (Toque para avançar)">
-        <div class="hero-banner-glow"></div>
-        <img class="hero-banner-img" id="heroBannerImg" src="images/banner-slide-1.jpg" alt="Peças Automotivas em Destaque Fahren Motors"/>
-        
-        <!-- Dots de navegação minimalistas no canto inferior -->
-        <div class="hero-dots" id="heroDots" role="tablist" aria-label="Navegar pelas fotos em destaque">
-          <span class="active" data-slide="0" role="tab" aria-label="Slide 1" title="Slide 1"></span>
-          <span data-slide="1" role="tab" aria-label="Slide 2" title="Slide 2"></span>
-          <span data-slide="2" role="tab" aria-label="Slide 3" title="Slide 3"></span>
-          <span data-slide="3" role="tab" aria-label="Slide 4" title="Slide 4"></span>
-        </div>
-      </div>
-
-      <!-- Peças reais do catálogo ao lado do banner (aparece somente no desktop) -->
-      <div class="hero-side-cards" id="heroSideCards" aria-label="Peças em destaque"></div>
-    </div>
-
-    <div class="hero-clean-tag">
-      <span class="pulse-dot"></span> CATÁLOGO DE PEÇAS OFICIAL
-    </div>
-    <h1 class="hero-clean-title">
-      A peça certa<br /><span>para o seu carro.</span>
-    </h1>
-    <p class="hero-clean-sub">
-      Componentes automotivos de alta durabilidade com pronta entrega e garantia de fábrica.
-    </p>
-
-    <!-- Busca oculta que o restante do site ainda usa internamente -->
-    <input type="search" id="homeSearchInput" name="q_catalogo_pecas" style="position:absolute;width:1px;height:1px;opacity:0;pointer-events:none" tabindex="-1" aria-hidden="true"/>
-    <button type="button" id="homeSearchBtn" style="position:absolute;width:1px;height:1px;opacity:0;pointer-events:none" tabindex="-1" aria-hidden="true"></button>
-
-    <!-- Benefícios rápidos -->
-    <div class="hero-clean-perks">
-      <div class="hero-perk"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2 4 5v6c0 5 3.4 8.4 8 11 4.6-2.6 8-6 8-11V5l-8-3Z"/><path d="m9 12 2 2 4-4"/></svg> Qualidade Garantida</div>
-      <div class="hero-perk"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="6" width="14" height="11" rx="1.5"/><path d="M15 10h4l3 3v4h-7z"/><circle cx="6" cy="19" r="2"/><circle cx="17.5" cy="19" r="2"/></svg> Envio Rápido</div>
-      <div class="hero-perk"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.6 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.6a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1Z"/></svg> Garantia de Fábrica</div>
-    </div>
-  </div>
-
-    <!-- Encontre a peça pelo seu veículo -->
-  <div class="vehicle-finder" id="vehicleFinderWidget" style="display:none !important;">
+  <!-- Encontre a peça pelo seu veículo -->
+  <div class="vehicle-finder" id="vehicleFinderWidget">
     <div class="vehicle-finder-title">Encontre a peça ideal para seu veículo</div>
     
     <div class="vf-tabs" style="display:none !important;">
@@ -275,7 +219,64 @@
     </div>
   </div>
 
-  <!-- Grade de categorias (Design Oficial Fahren Motors) -->
+  
+  <!-- Atalhos rápidos -->
+  <div class="quick-actions">
+    <button type="button" class="quick-action" id="qaVehicle">
+      <span class="qa-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 17h14M6.5 17V9.5L8 6h8l1.5 3.5V17"/><circle cx="8" cy="17" r="1.6"/><circle cx="16" cy="17" r="1.6"/></svg></span>
+      <span class="qa-text"><b>Informe seu veículo</b><small>Encontre a peça certa</small></span>
+      <svg class="qa-arrow" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m9 6 6 6-6 6"/></svg>
+    </button>
+    <a class="quick-action" id="qaStore" href="https://www.google.com/maps/search/?api=1&amp;query=Rua+Florian%C3%B3polis%2C+165+-+Residencial+Jo%C3%A3o+Luiz%2C+Hortol%C3%A2ndia+-+SP%2C+13186-492" target="_blank" rel="noopener">
+      <span class="qa-icon qa-icon-green"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg></span>
+      <span class="qa-text"><b>Rua Florianópolis, 165</b><small>Hortolândia/SP • Aberto das 08h às 18h</small></span>
+      <svg class="qa-arrow" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m9 6 6 6-6 6"/></svg>
+    </a>
+  </div>
+
+  <div class="hero-clean">
+    <!-- Banner Panorâmico em Alta Resolução Acima do Catálogo (Sem borda limitadora e proporções compactas) -->
+    <div class="hero-clean-visual">
+      <div class="hero-banner-container" id="heroBannerContainer" title="Peças em Destaque Fahren Motors (Toque para avançar)">
+        <div class="hero-banner-glow"></div>
+        <img class="hero-banner-img" id="heroBannerImg" src="images/banner-slide-1.jpg" alt="Peças Automotivas em Destaque Fahren Motors"/>
+        
+        <!-- Dots de navegação minimalistas no canto inferior -->
+        <div class="hero-dots" id="heroDots" role="tablist" aria-label="Navegar pelas fotos em destaque">
+          <span class="active" data-slide="0" role="tab" aria-label="Slide 1" title="Slide 1"></span>
+          <span data-slide="1" role="tab" aria-label="Slide 2" title="Slide 2"></span>
+          <span data-slide="2" role="tab" aria-label="Slide 3" title="Slide 3"></span>
+          <span data-slide="3" role="tab" aria-label="Slide 4" title="Slide 4"></span>
+        </div>
+      </div>
+
+      <!-- Peças reais do catálogo ao lado do banner (aparece somente no desktop) -->
+      <div class="hero-side-cards" id="heroSideCards" aria-label="Peças em destaque"></div>
+    </div>
+
+    <div class="hero-clean-tag">
+      <span class="pulse-dot"></span> CATÁLOGO DE PEÇAS OFICIAL
+    </div>
+    <h1 class="hero-clean-title">
+      A peça certa<br /><span>para o seu carro.</span>
+    </h1>
+    <p class="hero-clean-sub">
+      Componentes automotivos de alta durabilidade com pronta entrega e garantia de fábrica.
+    </p>
+
+    <!-- Busca oculta que o restante do site ainda usa internamente -->
+    <input type="search" id="homeSearchInput" name="q_catalogo_pecas" style="position:absolute;width:1px;height:1px;opacity:0;pointer-events:none" tabindex="-1" aria-hidden="true"/>
+    <button type="button" id="homeSearchBtn" style="position:absolute;width:1px;height:1px;opacity:0;pointer-events:none" tabindex="-1" aria-hidden="true"></button>
+
+    <!-- Benefícios rápidos -->
+    <div class="hero-clean-perks">
+      <div class="hero-perk"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2 4 5v6c0 5 3.4 8.4 8 11 4.6-2.6 8-6 8-11V5l-8-3Z"/><path d="m9 12 2 2 4-4"/></svg> Qualidade Garantida</div>
+      <div class="hero-perk"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="6" width="14" height="11" rx="1.5"/><path d="M15 10h4l3 3v4h-7z"/><circle cx="6" cy="19" r="2"/><circle cx="17.5" cy="19" r="2"/></svg> Envio Rápido</div>
+      <div class="hero-perk"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.6 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.6a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1Z"/></svg> Garantia de Fábrica</div>
+    </div>
+  </div>
+
+    <!-- Grade de categorias (Design Oficial Fahren Motors) -->
   <div class="cat-grid-wrap">
     <div class="cat-grid">
       <!-- 1. FREIOS -->
@@ -943,4 +944,4 @@
 <div id="toastContainer"></div>
 <script defer="True" src="vendor/qrcode.js"></script>
 <script defer="True" src="https://sdk.mercadopago.com/js/v2"></script>
-<script defer="True" src="loja.js?v=mw320ff8"></script></body></html>
+<script defer="True" src="loja.js?v=mw32i5yd"></script></body></html>
