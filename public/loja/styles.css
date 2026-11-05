@@ -201,7 +201,7 @@ html,body{scrollbar-color:#3a3d43 #0b0c0f}
 
   /* Regra legada de carrinho neutralizada */
 
-  .fp-whatsapp-float{width:50px;height:50px;right:16px;bottom:20px !important;z-index:2147483647 !important}
+  .fp-whatsapp-float{width:48px;height:48px;right:16px;bottom:calc(125px + env(safe-area-inset-bottom, 0px)) !important;z-index:2147483647 !important}
   .fp-whatsapp-float svg{width:26px;height:26px}
 }
 
@@ -2189,10 +2189,10 @@ html, body {
 
   /* Botão WhatsApp Flutuante */
   .fp-whatsapp-float {
-    bottom: 20px !important;
+    bottom: calc(125px + env(safe-area-inset-bottom, 0px)) !important;
     right: 16px !important;
-    width: 50px !important;
-    height: 50px !important;
+    width: 48px !important;
+    height: 48px !important;
     z-index: 2147483647 !important;
   }
   .fp-whatsapp-float svg {
@@ -3081,7 +3081,7 @@ body.tema-claro .cat-card-count-box{background:#f8fafc !important;border:1px sol
   .mobile-tabbar .mtb-badge{position:absolute;top:-2px;right:14px;background:#ed1c24;color:#fff;font-size:9px;font-weight:800;border-radius:8px;min-width:15px;height:15px;display:flex;align-items:center;justify-content:center;padding:0 3px}
 
   /* Botão flutuante do WhatsApp elevado acima da barra inferior de navegação e do carrinho */
-  .fp-whatsapp-float{bottom:calc(78px + env(safe-area-inset-bottom, 0px)) !important;right:16px !important;z-index:2147483647 !important}
+  .fp-whatsapp-float{bottom:calc(125px + env(safe-area-inset-bottom, 0px)) !important;right:16px !important;z-index:2147483647 !important}
 }
 
 /* ==========================================================================
@@ -8851,16 +8851,16 @@ body.tema-claro .card-photo-counter {
 
 /* WhatsApp Flutuante Compacto e Discreto (nunca bloqueia o conteúdo) */
 .fp-whatsapp-float {
-  width: 42px !important;
-  height: 42px !important;
-  right: 16px !important;
-  bottom: 20px !important;
+  width: 52px !important;
+  height: 52px !important;
+  right: 20px !important;
+  bottom: 24px !important;
   box-shadow: 0 4px 14px rgba(0,0,0,0.3) !important;
 }
 
 .fp-whatsapp-float svg {
-  width: 22px !important;
-  height: 22px !important;
+  width: 26px !important;
+  height: 26px !important;
 }
 
 
@@ -9087,7 +9087,7 @@ body.tema-claro .fp-footer-copy-line {
     width: 48px !important;
     height: 48px !important;
     right: 16px !important;
-    bottom: calc(78px + env(safe-area-inset-bottom, 0px)) !important; /* Elevado acima da barra inferior e do carrinho */
+    bottom: calc(125px + env(safe-area-inset-bottom, 0px)) !important; /* Posicionado bem acima da barra inferior e do carrinho da sacola */
     z-index: 2147483647 !important;
   }
   .fp-whatsapp-float svg {
