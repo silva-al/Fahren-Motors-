@@ -3630,6 +3630,80 @@ window.openDanfeForOrder = (orderId) => {
   document.getElementById('danfeModal')?.classList.remove('hidden');
 };
 
+
+// ===================================================================
+// IMPRESSÃO OFICIAL DANFE / DACCE EM 1 PÁGINA (ZERO PÁGINAS EM BRANCO)
+// ===================================================================
+window.printDanfeDocument = function() {
+  const content = document.getElementById('danfePrintArea')?.innerHTML;
+  if (!content) {
+    window.print();
+    return;
+  }
+  
+  let printIframe = document.getElementById('danfePrintHiddenIframe');
+  if (!printIframe) {
+    printIframe = document.createElement('iframe');
+    printIframe.id = 'danfePrintHiddenIframe';
+    printIframe.style.position = 'fixed';
+    printIframe.style.right = '0';
+    printIframe.style.bottom = '0';
+    printIframe.style.width = '0';
+    printIframe.style.height = '0';
+    printIframe.style.border = '0';
+    document.body.appendChild(printIframe);
+  }
+
+  const iframeDoc = printIframe.contentWindow.document;
+  iframeDoc.open();
+  iframeDoc.write('<!DOCTYPE html><html lang="pt-BR"><head><meta charset="utf-8"><title>DANFE - Fahren Motors</title><link rel="stylesheet" href="/admin/admin.css?v=20261105_v8"><style>@page{size:A4 portrait;margin:4mm 5mm;}*{-webkit-print-color-adjust:exact !important;print-color-adjust:exact !important;box-sizing:border-box !important;}html,body{margin:0 !important;padding:0 !important;background:#ffffff !important;color:#000000 !important;width:100% !important;height:auto !important;min-height:0 !important;overflow:visible !important;}.danfe-sheet{margin:0 auto !important;padding:0 !important;box-shadow:none !important;border:1px solid #000000 !important;width:100% !important;max-width:200mm !important;height:auto !important;page-break-before:avoid !important;break-before:avoid !important;page-break-inside:auto !important;break-inside:auto !important;page-break-after:avoid !important;break-after:avoid !important;background:#ffffff !important;}.nf-watermark-overlay{display:none !important;}.no-print{display:none !important;}</style></head><body><div class="danfe-sheet">' + content + '</div></body></html>');
+  iframeDoc.close();
+
+  setTimeout(() => {
+    try {
+      printIframe.contentWindow.focus();
+      printIframe.contentWindow.print();
+    } catch (e) {
+      window.print();
+    }
+  }, 300);
+};
+
+window.printDacceDocument = function() {
+  const content = document.getElementById('daccePrintArea')?.innerHTML;
+  if (!content) {
+    window.print();
+    return;
+  }
+  
+  let printIframe = document.getElementById('daccePrintHiddenIframe');
+  if (!printIframe) {
+    printIframe = document.createElement('iframe');
+    printIframe.id = 'daccePrintHiddenIframe';
+    printIframe.style.position = 'fixed';
+    printIframe.style.right = '0';
+    printIframe.style.bottom = '0';
+    printIframe.style.width = '0';
+    printIframe.style.height = '0';
+    printIframe.style.border = '0';
+    document.body.appendChild(printIframe);
+  }
+
+  const iframeDoc = printIframe.contentWindow.document;
+  iframeDoc.open();
+  iframeDoc.write('<!DOCTYPE html><html lang="pt-BR"><head><meta charset="utf-8"><title>DACCE - Carta de Correção - Fahren Motors</title><link rel="stylesheet" href="/admin/admin.css?v=20261105_v8"><style>@page{size:A4 portrait;margin:4mm 5mm;}*{-webkit-print-color-adjust:exact !important;print-color-adjust:exact !important;box-sizing:border-box !important;}html,body{margin:0 !important;padding:0 !important;background:#ffffff !important;color:#000000 !important;width:100% !important;height:auto !important;min-height:0 !important;overflow:visible !important;}.danfe-sheet,.dacce-sheet{margin:0 auto !important;padding:0 !important;box-shadow:none !important;border:1px solid #000000 !important;width:100% !important;max-width:200mm !important;height:auto !important;page-break-before:avoid !important;break-before:avoid !important;background:#ffffff !important;}.no-print{display:none !important;}</style></head><body><div class="danfe-sheet dacce-sheet">' + content + '</div></body></html>');
+  iframeDoc.close();
+
+  setTimeout(() => {
+    try {
+      printIframe.contentWindow.focus();
+      printIframe.contentWindow.print();
+    } catch (e) {
+      window.print();
+    }
+  }, 300);
+};
+
 window.closeDanfeModal = () => {
   document.getElementById('danfeModal')?.classList.add('hidden');
 };

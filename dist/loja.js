@@ -349,8 +349,22 @@ function show(id, opts = {}) {
   // Em outras telas, os cards informativos ficam ocultos e o rodapé legal permanece visível.
   if (id === 'inicio') {
     document.body.classList.add('screen-is-inicio');
+    // Limpeza automática de qualquer termo de busca ou filtro ao voltar para o Início
+    ['catalogSearch', 'homeSearchInput', 'headerSearchInput', 'headerSearchInputMobile'].forEach(inputId => {
+      const el = document.getElementById(inputId);
+      if (el) el.value = '';
+    });
+    activeCatalogCategory = '';
+    const catSelect = document.getElementById('filterCategory');
+    if (catSelect) catSelect.value = '';
   } else {
     document.body.classList.remove('screen-is-inicio');
+    if (id !== 'pecas') {
+      ['catalogSearch', 'homeSearchInput', 'headerSearchInput', 'headerSearchInputMobile'].forEach(inputId => {
+        const el = document.getElementById(inputId);
+        if (el) el.value = '';
+      });
+    }
   }
   if (!authenticated && !['welcome', 'inicio', 'pecas', 'cadastro', 'carrinho', 'produto'].includes(id)) {
     alert('Faça seu cadastro ou entre na sua conta para acessar esta área.');
@@ -1303,17 +1317,52 @@ function renderProducts(container, products) {
           if (counterEl) counterEl.textContent = `${cardIdx + 1}/${cardPhotos.length}`;
         };
 
+        // Suporte completo a swipe por toque no mobile diretamente no card
+        let cardStartX = 0;
+        let cardStartY = 0;
+        let cardSwiped = false;
+
+        sliderWrap.addEventListener('touchstart', (e) => {
+          if (e.touches && e.touches[0]) {
+            cardStartX = e.touches[0].clientX;
+            cardStartY = e.touches[0].clientY;
+            cardSwiped = false;
+          }
+        }, { passive: true });
+
+        sliderWrap.addEventListener('touchmove', (e) => {
+          if (e.touches && e.touches[0]) {
+            const diffX = e.touches[0].clientX - cardStartX;
+            const diffY = e.touches[0].clientY - cardStartY;
+            if (Math.abs(diffX) > 20 && Math.abs(diffX) > Math.abs(diffY)) {
+              cardSwiped = true;
+            }
+          }
+        }, { passive: true });
+
+        sliderWrap.addEventListener('touchend', (e) => {
+          if (!cardSwiped || !e.changedTouches || !e.changedTouches[0]) return;
+          const diffX = e.changedTouches[0].clientX - cardStartX;
+          if (diffX < -30) {
+            updateCardPhoto(cardIdx + 1);
+          } else if (diffX > 30) {
+            updateCardPhoto(cardIdx - 1);
+          }
+        });
+
         if (btnPrev) {
           btnPrev.addEventListener('click', (e) => {
             e.stopPropagation();
             updateCardPhoto(cardIdx - 1);
           });
+          btnPrev.addEventListener('touchstart', (e) => { e.stopPropagation(); }, { passive: true });
         }
         if (btnNext) {
           btnNext.addEventListener('click', (e) => {
             e.stopPropagation();
             updateCardPhoto(cardIdx + 1);
           });
+          btnNext.addEventListener('touchstart', (e) => { e.stopPropagation(); }, { passive: true });
         }
       }
     }
@@ -1779,29 +1828,40 @@ function initProductViewer() {
     return e.type.includes('mouse') ? e.pageX : (e.touches && e.touches[0] ? e.touches[0].clientX : 0);
   }
 
+  let startY = 0;
+
   function touchStart(e) {
     const slides = track.querySelectorAll('.gallery-slide');
-    if (slides.length <= 1) return; // Foto estática quando há apenas 1 foto da peça
+    if (slides.length <= 1) return;
     if (e.touches && e.touches.length > 1) {
       isDragging = false;
       return;
     }
     isDragging = true;
     startX = getPositionX(e);
+    startY = e.touches && e.touches[0] ? e.touches[0].clientY : 0;
     track.style.transition = 'none';
   }
 
   function touchMove(e) {
     if (!isDragging) return;
     const slides = track.querySelectorAll('.gallery-slide');
-    if (slides.length <= 1) return; // Foto 100% estática
+    if (slides.length <= 1) return;
     if (e.touches && e.touches.length > 1) {
       isDragging = false;
       return;
     }
     const currentX = getPositionX(e);
-    const diff = currentX - startX;
-    const offset = -currentSlide * slider.offsetWidth + diff;
+    const currentY = e.touches && e.touches[0] ? e.touches[0].clientY : 0;
+    const diffX = currentX - startX;
+    const diffY = currentY - startY;
+
+    // Se estiver deslizando para os lados, cancela o scroll vertical para resposta imediata
+    if (Math.abs(diffX) > Math.abs(diffY) && e.cancelable) {
+      e.preventDefault();
+    }
+
+    const offset = -currentSlide * slider.offsetWidth + diffX;
     track.style.transform = `translateX(${offset}px)`;
   }
 
@@ -1813,18 +1873,29 @@ function initProductViewer() {
     const endX = e.type.includes('mouse') ? e.pageX : (e.changedTouches ? e.changedTouches[0].clientX : startX);
     const diff = endX - startX;
 
-    if (diff < -40 && currentSlide < slides.length - 1) {
-      updateGallery(currentSlide + 1);
-    } else if (diff > 40 && currentSlide > 0) {
-      updateGallery(currentSlide - 1);
+    if (diff < -35) {
+      updateGallery((currentSlide + 1) % slides.length);
+    } else if (diff > 35) {
+      updateGallery((currentSlide - 1 + slides.length) % slides.length);
     } else {
       updateGallery(currentSlide);
     }
   }
 
   slider.addEventListener('touchstart', touchStart, { passive: true });
-  slider.addEventListener('touchmove', touchMove, { passive: true });
+  slider.addEventListener('touchmove', touchMove, { passive: false });
   slider.addEventListener('touchend', touchEnd);
+  slider.addEventListener('touchcancel', () => {
+    isDragging = false;
+    updateGallery(currentSlide);
+  });
+
+  thumbsRow?.addEventListener('touchstart', (e) => {
+    const thumb = e.target.closest('.gallery-thumb');
+    if (thumb && thumb.dataset.index != null) {
+      updateGallery(parseInt(thumb.dataset.index, 10));
+    }
+  }, { passive: true });
 
   slider.addEventListener('mousedown', (e) => {
     e.preventDefault();
@@ -1879,8 +1950,8 @@ function initProductViewer() {
   function openLightbox() {
     if (modal) {
       modal.style.display = 'flex';
+      document.documentElement.style.overflow = 'hidden';
       document.body.style.overflow = 'hidden';
-      // "Ver foto inteira" abre com a foto grande, nítida e centralizada no 1.0x
       lbScale = 1.0;
       lbPanX = 0;
       lbPanY = 0;
@@ -1893,6 +1964,7 @@ function initProductViewer() {
 
   function closeLightbox(shouldPopHistory = true) {
     if (modal) modal.style.display = 'none';
+    document.documentElement.style.overflow = '';
     document.body.style.overflow = '';
     lbDragging = false;
     lbViewport?.classList.remove('is-dragging');
@@ -1902,6 +1974,68 @@ function initProductViewer() {
       } catch (_) {}
     }
   }
+
+  // Zoom fino com o scroll do mouse (Desktop) sem mover a página de trás
+  const handleLbWheelZoom = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    const zoomStep = 0.2;
+    if (e.deltaY < 0) {
+      lbScale = Math.min(5.0, Math.round((lbScale + zoomStep) * 10) / 10);
+    } else {
+      lbScale = Math.max(1.0, Math.round((lbScale - zoomStep) * 10) / 10);
+      if (lbScale === 1.0) {
+        lbPanX = 0;
+        lbPanY = 0;
+      }
+    }
+    updateLbTransform();
+  };
+
+  lbViewport?.addEventListener('wheel', handleLbWheelZoom, { passive: false });
+  modal?.addEventListener('wheel', (e) => {
+    e.preventDefault();
+  }, { passive: false });
+
+  // Swipe para navegar fotos no Lightbox em tela cheia no mobile
+  let lbTouchStartX = 0;
+  let lbTouchStartY = 0;
+  let lbTouchSwiped = false;
+
+  lbViewport?.addEventListener('touchstart', (e) => {
+    if (e.touches && e.touches.length === 1 && lbScale <= 1.05) {
+      lbTouchStartX = e.touches[0].clientX;
+      lbTouchStartY = e.touches[0].clientY;
+      lbTouchSwiped = false;
+    }
+  }, { passive: true });
+
+  lbViewport?.addEventListener('touchmove', (e) => {
+    if (e.touches && e.touches.length === 1 && lbScale <= 1.05) {
+      const diffX = e.touches[0].clientX - lbTouchStartX;
+      const diffY = e.touches[0].clientY - lbTouchStartY;
+      if (Math.abs(diffX) > 20 && Math.abs(diffX) > Math.abs(diffY)) {
+        lbTouchSwiped = true;
+      }
+    }
+  }, { passive: true });
+
+  lbViewport?.addEventListener('touchend', (e) => {
+    if (!lbTouchSwiped || lbScale > 1.05 || !e.changedTouches || !e.changedTouches[0]) return;
+    const diffX = e.changedTouches[0].clientX - lbTouchStartX;
+    const trackEl = document.getElementById('gallerySlidesTrack');
+    const totalSlides = trackEl ? trackEl.querySelectorAll('.gallery-slide').length : 1;
+    if (totalSlides <= 1) return;
+    if (diffX < -35) {
+      if (typeof window.updateProductGallery === 'function') {
+        window.updateProductGallery((currentSlide + 1) % totalSlides);
+      }
+    } else if (diffX > 35) {
+      if (typeof window.updateProductGallery === 'function') {
+        window.updateProductGallery((currentSlide - 1 + totalSlides) % totalSlides);
+      }
+    }
+  });
 
   window.openLightbox = openLightbox;
   window.closeLightbox = closeLightbox;
