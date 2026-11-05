@@ -398,35 +398,42 @@ body {
   gap: 12px;
 }
 
-/* RELÓGIO EM TEMPO REAL */
+/* RELÓGIO EM TEMPO REAL (APENAS A HORA) */
 .live-clock-badge {
-  display: flex;
+  display: inline-flex;
   align-items: center;
-  gap: 12px;
+  gap: 8px;
   background: #0e1013;
   border: 1px solid var(--panel-border);
-  padding: 8px 16px;
-  border-radius: 10px;
-  font-size: 14.5px;
+  padding: 6px 14px;
+  border-radius: 9px;
+  font-size: 14px;
+  white-space: nowrap;
+}
+
+.live-clock-icon {
+  color: #ff3b44;
+  flex-shrink: 0;
+  display: inline-block;
+  vertical-align: middle;
 }
 
 .live-date {
-  color: var(--text-secondary);
-  font-size: 14.5px;
-  font-weight: 500;
-  letter-spacing: 0.2px;
+  display: none !important;
 }
 
 .live-time {
-  font-family: var(--font-mono);
+  font-family: var(--font-mono, ui-monospace, monospace);
   font-weight: 800;
-  font-size: 15px;
+  font-size: 14.5px;
   color: #ff3b44;
   background: rgba(237, 28, 36, 0.12);
   padding: 3px 8px;
   border-radius: 6px;
   border: 1px solid rgba(237, 28, 36, 0.25);
-  letter-spacing: 0.5px;
+  letter-spacing: 0.8px;
+  white-space: nowrap;
+  line-height: 1.2;
 }
 
 .topbar-btn {
@@ -1524,8 +1531,21 @@ html.has-admin-session #mainScreen {
 
 .nf-barcode-svg-wrap {
   width: 100%;
-  max-width: 320px;
-  margin-bottom: 3px;
+  text-align: center;
+  margin-bottom: 2px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.nf-barcode-svg-wrap svg,
+.danfe-barcode-svg {
+  width: 76mm;
+  max-width: 100%;
+  height: 52px;
+  display: block;
+  margin: 0 auto;
+  shape-rendering: crispEdges;
 }
 
 .nf-key-label {
@@ -12464,6 +12484,63 @@ body.tema-claro .order-status-badge-select.novo {
 /* ===================================================================
    BADGE VISÍVEL DE BUILD / VERSÃO ATIVA NO TOPO DO PAINEL WMS
    =================================================================== */
+.wms-build-badge {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+  background: rgba(0, 230, 118, 0.12) !important;
+  border: 1px solid rgba(0, 230, 118, 0.35) !important;
+  color: #00e676 !important;
+  padding: 6px 12px !important;
+  border-radius: 8px !important;
+  font-size: 11.5px !important;
+  font-weight: 800 !important;
+  letter-spacing: 0.5px !important;
+  white-space: nowrap !important;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25) !important;
+}
+
+.wms-build-dot {
+  width: 7px !important;
+  height: 7px !important;
+  border-radius: 50% !important;
+  background: #00e676 !important;
+  box-shadow: 0 0 8px #00e676 !important;
+  display: inline-block !important;
+  animation: pulseGreen 2s infinite ease-in-out !important;
+}
+
+@keyframes pulseGreen {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.35; transform: scale(0.85); }
+}
+
+body.tema-claro .wms-build-badge {
+  background: rgba(16, 185, 129, 0.12) !important;
+  border: 1px solid rgba(16, 185, 129, 0.4) !important;
+  color: #047857 !important;
+}
+
+body.tema-claro .wms-build-dot {
+  background: #10b981 !important;
+  box-shadow: 0 0 6px #10b981 !important;
+}
+
+body.tema-claro .live-clock-badge {
+  background: #f1f5f9 !important;
+  border: 1px solid #cbd5e1 !important;
+}
+
+body.tema-claro .live-clock-icon {
+  color: #dc2626 !important;
+}
+
+body.tema-claro .live-time {
+  color: #dc2626 !important;
+  background: rgba(237, 28, 36, 0.08) !important;
+  border: 1px solid rgba(237, 28, 36, 0.22) !important;
+}
 
 
 /* ===================================================================

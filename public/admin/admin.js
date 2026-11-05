@@ -232,12 +232,19 @@ function showMain(admin) {
   } catch (e) {}
 }
 
-// ---------- Relógio Digital em Tempo Real ----------
+// ---------- Relógio Digital em Tempo Real (Apenas Hora) ----------
 function startLiveClock() {
   function update() {
     const now = new Date();
-    const dateEl = document.getElementById('liveDateText');
     const clockEl = document.getElementById('liveClockText');
+    if (clockEl) {
+      clockEl.textContent = now.toLocaleTimeString('pt-BR', {
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit'
+      });
+    }
+    const dateEl = document.getElementById('liveDateText');
     if (dateEl) {
       dateEl.textContent = now.toLocaleDateString('pt-BR', {
         weekday: 'long',
@@ -246,12 +253,9 @@ function startLiveClock() {
         year: 'numeric'
       });
     }
-    if (clockEl) {
-      clockEl.textContent = now.toLocaleTimeString('pt-BR', {
-        hour: '2-digit',
-        minute: '2-digit',
-        second: '2-digit'
-      });
+    const buildEl = document.getElementById('wmsBuildVer');
+    if (buildEl && !buildEl.textContent.trim()) {
+      buildEl.textContent = '2026.11.05-v11';
     }
   }
   update();
@@ -3192,7 +3196,7 @@ function moneyNum(v) {
   return Number(v || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 }
 
-function generateCode128Svg(codeText, height = 44) {
+function generateCode128Svg(codeText, height = 52) {
   const patterns = [
     [2,1,2,2,2,2],[2,2,2,1,2,2],[2,2,2,2,2,1],[1,2,1,2,2,3],[1,2,1,3,2,2],[1,3,1,2,2,2],[1,2,2,2,1,3],[1,2,2,3,1,2],[1,3,2,2,1,2],[2,2,1,2,1,3],
     [2,2,1,3,1,2],[2,3,1,2,1,2],[1,1,2,2,3,2],[1,2,2,1,3,2],[1,2,2,2,3,1],[1,1,3,2,2,2],[1,2,3,1,2,2],[1,2,3,2,2,1],[2,2,3,2,1,1],[2,2,1,1,3,2],
@@ -3209,6 +3213,7 @@ function generateCode128Svg(codeText, height = 44) {
 
   const digitsOnly = String(codeText).replace(/\D/g, '');
   const isNumeric = digitsOnly.length >= 4 && digitsOnly.length % 2 === 0 && digitsOnly.length === String(codeText).trim().length;
+  const isDanfe = isNumeric && digitsOnly.length === 44;
 
   let sequence = [];
   let checksum = 0;
@@ -3242,42 +3247,40 @@ function generateCode128Svg(codeText, height = 44) {
   sequence.push(checksum);
   sequence.push(106); // Stop
 
-  let modules = [];
+  // Quiet Zone de 10 módulos brancos de cada lado (obrigatório pelas normas GS1 e SEFAZ para leitura ótica)
+  const quietZone = 10;
+  let totalDataModules = 0;
+  sequence.forEach(code => {
+    const pattern = patterns[code];
+    if (pattern) totalDataModules += pattern.reduce((a, b) => a + b, 0);
+  });
+  const totalWidth = totalDataModules + (quietZone * 2);
+
+  // Renderização vetorial exata: cada barra é desenhada com sua largura inteira em módulos
+  let rects = '';
+  let currentX = quietZone;
   sequence.forEach(code => {
     const pattern = patterns[code];
     if (!pattern) return;
     let isBar = true;
     for (let w of pattern) {
-      for (let i = 0; i < w; i++) modules.push(isBar ? 1 : 0);
+      if (isBar) {
+        rects += '<rect x="' + currentX + '" y="0" width="' + w + '" height="' + height + '" fill="#000000" shape-rendering="crispEdges"/>';
+      }
+      currentX += w;
       isBar = !isBar;
     }
   });
 
-  // Quiet Zone de 10 módulos brancos de cada lado (obrigatório pelas normas GS1 e SEFAZ para leitura ótica)
-  const quietZone = 10;
-  const totalWidth = modules.length + (quietZone * 2);
+  const svgStyle = isDanfe
+    ? 'width:76mm;max-width:100%;height:' + height + 'px;display:block;margin:0 auto;background:#ffffff;'
+    : 'width:100%;max-width:' + Math.max(180, totalWidth * 1.5) + 'px;height:' + height + 'px;display:block;margin:0 auto;background:#ffffff;';
 
-  // SVG vetorial ultra-nítido com shape-rendering="crispEdges" para NUNCA borrar na impressão
   let svg = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ' + totalWidth + ' ' + height + '" ' +
-            'shape-rendering="crispEdges" style="width:100%;max-width:320px;height:' + height + 'px;display:block;margin:0 auto;background:#ffffff;">';
-  
-  // Fundo branco sólido para garantir 100% de contraste
-  svg += '<rect x="0" y="0" width="' + totalWidth + '" height="' + height + '" fill="#ffffff" shape-rendering="crispEdges" />';
-
-  let currentX = quietZone;
-  for (let i = 0; i < modules.length; i++) {
-    if (modules[i] === 1) {
-      let len = 1;
-      while (i + 1 < modules.length && modules[i + 1] === 1) {
-        len++;
-        i++;
-      }
-      svg += '<rect x="' + currentX + '" y="0" width="' + len + '" height="' + height + '" fill="#000000" shape-rendering="crispEdges" />';
-      currentX += len;
-    } else {
-      currentX++;
-    }
-  }
+            'preserveAspectRatio="none" shape-rendering="crispEdges" class="danfe-barcode-svg" ' +
+            'style="' + svgStyle + '">';
+  svg += '<rect x="0" y="0" width="' + totalWidth + '" height="' + height + '" fill="#ffffff" shape-rendering="crispEdges"/>';
+  svg += rects;
   svg += '</svg>';
   return svg;
 }
@@ -3414,7 +3417,7 @@ window.openDanfeForOrder = (orderId) => {
       </div>
       <div class="nf-header-barcode">
         <div class="nf-barcode-svg-wrap">
-          ${generateCode128Svg(rawKey, 46)}
+          ${generateCode128Svg(rawKey, 52)}
         </div>
         <div class="nf-key-label">CHAVE DE ACESSO</div>
         <div class="nf-key-text">${nf.accessKey}</div>
@@ -3722,9 +3725,9 @@ function getDanfeStandalonePrintCss() {
     .nf-tp-emis-digit { border: 1px solid #000 !important; padding: 2px 7px !important; font-size: 11px !important; font-weight: bold !important; line-height: 1 !important; }
     .nf-danfe-num { font-size: 10.5px !important; font-weight: bold !important; white-space: nowrap !important; margin-top: 1px !important; }
     .nf-danfe-sub { font-size: 8px !important; line-height: 1.25 !important; }
-    .nf-header-barcode { display: flex !important; flex-direction: column !important; align-items: center !important; justify-content: center !important; padding: 6px 8px !important; text-align: center !important; }
-    .nf-barcode-svg-wrap { width: 100% !important; max-width: 320px !important; margin-bottom: 3px !important; }
-    .nf-barcode-svg-wrap svg { width: 100% !important; height: 44px !important; display: block !important; margin: 0 auto !important; shape-rendering: crispEdges !important; image-rendering: -webkit-optimize-contrast !important; image-rendering: pixelated !important; }
+    .nf-header-barcode { display: flex !important; flex-direction: column !important; align-items: center !important; justify-content: center !important; padding: 5px 6px !important; text-align: center !important; background: #ffffff !important; }
+    .nf-barcode-svg-wrap { width: 100% !important; text-align: center !important; margin-bottom: 2px !important; display: flex !important; justify-content: center !important; align-items: center !important; }
+    .nf-barcode-svg-wrap svg, .danfe-barcode-svg { width: 76mm !important; max-width: 100% !important; height: 52px !important; display: block !important; margin: 0 auto !important; shape-rendering: crispEdges !important; }
     .nf-key-label { font-size: 6.8px !important; font-weight: bold !important; text-transform: uppercase !important; letter-spacing: 0.2px !important; }
     .nf-key-text { font-family: 'Courier New', Courier, monospace !important; font-size: 8.2px !important; font-weight: bold !important; letter-spacing: 0.5px !important; white-space: nowrap !important; margin: 2px 0 3px 0 !important; }
     .nf-consulta-box { font-size: 6.4px !important; line-height: 1.2 !important; color: #000 !important; border-top: 1px solid #000 !important; width: 100% !important; padding-top: 3px !important; margin-top: 2px !important; }
@@ -3794,7 +3797,7 @@ window.printDanfeDocument = function() {
       console.warn('Fallback impressão direta:', e);
       window.print();
     }
-  }, 250);
+  }, 350);
 };
 
 window.printDacceDocument = function() {
@@ -3832,7 +3835,7 @@ window.printDacceDocument = function() {
       console.warn('Fallback impressão direta:', e);
       window.print();
     }
-  }, 250);
+  }, 350);
 };
 window.closeDanfeModal = () => {
   document.getElementById('danfeModal')?.classList.add('hidden');
