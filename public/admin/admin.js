@@ -155,13 +155,22 @@ function formatDate(isoStr) {
 }
 
 function getProductPhoto(p) {
+  if (!p) return '/images/categorias/filtros.jpg';
   let photo = '';
-  if (p && p.photos && Array.isArray(p.photos) && p.photos.length) {
+  if (typeof p === 'string') {
+    photo = p;
+  } else if (p && p.photos && Array.isArray(p.photos) && p.photos.length) {
     photo = p.photos[0];
-  } else {
-    photo = (p && (p.photoUrl || p.photo_url)) || '';
+  } else if (p) {
+    photo = p.photo_url || p.photoUrl || p.photo || p.product_photo || '';
   }
-  if (!photo) return '/images/categorias/freios.jpg';
+  if (!photo) {
+    const cat = p && (p.category || p.product_category);
+    if (cat && typeof CATEGORY_IMAGES !== 'undefined' && CATEGORY_IMAGES[cat]) {
+      return CATEGORY_IMAGES[cat];
+    }
+    return '/images/categorias/filtros.jpg';
+  }
   photo = String(photo).trim();
   if (photo.startsWith('[')) {
     try {
@@ -2032,8 +2041,15 @@ function renderOrdersTable(orders) {
   tbody.innerHTML = orders.map(o => {
     const items = o.items || [];
     const itemsHtml = items.length
-      ? items.map(i => `<div class="order-item-row"><span class="order-item-qty">${i.quantity}x</span> <span class="order-item-title">${i.name}</span>${i.location ? `<span class="order-item-loc-tag">📍 ${i.location}</span>` : ''}</div>`).join('')
+      ? items.map(i => `<div class="order-item-row"><span class="order-item-qty">${i.quantity}x</span> <span class="order-item-title">${i.name}</span></div>`).join('')
       : '<span style="color:var(--text-muted);font-size:12px">Nenhum item informado</span>';
+
+    const locationsHtml = items.length
+      ? items.map(i => {
+          const loc = i.location ? String(i.location).trim() : '';
+          return `<div class="order-loc-row"><span class="order-loc-tag ${loc ? 'has-loc' : 'no-loc'}">📍 ${loc || 'Sem localização'}</span></div>`;
+        }).join('')
+      : '<div class="order-loc-row"><span class="order-loc-tag no-loc">📍 Sem localização</span></div>';
 
     const payBadge = getPaymentBadgeHtml(o.paymentMethodLabel);
 
@@ -2054,6 +2070,11 @@ function renderOrdersTable(orders) {
             ${itemsHtml}
           </div>
         </td>
+        <td class="order-col-location">
+          <div class="order-loc-list">
+            ${locationsHtml}
+          </div>
+        </td>
         <td class="order-col-total">
           <strong class="order-total-price">${money(o.total)}</strong>
         </td>
@@ -2071,10 +2092,10 @@ function renderOrdersTable(orders) {
             <span class="status-dot"></span>
             <select class="order-status-badge-select ${o.status}" data-order-status="${o.id}" title="Alterar status do pedido">
               <option value="novo" ${o.status === 'novo' ? 'selected' : ''}>Novo</option>
-              <option value="em_preparacao" ${o.status === 'em_preparacao' ? 'selected' : ''}>Em preparação</option>
+              <option value="em_preparacao" ${o.status === 'em_preparacao' ? 'selected' : ''}>Em prep.</option>
               <option value="pronto" ${o.status === 'pronto' ? 'selected' : ''}>Pronto</option>
               <option value="entregue" ${o.status === 'entregue' ? 'selected' : ''}>Entregue</option>
-              <option value="cancelado" ${o.status === 'cancelado' ? 'selected' : ''}>Cancelado</option>
+              <option value="cancelado" ${o.status === 'cancelado' ? 'selected' : ''}>Canc.</option>
             </select>
           </div>
         </td>
@@ -3834,7 +3855,8 @@ function renderMovementsTable(movements) {
     const sign = isPos ? '+' : '−';
     const absQty = Math.abs(Number(m.quantity) || 0);
     const qtyColor = isPos ? '#10b981' : '#ef4444';
-    const photo = m.product_photo ? getProductPhoto({ photo: m.product_photo }) : '/images/categorias/freios.jpg';
+    const prodObj = (typeof allProducts !== 'undefined' && Array.isArray(allProducts)) ? allProducts.find(x => String(x.id) === String(m.product_id)) : null;
+    const photo = prodObj ? getProductPhoto(prodObj) : getProductPhoto(m.product_photo || { photo_url: m.product_photo, category: m.product_category });
     const loc = m.to_location || m.current_location || m.location || m.from_location || 'H-04-04';
     const docRef = m.reference || m.document_ref || '';
     const note = m.notes || m.reason || (m.type === 'entrada' ? 'Recebimento WMS' : m.type === 'saida' ? 'Saída de Pedido' : 'Ajuste de Estoque');

@@ -9631,7 +9631,6 @@ body:not(.tema-claro) .ped-kpi-card,
 body:not(.tema-claro) .ped-resumo-card,
 body:not(.tema-claro) .rack-location-card,
 body:not(.tema-claro) .est-qa-card,
-body:not(.tema-claro) .stock-label-card,
 body:not(.tema-claro) #pane-dashboard .wms-panel,
 body:not(.tema-claro) #pane-produtos .wms-panel,
 body:not(.tema-claro) #pane-pecas .wms-panel,
@@ -11246,4 +11245,47 @@ body.tema-claro #dacceModal .danfe-scroll-viewport {
 
 body:not(.tema-claro) .order-item-title {
   color: #ffffff !important;
+}
+
+
+
+/* ETIQUETA WMS INDUSTRIAL: SEMPRE 100% BRANCA COM TEXTO E CÓDIGOS EM PRETO NÍTIDO */
+.stock-label-card,
+body:not(.tema-claro) .stock-label-card,
+body.tema-claro .stock-label-card {
+  background: #ffffff !important;
+  color: #000000 !important;
+  border: 1px solid #333333 !important;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.45) !important;
+}
+
+.stock-label-card *,
+body:not(.tema-claro) .stock-label-card *,
+body.tema-claro .stock-label-card * {
+  color: #000000 !important;
+}
+
+.stock-label-card .label-brand-sub,
+body:not(.tema-claro) .stock-label-card .label-brand-sub,
+body.tema-claro .stock-label-card .label-brand-sub {
+  color: #ed1c24 !important;
+}
+
+.stock-label-card .label-tag,
+body:not(.tema-claro) .stock-label-card .label-tag,
+body.tema-claro .stock-label-card .label-tag {
+  background: #000000 !important;
+  color: #ffffff !important;
+}
+
+.stock-label-card .label-tag *,
+body:not(.tema-claro) .stock-label-card .label-tag *,
+body.tema-claro .stock-label-card .label-tag * {
+  color: #ffffff !important;
+}
+
+.stock-label-card svg rect,
+body:not(.tema-claro) .stock-label-card svg rect,
+body.tema-claro .stock-label-card svg rect {
+  fill: #000000 !important;
 }

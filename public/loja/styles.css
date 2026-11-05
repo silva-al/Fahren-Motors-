@@ -8846,3 +8846,18 @@ body.tema-claro .card-photo-counter {
 
 .lb-nav-btn.prev { left: 16px; }
 .lb-nav-btn.next { right: 16px; }
+
+
+/* WhatsApp Flutuante Compacto e Discreto (nunca bloqueia o conteúdo) */
+.fp-whatsapp-float {
+  width: 42px !important;
+  height: 42px !important;
+  right: 16px !important;
+  bottom: 20px !important;
+  box-shadow: 0 4px 14px rgba(0,0,0,0.3) !important;
+}
+
+.fp-whatsapp-float svg {
+  width: 22px !important;
+  height: 22px !important;
+}

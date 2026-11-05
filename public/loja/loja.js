@@ -1642,10 +1642,15 @@ async function openProductDetails(productId, cachedProduct = null, push = true) 
     }
   }
 
+  // Salva no sessionStorage para que F5 / reload nunca perca a peça ativa
+  try {
+    sessionStorage.setItem('fahren-last-product-id', String(product.id));
+  } catch {}
+
   // Navega para a tela do produto
   show('produto', { push });
   if (push) {
-    window.history.replaceState({ screen: 'produto', depth: navDepth, productId: product.id }, '');
+    window.history.replaceState({ screen: 'produto', depth: navDepth, productId: product.id }, '', '#produto/' + product.id);
   }
   loadRecommendedProducts(product);
 }
@@ -2926,7 +2931,13 @@ async function init() {
   let initialScreen = 'inicio';
   const validScreens = ['inicio', 'pecas', 'carrinho', 'perfil', 'produto', 'cadastro'];
   const rawHash = (window.location.hash || '').replace('#', '').trim();
-  if (rawHash && validScreens.includes(rawHash)) {
+
+  let targetProdId = null;
+  if (rawHash.startsWith('produto')) {
+    const parts = rawHash.split('/');
+    if (parts.length > 1 && parts[1]) targetProdId = parts[1];
+    initialScreen = 'produto';
+  } else if (rawHash && validScreens.includes(rawHash)) {
     initialScreen = rawHash;
   } else {
     try {
@@ -2937,7 +2948,26 @@ async function init() {
     } catch {}
   }
 
-  show(initialScreen, { push: false });
+  if (!targetProdId) {
+    try {
+      targetProdId = sessionStorage.getItem('fahren-last-product-id');
+    } catch {}
+  }
+
+  // Se a tela inicial for produto mas não temos o ID, volta com segurança para o catálogo (#pecas)
+  if (initialScreen === 'produto') {
+    if (targetProdId) {
+      show('produto', { push: false });
+      setTimeout(() => {
+        openProductDetails(targetProdId, null, false);
+      }, 50);
+    } else {
+      initialScreen = 'pecas';
+      show('pecas', { push: false });
+    }
+  } else {
+    show(initialScreen, { push: false });
+  }
   loadAddress();
   
   // Pré-carrega carrossel da home e catálogo de peças em paralelo para velocidade máxima
