@@ -1423,10 +1423,10 @@ html.has-admin-session #mainScreen {
 /* CABEÇALHO PRINCIPAL (3 COLUNAS ESPAÇOSAS) */
 .nf-header-main {
   display: grid;
-  grid-template-columns: 1.85fr 1.05fr 2.85fr;
+  grid-template-columns: 2.3fr 1.1fr 2.4fr;
   border: 1px solid #000;
   box-sizing: border-box;
-  min-height: 106px;
+  min-height: 104px;
 }
 
 .nf-header-emitente {
@@ -1539,20 +1539,27 @@ html.has-admin-session #mainScreen {
 }
 
 .nf-barcode-svg-wrap svg,
-.danfe-barcode-svg {
-  width: 100%;
-  max-width: 350px;
-  height: 58px;
+.danfe-barcode-svg,
+.danfe-barcode-img {
+  width: 80mm !important;
+  max-width: 80mm !important;
+  height: 48px !important;
   display: block;
   margin: 0 auto;
   shape-rendering: crispEdges;
+  image-rendering: -webkit-optimize-contrast;
+  image-rendering: crisp-edges;
+  image-rendering: pixelated;
 }
 
 .nf-key-label {
   font-size: 6.8px;
   font-weight: bold;
   text-transform: uppercase;
-  letter-spacing: 0.2px;
+  letter-spacing: 0.5px;
+  font-variant-ligatures: none;
+  font-feature-settings: "liga" 0, "clig" 0;
+  text-align: center;
 }
 
 .nf-key-text {
@@ -12041,6 +12048,9 @@ body.tema-claro .nf-watermark-overlay {
 
   .danfe-sheet * {
     color: #000000 !important;
+    font-variant-ligatures: none !important;
+    font-feature-settings: "liga" 0, "clig" 0, "calt" 0 !important;
+    text-rendering: geometricPrecision !important;
   }
 
   .nf-products-table th {
