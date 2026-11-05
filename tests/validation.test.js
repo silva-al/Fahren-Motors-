@@ -6,6 +6,7 @@ import { Window } from 'happy-dom';
 const { registerSchema, loginSchema, cartSyncSchema } = require('../server/validators/auth-schema');
 const { createOrderSchema, updateOrderStatusSchema, manualOrderSchema } = require('../server/validators/order-schema');
 const { stockOperationSchema, inventoryCountSchema, inventoryReconcileSchema } = require('../server/validators/stock-schema');
+const { cardPaymentSchema } = require('../server/validators/payment-schema');
 
 describe('Zod Schemas - Auth Validation', () => {
   it('deve aceitar um cadastro válido de cliente', () => {
@@ -381,4 +382,38 @@ it('deve conter o modal de tela cheia (lightbox) com controles de zoom e fechar'
     });
   });
 
+
+  describe('Zod Schemas - Card Payment & B2B Methods', () => {
+    it('deve aceitar payload valido de pagamento com cartao', () => {
+      const res = cardPaymentSchema.safeParse({
+        orderId: 10,
+        token: 'tok_test123',
+        installments: 3,
+        payment_method_id: 'master',
+        payer: { email: 'cliente@teste.com' }
+      });
+      expect(res.success).toBe(true);
+    });
+
+    it('deve rejeitar pagamento sem orderId valido', () => {
+      const res = cardPaymentSchema.safeParse({
+        orderId: -1,
+        token: 'tok_test'
+      });
+      expect(res.success).toBe(false);
+    });
+
+    it('deve aceitar novos metodos de pagamento boleto e faturado no pedido', () => {
+      const resBoleto = createOrderSchema.safeParse({
+        items: [{ productId: 1, quantity: 2 }],
+        paymentMethod: 'boleto'
+      });
+      const resFaturado = createOrderSchema.safeParse({
+        items: [{ productId: 1, quantity: 2 }],
+        paymentMethod: 'faturado'
+      });
+      expect(resBoleto.success).toBe(true);
+      expect(resFaturado.success).toBe(true);
+    });
+  });
 });

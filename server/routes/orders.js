@@ -23,8 +23,15 @@ async function ensureWarehouseAndOrderIndexes() {
 }
 
 
-const PAYMENT_METHODS = ['pix', 'cartao', 'retirada'];
-const PAYMENT_LABELS = { pix: 'Pix', cartao: 'Cartão de Crédito', retirada: 'Retirada/Entrega' };
+const PAYMENT_METHODS = ['pix', 'cartao', 'retirada', 'dinheiro', 'boleto', 'faturado'];
+const PAYMENT_LABELS = {
+  pix: 'Pix',
+  cartao: 'Cartão de Crédito',
+  retirada: 'Retirada/Entrega',
+  dinheiro: 'Dinheiro',
+  boleto: 'Boleto Bancário',
+  faturado: 'Faturado Oficina (B2B)'
+};
 const PIX_DISCOUNT_RATE = 0.04; // 4% de desconto pagando no Pix
 
 function serializeOrder(row, items) {
@@ -40,6 +47,8 @@ function serializeOrder(row, items) {
     items: (items || []).map((i) => ({
       productId: i.product_id,
       name: i.name,
+      code: i.code || '',
+      location: i.location || 'Sem localização',
       quantity: i.quantity,
       unitPrice: Math.round(i.unit_price_cents) / 100,
     })),
@@ -118,6 +127,8 @@ router.post('/', requireRole('customer'), validateBody(createOrderSchema), async
     const items2 = lineItems.map(({ product, qty }) => ({
       product_id: product.id,
       name: product.name,
+      code: product.code,
+      location: product.location,
       quantity: qty,
       unit_price_cents: product.price_cents,
     }));
@@ -141,7 +152,7 @@ router.get('/mine', requireRole('customer'), async (req, res) => {
     let itemsByOrderId = {};
     if (orderIds.length > 0) {
       const itemsRes = await db.query(
-        `SELECT oi.*, p.name FROM order_items oi
+        `SELECT oi.*, p.name, p.code, p.location FROM order_items oi
          JOIN products p ON p.id = oi.product_id
          WHERE oi.order_id = ANY($1::int[])`,
         [orderIds]
@@ -180,7 +191,7 @@ router.get('/', requireRole('admin'), async (req, res) => {
     let itemsByOrderId = {};
     if (orderIds.length > 0) {
       const itemsRes = await db.query(
-        `SELECT oi.*, p.name FROM order_items oi
+        `SELECT oi.*, p.name, p.code, p.location FROM order_items oi
          JOIN products p ON p.id = oi.product_id
          WHERE oi.order_id = ANY($1::int[])`,
         [orderIds]
@@ -357,6 +368,8 @@ router.post('/manual', requireRole('admin'), validateBody(manualOrderSchema), as
     const items2 = lineItems.map(({ product, qty, unitPriceCents }) => ({
       product_id: product.id,
       name: product.name,
+      code: product.code,
+      location: product.location,
       quantity: qty,
       unit_price_cents: unitPriceCents,
     }));

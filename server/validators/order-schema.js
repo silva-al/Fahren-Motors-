@@ -7,7 +7,7 @@ const createOrderSchema = z.object({
       quantity: z.coerce.number().int().positive('A quantidade deve ser maior que zero.')
     })
   ).min(1, 'O carrinho está vazio.'),
-  paymentMethod: z.enum(['pix', 'cartao', 'retirada']).default('retirada')
+  paymentMethod: z.enum(['pix', 'cartao', 'retirada', 'dinheiro', 'boleto', 'faturado']).default('retirada')
 });
 
 const updateOrderStatusSchema = z.object({
@@ -22,7 +22,7 @@ const manualOrderSchema = z.object({
     .min(1, 'Nome do cliente é obrigatório.')
     .max(100, 'Nome muito longo.'),
   customerPhone: z.string().trim().max(25, 'Telefone muito longo.').optional().default(''),
-  paymentMethod: z.enum(['pix', 'cartao', 'retirada', 'dinheiro', 'boleto']).default('retirada'),
+  paymentMethod: z.enum(['pix', 'cartao', 'retirada', 'dinheiro', 'boleto', 'faturado']).default('retirada'),
   status: z.enum(['novo', 'em_preparacao', 'pronto', 'entregue', 'cancelado']).default('novo'),
   items: z.array(
     z.object({

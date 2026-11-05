@@ -2485,27 +2485,56 @@ window.renderTopProductsRanking = renderTopProductsRanking;
 
 
 // ---------- 4. EXPEDIÇÃO ----------
+let expedicaoFilter = 'todos';
+window.filterExpedicao = function(status) {
+  expedicaoFilter = status;
+  renderExpedicao();
+};
+
 function renderExpedicao() {
   const grid = document.getElementById('expedicaoGrid');
   if (!grid) return;
 
-  const expedicaoOrders = allOrders.filter(o => ['novo', 'em_preparacao', 'pronto'].includes(o.status));
+  let expedicaoOrders = allOrders.filter(o => ['novo', 'em_preparacao', 'pronto'].includes(o.status));
+  if (expedicaoFilter && expedicaoFilter !== 'todos') {
+    expedicaoOrders = expedicaoOrders.filter(o => o.status === expedicaoFilter);
+  }
+
+  // Filtro por texto/barcode digitado
+  const searchInput = document.getElementById('expedicaoBarcodeInput');
+  const query = searchInput ? searchInput.value.trim().toLowerCase() : '';
+  if (query) {
+    expedicaoOrders = expedicaoOrders.filter(o => {
+      const matchId = String(o.id).includes(query);
+      const matchCust = (o.customerName || '').toLowerCase().includes(query);
+      const matchItem = (o.items || []).some(i => 
+        (i.name || '').toLowerCase().includes(query) || 
+        (i.code || '').toLowerCase().includes(query) ||
+        (i.location || '').toLowerCase().includes(query)
+      );
+      return matchId || matchCust || matchItem;
+    });
+  }
 
   if (!expedicaoOrders.length) {
-    grid.innerHTML = '<p style="color:var(--text-muted);padding:20px">Nenhum pedido pendente na fila de expedição.</p>';
+    grid.innerHTML = '<p style="color:var(--text-muted);padding:30px;text-align:center">Nenhum pedido pendente nesta etapa da expedição.</p>';
     return;
   }
 
   grid.innerHTML = expedicaoOrders.map(o => {
     const addr = o.address;
     const addressStr = addr ? `${addr.street}, ${addr.number} - ${addr.neighborhood}, ${addr.city}/${addr.state}` : 'Retirada na Oficina';
+    const payLabel = o.paymentMethodLabel || o.paymentMethod || 'Retirada';
     return `
-      <div class="expedicao-card">
+      <div class="expedicao-card" id="expCard-${o.id}">
         <div class="exp-card-header">
           <div>
-            <strong class="exp-order-id">Pacote #${o.id}</strong>
-            <div class="exp-cust-name">${o.customerName || 'Cliente'}</div>
-            <div class="exp-address-text">📍 ${addressStr}</div>
+            <div style="display:flex;align-items:center;gap:8px;">
+              <strong class="exp-order-id">Pacote #${o.id}</strong>
+              <span class="exp-cust-payment" style="font-size:11px;padding:2px 7px;border-radius:4px;background:rgba(255,255,255,0.06);color:var(--text-muted);font-weight:600;">💳 ${payLabel}</span>
+            </div>
+            <div class="exp-cust-name" style="font-weight:700;margin-top:4px;">${o.customerName || 'Cliente Balcão'}</div>
+            <div class="exp-address-text" style="font-size:12px;color:var(--text-muted);margin-top:2px;">📍 ${addressStr}</div>
           </div>
           <div style="display:flex;align-items:center;gap:8px">
             <span class="status-badge ${o.status}">${ORDER_STATUS_LABEL[o.status] || o.status}</span>
@@ -2515,13 +2544,29 @@ function renderExpedicao() {
           </div>
         </div>
         <div class="exp-items-box">
-          <strong class="exp-separar-title">Itens a separar:</strong>
-          ${(o.items || []).map(i => `<div class="exp-item-line"><span class="order-item-qty">${i.quantity}x</span> <span class="order-item-title">${i.name}</span></div>`).join('')}
+          <strong class="exp-separar-title" style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+            <span>Itens a separar:</span>
+            <small style="color:var(--text-muted);font-weight:normal;">Localização no Armazém WMS</small>
+          </strong>
+          ${(o.items || []).map(i => `
+            <div class="exp-item-line" style="display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px dashed rgba(255,255,255,0.06);gap:10px;">
+              <div style="display:flex;align-items:center;gap:8px;min-width:0;">
+                <span class="order-item-qty" style="background:#2b6cb0;color:#fff;padding:2px 7px;border-radius:4px;font-weight:800;font-size:12px;">${i.quantity}x</span>
+                <span class="order-item-title" style="font-weight:600;font-size:13px;word-break:break-word;">${i.name}</span>
+              </div>
+              <div style="display:flex;align-items:center;gap:8px;flex-shrink:0;">
+                ${i.code ? `<span style="font-size:11px;font-family:monospace;background:rgba(255,255,255,0.06);padding:2px 6px;border-radius:4px;color:var(--text-muted);">SKU: ${i.code}</span>` : ''}
+                <span style="font-size:12px;font-weight:700;color:#38bdf8;background:rgba(56,189,248,0.12);padding:3px 9px;border-radius:5px;border:1px solid rgba(56,189,248,0.25);">
+                  📍 ${i.location || 'Sem prateleira'}
+                </span>
+              </div>
+            </div>
+          `).join('')}
         </div>
-        <div class="exp-card-footer">
-          <span class="exp-total-price">Total: ${money(o.total)}</span>
-          <div style="display:flex;gap:8px;flex-wrap:wrap">
-            <button class="order-action-btn btn-danfe-action" onclick="openDanfeForOrder(${o.id})">🖨️ DANFE de Envio</button>
+        <div class="exp-card-footer" style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;margin-top:14px;padding-top:12px;border-top:1px solid rgba(255,255,255,0.06);">
+          <span class="exp-total-price" style="font-weight:800;font-size:14px;">Total: ${money(o.total)}</span>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
+            <button class="order-action-btn btn-danfe-action" onclick="openDanfeForOrder(${o.id})">📄 DANFE / Envio</button>
             
             ${o.status === 'em_preparacao' ? `
               <button class="btn btn-secondary btn-sm" onclick="stepBackOrderStatus(${o.id}, 'novo')" title="Voltar etapa para Novo">
@@ -2530,16 +2575,22 @@ function renderExpedicao() {
               <button class="btn btn-primary btn-sm" onclick="updateOrderStatusQuick(${o.id}, 'pronto')">
                 ✓ Marcar Pronto
               </button>
+              <button class="btn btn-primary btn-sm" style="background:#16a34a;border-color:#16a34a;font-weight:800;" onclick="fastDispatchOrder(${o.id})" title="Despacho Imediato Direto">
+                ⚡ Despacho Direto
+              </button>
             ` : o.status === 'pronto' ? `
               <button class="btn btn-secondary btn-sm" onclick="stepBackOrderStatus(${o.id}, 'em_preparacao')" title="Voltar etapa para Em Preparação">
                 ↩ Voltar p/ Separação
               </button>
-              <button class="btn btn-primary btn-sm btn-despachar" onclick="updateOrderStatusQuick(${o.id}, 'entregue')">
-                🚀 Despachar / Entregue
+              <button class="btn btn-primary btn-sm btn-despachar" style="background:#16a34a;border-color:#16a34a;font-weight:800;" onclick="fastDispatchOrder(${o.id})">
+                ⚡ Despachar Agora
               </button>
             ` : `
               <button class="btn btn-primary btn-sm" onclick="updateOrderStatusQuick(${o.id}, 'em_preparacao')">
                 ▶ Iniciar Separação
+              </button>
+              <button class="btn btn-primary btn-sm" style="background:#16a34a;border-color:#16a34a;font-weight:800;" onclick="fastDispatchOrder(${o.id})" title="Despacho Imediato Direto">
+                ⚡ Despacho Direto
               </button>
             `}
           </div>
@@ -5750,3 +5801,173 @@ function exportWeeklyReportCSV() {
   showToast('Relatório semanal exportado com sucesso!');
 }
 window.exportWeeklyReportCSV = exportWeeklyReportCSV;
+
+
+// ====================================================
+// WMS EXPEDIÇÃO RÁPIDA & ROMANEIO DE SEPARAÇÃO (PICKING)
+// ====================================================
+
+window.fastDispatchOrder = async function(orderId) {
+  try {
+    await api(`/orders/${orderId}/status`, {
+      method: 'PUT',
+      body: JSON.stringify({ status: 'entregue' })
+    });
+    if (typeof isAutoNfEnabled === 'function' && isAutoNfEnabled()) {
+      markNfAsIssued(orderId);
+    }
+    showToast(`⚡ Pedido #${orderId} despachado com sucesso!`);
+    await refreshAllData();
+    broadcastSync('ORDER_UPDATED');
+  } catch (err) {
+    showToast('Erro ao despachar pedido: ' + err.message, 'error');
+  }
+};
+
+window.fastDispatchAllReadyOrders = async function() {
+  const readyOrders = allOrders.filter(o => o.status === 'pronto');
+  if (!readyOrders.length) {
+    showToast('Nenhum pacote com status "Pronto" para despacho em massa.');
+    return;
+  }
+  if (!confirm(`Deseja despachar todos os ${readyOrders.length} pacotes prontos de uma vez?`)) {
+    return;
+  }
+  let successCount = 0;
+  for (const o of readyOrders) {
+    try {
+      await api(`/orders/${o.id}/status`, {
+        method: 'PUT',
+        body: JSON.stringify({ status: 'entregue' })
+      });
+      successCount++;
+    } catch (e) {
+      console.error('Erro ao despachar pedido #' + o.id, e);
+    }
+  }
+  showToast(`⚡ ${successCount} pacotes despachados com sucesso!`);
+  await refreshAllData();
+  broadcastSync('ORDER_UPDATED');
+};
+
+window.handleExpedicaoSearchOrScan = function(e) {
+  renderExpedicao();
+};
+
+window.openPickingListModal = function() {
+  const modal = document.getElementById('pickingListModal');
+  const body = document.getElementById('pickingListBody');
+  const summary = document.getElementById('pickingSummaryText');
+  if (!modal || !body) return;
+
+  const pendingOrders = allOrders.filter(o => ['novo', 'em_preparacao'].includes(o.status));
+  if (!pendingOrders.length) {
+    body.innerHTML = '<p style="color:var(--text-muted);text-align:center;padding:24px;">Nenhum pedido pendente de separação no momento.</p>';
+    if (summary) summary.textContent = '0 pedidos pendentes';
+    modal.classList.remove('hidden');
+    return;
+  }
+
+  // Agrupar itens por produto e localização
+  const itemsMap = {};
+  let totalPieces = 0;
+
+  for (const order of pendingOrders) {
+    for (const item of (order.items || [])) {
+      const key = item.productId || item.name;
+      if (!itemsMap[key]) {
+        itemsMap[key] = {
+          name: item.name,
+          code: item.code || 'S/N',
+          location: item.location || 'Sem localização',
+          totalQty: 0,
+          orders: []
+        };
+      }
+      itemsMap[key].totalQty += item.quantity;
+      itemsMap[key].orders.push(`#${order.id} (${item.quantity}un)`);
+      totalPieces += item.quantity;
+    }
+  }
+
+  // Ordenar por localização de prateleira para rota ótima
+  const sortedItems = Object.values(itemsMap).sort((a, b) => a.location.localeCompare(b.location));
+
+  let tableHtml = `
+    <table class="wms-table" style="width:100%;margin:0;">
+      <thead>
+        <tr>
+          <th style="width:18%;">📍 Localização</th>
+          <th style="width:18%;">SKU / Código</th>
+          <th style="width:36%;">Descrição da Peça</th>
+          <th style="width:12%;text-align:center;">Qtd Total</th>
+          <th style="width:16%;">Destino (Pacotes)</th>
+        </tr>
+      </thead>
+      <tbody>
+  `;
+
+  for (const item of sortedItems) {
+    tableHtml += `
+      <tr>
+        <td>
+          <span style="font-weight:800;color:#38bdf8;background:rgba(56,189,248,0.1);padding:3px 8px;border-radius:4px;border:1px solid rgba(56,189,248,0.2);">
+            ${item.location}
+          </span>
+        </td>
+        <td><code style="font-family:monospace;color:var(--text-muted);">${item.code}</code></td>
+        <td style="font-weight:600;">${item.name}</td>
+        <td style="text-align:center;">
+          <span style="background:#2b6cb0;color:#fff;font-weight:800;padding:2px 8px;border-radius:12px;font-size:12px;">
+            ${item.totalQty} un
+          </span>
+        </td>
+        <td style="font-size:11px;color:var(--text-muted);">${item.orders.join(', ')}</td>
+      </tr>
+    `;
+  }
+
+  tableHtml += '</tbody></table>';
+  body.innerHTML = tableHtml;
+
+  if (summary) {
+    summary.textContent = `Total: ${sortedItems.length} peças distintas | ${totalPieces} unidades em ${pendingOrders.length} pedidos pendentes`;
+  }
+
+  modal.classList.remove('hidden');
+};
+
+window.closePickingListModal = function() {
+  const modal = document.getElementById('pickingListModal');
+  if (modal) modal.classList.add('hidden');
+};
+
+window.printPickingList = function() {
+  const content = document.getElementById('pickingListBody');
+  if (!content) return;
+  const printWin = window.open('', '_blank', 'width=900,height=650');
+  printWin.document.write(`
+    <html>
+      <head>
+        <title>Romaneio de Separação WMS - Fahren Motors</title>
+        <style>
+          body { font-family: sans-serif; font-size: 11pt; padding: 20px; color: #111; }
+          h2 { margin: 0 0 4px; font-size: 16pt; color: #1a365d; }
+          p { margin: 0 0 16px; color: #555; font-size: 9pt; }
+          table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+          th, td { border: 1px solid #ccc; padding: 7px 10px; font-size: 9pt; text-align: left; }
+          th { background: #f0f4f8; font-weight: bold; }
+        </style>
+      </head>
+      <body>
+        <h2>Fahren Motors - Romaneio de Separação (Picking List)</h2>
+        <p>Gerado em: ${new Date().toLocaleString('pt-BR')} | Ordenado por Localização de Prateleira</p>
+        ${content.innerHTML}
+        <script>
+          window.onload = function() { window.print(); window.close(); };
+        </script>
+      </body>
+    </html>
+  `);
+  printWin.document.close();
+};

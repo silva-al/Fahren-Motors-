@@ -1,7 +1,13 @@
 // Rotas de pagamentos
 const express = require('express');
 const db = require('../db');
+const crypto = require('crypto');
 const { requireRole, readToken } = require('../middleware/auth');
+const { validateBody } = require('../middleware/validate');
+const { cardPaymentSchema } = require('../validators/payment-schema');
+
+// Proteção de Idempotência: impede requisições concorrentes duplicadas para o mesmo pedido
+const activeCardPayments = new Set();
 const {
   createPixPayment,
   processCardPayment,
@@ -56,11 +62,16 @@ router.get('/installments', (req, res) => {
 // Pagamento com cartão de crédito (Mercado Pago Bricks / Mock seguro).
 const CARD_STATUS_MAP = { aprovado: 'approved', pendente: 'in_process', recusado: 'rejected' };
 
-router.post('/card', async (req, res) => {
+router.post('/card', validateBody(cardPaymentSchema), async (req, res) => {
   try {
     const body = req.body || {};
     const orderId = body.orderId;
     if (!orderId) return res.status(400).json({ error: 'Informe o pedido.' });
+
+    if (activeCardPayments.has(Number(orderId))) {
+      return res.status(409).json({ error: 'Processamento de pagamento já em andamento para este pedido. Aguarde.' });
+    }
+    activeCardPayments.add(Number(orderId));
 
     const { order, customer } = await loadOwnedOrder(req, orderId);
 
@@ -106,6 +117,10 @@ router.post('/card', async (req, res) => {
     const status = err.status || 500;
     if (status === 500) console.error('[Route:Payments:card]', err.message);
     res.status(status).json({ error: err.message || 'Erro ao processar o pagamento com cartão.' });
+  } finally {
+    if (req.body && req.body.orderId) {
+      activeCardPayments.delete(Number(req.body.orderId));
+    }
   }
 });
 
@@ -164,6 +179,37 @@ router.post('/:orderId/simulate-approval', requireRole('admin'), async (req, res
 // Webhook Mercado Pago
 router.post('/webhook', async (req, res) => {
   try {
+    // Validação de Segurança HMAC Mercado Pago (quando configurado MERCADOPAGO_WEBHOOK_SECRET)
+    const webhookSecret = process.env.MERCADOPAGO_WEBHOOK_SECRET;
+    const xSignature = req.headers['x-signature'];
+    const xRequestId = req.headers['x-request-id'];
+
+    if (webhookSecret && xSignature) {
+      try {
+        const parts = xSignature.split(',');
+        let ts = null;
+        let v1 = null;
+        for (const p of parts) {
+          const [k, v] = p.split('=');
+          if (k && v) {
+            if (k.trim() === 'ts') ts = v.trim();
+            if (k.trim() === 'v1') v1 = v.trim();
+          }
+        }
+        if (ts && v1) {
+          const dataId = req.query['data.id'] || req.body?.data?.id || '';
+          const manifest = `id:${dataId};request-id:${xRequestId || ''};ts:${ts};`;
+          const hmac = crypto.createHmac('sha256', webhookSecret).update(manifest).digest('hex');
+          if (hmac !== v1) {
+            console.warn('[Webhook:Security] Assinatura HMAC inválida no webhook.');
+            return res.status(401).send('Invalid signature');
+          }
+        }
+      } catch (sigErr) {
+        console.warn('[Webhook:Security] Erro ao validar assinatura:', sigErr.message);
+      }
+    }
+
     const { action, data } = req.body || {};
     if (data && data.id) {
       const paymentId = String(data.id);
