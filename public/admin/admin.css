@@ -1768,21 +1768,24 @@ html.has-admin-session #mainScreen {
   }
 
   .danfe-sheet {
-    margin: 0 !important;
+    margin: 0 auto !important;
     padding: 0 !important;
     width: 100% !important;
-    max-width: 100% !important;
-    border: none !important;
+    max-width: 200mm !important;
+    border: 1px solid #000000 !important;
     box-shadow: none !important;
     border-radius: 0 !important;
     overflow: visible !important;
-    page-break-inside: avoid !important;
+    page-break-before: avoid !important;
+    break-before: avoid !important;
+    page-break-inside: auto !important;
+    break-inside: auto !important;
     page-break-after: avoid !important;
-    height: 284mm !important;
-    max-height: 284mm !important;
-    display: flex !important;
-    flex-direction: column !important;
-    justify-content: space-between !important;
+    break-after: avoid !important;
+    height: auto !important;
+    max-height: none !important;
+    display: block !important;
+    background: #ffffff !important;
   }
 
   .danfe-sheet::after {
@@ -12311,5 +12314,148 @@ body.tema-claro .order-status-badge-select.novo {
     margin: 0 !important;
     padding: 0 !important;
     display: block !important;
+  }
+}
+
+
+/* ===================================================================
+   AJUSTE DE RESPIRO: CLIENTES COM NOMES MAIORES & COLUNA LOCAL COMPACTA
+   =================================================================== */
+.col-th-customer, .order-col-customer {
+  width: 155px !important;
+  min-width: 140px !important;
+  max-width: 175px !important;
+  text-align: left !important;
+  padding: 8px 6px 8px 2px !important;
+}
+
+.order-cust-name {
+  font-size: 12.5px !important;
+  font-weight: 700 !important;
+  line-height: 1.25 !important;
+  white-space: normal !important;
+  word-break: break-word !important;
+}
+
+.order-cust-phone {
+  font-size: 11px !important;
+  margin-top: 1px !important;
+  white-space: nowrap !important;
+}
+
+.col-th-location, .order-col-location {
+  width: 80px !important;
+  min-width: 75px !important;
+  max-width: 85px !important;
+  text-align: center !important;
+  white-space: nowrap !important;
+  padding: 8px 2px !important;
+  overflow: visible !important;
+}
+
+.col-th-location {
+  font-size: 11.5px !important;
+  letter-spacing: 0.5px !important;
+  text-overflow: clip !important;
+}
+
+.order-loc-tag {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  padding: 3px 5px !important;
+  border-radius: 6px !important;
+  font-size: 10px !important;
+  font-weight: 700 !important;
+  box-sizing: border-box !important;
+  margin: 0 auto !important;
+}
+
+.order-loc-tag.no-loc {
+  flex-direction: column !important;
+  padding: 2px 4px !important;
+  gap: 0 !important;
+  line-height: 1.1 !important;
+}
+
+.order-loc-tag .loc-sem {
+  font-size: 10px !important;
+  font-weight: 800 !important;
+  display: block !important;
+}
+
+.order-loc-tag .loc-sub {
+  font-size: 8px !important;
+  opacity: 0.9 !important;
+  display: block !important;
+}
+
+/* Regras de impressão definitivas: sempre do topo da folha */
+@media print {
+  @page {
+    size: A4 portrait !important;
+    margin: 4mm 5mm !important;
+  }
+  html, body {
+    margin: 0 !important;
+    padding: 0 !important;
+    background: #ffffff !important;
+    color: #000000 !important;
+    width: 100% !important;
+    height: auto !important;
+    min-height: 0 !important;
+    overflow: visible !important;
+  }
+  body > *:not(#danfeModal):not(#dacceModal) {
+    display: none !important;
+  }
+  #danfeModal.hidden, #dacceModal.hidden {
+    display: none !important;
+  }
+  #danfeModal:not(.hidden), #dacceModal:not(.hidden) {
+    position: static !important;
+    display: block !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    border: none !important;
+    box-shadow: none !important;
+    background: transparent !important;
+    width: 100% !important;
+    height: auto !important;
+    overflow: visible !important;
+  }
+  .modal-danfe-container,
+  .danfe-scroll-viewport {
+    position: static !important;
+    display: block !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    border: none !important;
+    box-shadow: none !important;
+    background: transparent !important;
+    width: 100% !important;
+    height: auto !important;
+    overflow: visible !important;
+  }
+  .danfe-sheet,
+  .dacce-sheet {
+    position: static !important;
+    display: block !important;
+    margin: 0 auto !important;
+    padding: 0 !important;
+    border: 1px solid #000000 !important;
+    box-shadow: none !important;
+    background: #ffffff !important;
+    color: #000000 !important;
+    width: 100% !important;
+    max-width: 200mm !important;
+    height: auto !important;
+    max-height: none !important;
+    page-break-before: avoid !important;
+    break-before: avoid !important;
+    page-break-inside: auto !important;
+    break-inside: auto !important;
+    page-break-after: avoid !important;
+    break-after: avoid !important;
   }
 }

@@ -1795,7 +1795,7 @@ select option {
   margin: auto !important;
   display: block !important;
   transform-origin: center center;
-  transition: transform .05s ease-out;
+  transition: none !important; will-change: transform !important; transform: translateZ(0) !important;
   pointer-events: none;
   filter: drop-shadow(0 12px 35px rgba(0, 0, 0, 0.85)) !important;
 }
@@ -9019,4 +9019,22 @@ body.tema-claro .fp-footer-copy-line {
 
 #lightboxViewport.is-dragging {
   cursor: grabbing !important;
+}
+
+
+/* ==========================================================================
+   ZOOM ULTRA FLUIDO 60/120FPS SEM TRAVAMENTOS OU DELAY
+   ========================================================================== */
+#lightboxImg {
+  transition: none !important;
+  will-change: transform !important;
+  transform: translateZ(0) !important;
+  backface-visibility: hidden !important;
+  -webkit-backface-visibility: hidden !important;
+}
+
+#lightboxViewport {
+  touch-action: none !important;
+  user-select: none !important;
+  -webkit-user-select: none !important;
 }
