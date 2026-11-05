@@ -11289,3 +11289,731 @@ body:not(.tema-claro) .stock-label-card svg rect,
 body.tema-claro .stock-label-card svg rect {
   fill: #000000 !important;
 }
+
+
+/* ===================================================================
+   RESPONSIVIDADE E ESPAÇAMENTO DE SEGURANÇA À DIREITA (NÃO PASSAR DA TELA)
+   Elimina sobreposição por widgets flutuantes, barras de rolagem ou borda da tela.
+   =================================================================== */
+.wms-content {
+  padding-right: 48px !important;
+  box-sizing: border-box !important;
+}
+
+.wms-panel {
+  padding-right: 32px !important;
+  box-sizing: border-box !important;
+  max-width: 100% !important;
+}
+
+.table-wrap,
+.wms-table-wrap,
+.orders-table-wrapper,
+.table-panel {
+  width: 100% !important;
+  max-width: 100% !important;
+  overflow-x: auto !important;
+  box-sizing: border-box !important;
+  padding-right: 36px !important;
+  -webkit-overflow-scrolling: touch !important;
+}
+
+/* Coluna de Ações na tabela de Produtos: Linha horizontal compacta sem passar da tela */
+.prod-actions-stack {
+  display: inline-flex !important;
+  flex-direction: row !important;
+  align-items: center !important;
+  justify-content: flex-end !important;
+  gap: 6px !important;
+  width: auto !important;
+  white-space: nowrap !important;
+  vertical-align: middle !important;
+}
+
+.prod-actions-stack .btn-prod-action,
+.prod-actions-stack .btn-prod-delete {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 4px !important;
+  width: auto !important;
+  height: 28px !important;
+  padding: 4px 9px !important;
+  font-size: 11px !important;
+  font-weight: 700 !important;
+  border-radius: 6px !important;
+  cursor: pointer !important;
+  transition: all 0.15s ease !important;
+  line-height: 1 !important;
+  box-sizing: border-box !important;
+  white-space: nowrap !important;
+}
+
+/* Espaçamento extra de segurança na última célula de qualquer tabela */
+.wms-table th:last-child,
+.wms-table td:last-child,
+.orders-table th:last-child,
+.orders-table td:last-child,
+table th:last-child,
+table td:last-child {
+  padding-right: 32px !important;
+}
+
+/* ===================================================================
+   TABELA DE PEDIDOS — LAYOUT DEFINITIVO, FLEXÍVEL E SEM CORTES
+   =================================================================== */
+.orders-table {
+  width: 100% !important;
+  min-width: 1050px !important;
+  table-layout: auto !important;
+  border-collapse: separate !important;
+  border-spacing: 0 !important;
+}
+
+.orders-table th {
+  overflow: visible !important;
+  text-overflow: clip !important;
+  white-space: nowrap !important;
+  vertical-align: middle !important;
+  padding: 12px 10px !important;
+  font-size: 11px !important;
+  font-weight: 800 !important;
+  letter-spacing: 0.5px !important;
+  text-transform: uppercase !important;
+}
+
+.orders-table td {
+  overflow: visible !important;
+  vertical-align: middle !important;
+  padding: 12px 10px !important;
+}
+
+/* 1. Nº PEDIDO: nunca cortado com "Nº PE...", cabeçalho e badge visíveis */
+.col-th-id, .order-col-id {
+  width: 115px !important;
+  min-width: 115px !important;
+  max-width: 125px !important;
+  white-space: nowrap !important;
+  overflow: visible !important;
+  text-overflow: clip !important;
+  text-align: center !important;
+}
+
+.order-id-badge {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  padding: 4px 10px !important;
+  border-radius: 6px !important;
+  font-size: 13px !important;
+  font-weight: 800 !important;
+  font-family: 'JetBrains Mono', monospace !important;
+  background: rgba(239, 68, 68, 0.12) !important;
+  color: #f87171 !important;
+  border: 1px solid rgba(239, 68, 68, 0.3) !important;
+}
+
+body.tema-claro .order-id-badge {
+  background: #fee2e2 !important;
+  color: #b91c1c !important;
+  border-color: #fca5a5 !important;
+}
+
+/* 2. CLIENTE */
+.col-th-customer, .order-col-customer {
+  width: 160px !important;
+  min-width: 150px !important;
+  text-align: left !important;
+  white-space: nowrap !important;
+}
+
+.order-cust-name {
+  font-weight: 700 !important;
+  font-size: 13px !important;
+  line-height: 1.3 !important;
+}
+
+.order-cust-phone {
+  display: flex !important;
+  align-items: center !important;
+  gap: 4px !important;
+  font-size: 11.5px !important;
+  color: var(--text-muted, #94a3b8) !important;
+  margin-top: 2px !important;
+}
+
+/* 3. ITENS: TOTALMENTE FLEXÍVEL — NENHUM NOME CORTADO */
+.col-th-items, .order-col-items {
+  width: auto !important;
+  min-width: 320px !important;
+  max-width: none !important;
+  text-align: left !important;
+  overflow: visible !important;
+}
+
+.order-items-list {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 8px !important;
+  width: 100% !important;
+  align-items: flex-start !important;
+}
+
+.order-item-row {
+  display: flex !important;
+  align-items: flex-start !important;
+  justify-content: flex-start !important;
+  gap: 8px !important;
+  width: 100% !important;
+}
+
+.order-item-qty {
+  background: #ef4444 !important;
+  color: #ffffff !important;
+  padding: 2px 6px !important;
+  border-radius: 4px !important;
+  font-weight: 800 !important;
+  font-size: 11px !important;
+  line-height: 1.2 !important;
+  flex-shrink: 0 !important;
+  margin-top: 2px !important;
+}
+
+.order-item-title {
+  display: block !important;
+  -webkit-line-clamp: unset !important;
+  -webkit-box-orient: unset !important;
+  overflow: visible !important;
+  text-overflow: clip !important;
+  white-space: normal !important;
+  word-break: break-word !important;
+  font-size: 13.5px !important;
+  font-weight: 700 !important;
+  line-height: 1.4 !important;
+  flex: 1 !important;
+  max-width: none !important;
+  width: auto !important;
+}
+
+body:not(.tema-claro) .order-item-title {
+  color: #ffffff !important;
+}
+
+body.tema-claro .order-item-title {
+  color: #0f172a !important;
+}
+
+/* 4. LOCALIZAÇÃO: Cabeçalho e etiqueta completos */
+.col-th-location, .order-col-location {
+  width: 150px !important;
+  min-width: 145px !important;
+  text-align: center !important;
+  white-space: nowrap !important;
+  overflow: visible !important;
+  text-overflow: clip !important;
+}
+
+.order-loc-list {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 6px !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+
+.order-loc-row {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+
+.order-loc-tag {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 4px !important;
+  white-space: nowrap !important;
+  padding: 4px 10px !important;
+  border-radius: 6px !important;
+  font-size: 11.5px !important;
+  font-weight: 700 !important;
+  box-sizing: border-box !important;
+}
+
+.order-loc-tag.has-loc {
+  background: rgba(59, 130, 246, 0.15) !important;
+  color: #60a5fa !important;
+  border: 1px solid rgba(59, 130, 246, 0.35) !important;
+}
+
+.order-loc-tag.no-loc {
+  background: rgba(148, 163, 184, 0.12) !important;
+  color: #94a3b8 !important;
+  border: 1px solid rgba(148, 163, 184, 0.25) !important;
+}
+
+body.tema-claro .order-loc-tag.has-loc {
+  background: #dbeafe !important;
+  color: #1e40af !important;
+  border-color: #bfdbfe !important;
+}
+
+body.tema-claro .order-loc-tag.no-loc {
+  background: #f1f5f9 !important;
+  color: #64748b !important;
+  border-color: #cbd5e1 !important;
+}
+
+/* 5. TOTAL */
+.col-th-total, .order-col-total {
+  width: 105px !important;
+  min-width: 100px !important;
+  text-align: center !important;
+  white-space: nowrap !important;
+}
+
+.order-total-price {
+  font-size: 14px !important;
+  font-weight: 800 !important;
+  color: #22c55e !important;
+}
+
+body.tema-claro .order-total-price {
+  color: #16a34a !important;
+}
+
+/* 6. PAGAMENTO */
+.col-th-pay, .order-col-pay {
+  width: 125px !important;
+  min-width: 115px !important;
+  text-align: center !important;
+  white-space: nowrap !important;
+}
+
+/* 7. DATA/HORA */
+.col-th-date, .order-col-date {
+  width: 115px !important;
+  min-width: 110px !important;
+  text-align: center !important;
+  white-space: nowrap !important;
+}
+
+.order-date-text {
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  gap: 2px !important;
+  font-size: 11.5px !important;
+  font-weight: 600 !important;
+}
+
+.order-date-time {
+  font-size: 11px !important;
+  color: var(--text-muted, #94a3b8) !important;
+}
+
+/* 8. STATUS DO PEDIDO — ALINHAMENTO PERFEITO, BOTÃO NÃO TORTO */
+.col-th-status, .order-col-status {
+  width: 130px !important;
+  min-width: 125px !important;
+  text-align: center !important;
+  white-space: nowrap !important;
+  overflow: visible !important;
+}
+
+.status-badge-wrap {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 7px !important;
+  padding: 5px 12px !important;
+  border-radius: 9999px !important;
+  position: static !important;
+  min-width: auto !important;
+  max-width: none !important;
+  width: auto !important;
+  margin: 0 auto !important;
+  box-sizing: border-box !important;
+  transition: all 0.2s ease !important;
+}
+
+.status-badge-wrap .status-dot {
+  position: static !important;
+  display: inline-block !important;
+  width: 8px !important;
+  height: 8px !important;
+  min-width: 8px !important;
+  min-height: 8px !important;
+  border-radius: 50% !important;
+  flex-shrink: 0 !important;
+  margin: 0 !important;
+  left: auto !important;
+}
+
+.order-status-badge-select {
+  appearance: none !important;
+  -webkit-appearance: none !important;
+  background: transparent !important;
+  border: none !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  font-size: 11px !important;
+  font-weight: 800 !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.5px !important;
+  cursor: pointer !important;
+  color: inherit !important;
+  outline: none !important;
+  text-align: center !important;
+  line-height: 1.2 !important;
+}
+
+/* Cores dos status no wrap (DARK e CLARO) */
+.status-badge-wrap.novo {
+  background: rgba(245, 158, 11, 0.18) !important;
+  color: #fbbf24 !important;
+  border: 1.5px solid rgba(245, 158, 11, 0.5) !important;
+}
+.status-badge-wrap.novo .status-dot {
+  background: #f59e0b !important;
+  box-shadow: 0 0 6px rgba(245, 158, 11, 0.7) !important;
+}
+
+.status-badge-wrap.em_preparacao {
+  background: rgba(59, 130, 246, 0.18) !important;
+  color: #60a5fa !important;
+  border: 1.5px solid rgba(59, 130, 246, 0.5) !important;
+}
+.status-badge-wrap.em_preparacao .status-dot {
+  background: #3b82f6 !important;
+  box-shadow: 0 0 6px rgba(59, 130, 246, 0.7) !important;
+}
+
+.status-badge-wrap.pronto {
+  background: rgba(168, 85, 247, 0.18) !important;
+  color: #c084fc !important;
+  border: 1.5px solid rgba(168, 85, 247, 0.5) !important;
+}
+.status-badge-wrap.pronto .status-dot {
+  background: #a855f7 !important;
+  box-shadow: 0 0 6px rgba(168, 85, 247, 0.7) !important;
+}
+
+.status-badge-wrap.entregue {
+  background: rgba(34, 197, 94, 0.18) !important;
+  color: #4ade80 !important;
+  border: 1.5px solid rgba(34, 197, 94, 0.5) !important;
+}
+.status-badge-wrap.entregue .status-dot {
+  background: #22c55e !important;
+  box-shadow: 0 0 6px rgba(34, 197, 94, 0.7) !important;
+}
+
+.status-badge-wrap.cancelado {
+  background: rgba(239, 68, 68, 0.18) !important;
+  color: #f87171 !important;
+  border: 1.5px solid rgba(239, 68, 68, 0.5) !important;
+}
+.status-badge-wrap.cancelado .status-dot {
+  background: #ef4444 !important;
+  box-shadow: 0 0 6px rgba(239, 68, 68, 0.7) !important;
+}
+
+/* TEMA CLARO PARA STATUS */
+body.tema-claro .status-badge-wrap.novo {
+  background: #fef3c7 !important;
+  color: #b45309 !important;
+  border: 1.5px solid #fde68a !important;
+}
+body.tema-claro .status-badge-wrap.em_preparacao {
+  background: #dbeafe !important;
+  color: #1d4ed8 !important;
+  border: 1.5px solid #bfdbfe !important;
+}
+body.tema-claro .status-badge-wrap.pronto {
+  background: #f3e8ff !important;
+  color: #7e22ce !important;
+  border: 1.5px solid #e9d5ff !important;
+}
+body.tema-claro .status-badge-wrap.entregue {
+  background: #dcfce7 !important;
+  color: #15803d !important;
+  border: 1.5px solid #bbf7d0 !important;
+}
+body.tema-claro .status-badge-wrap.cancelado {
+  background: #fee2e2 !important;
+  color: #b91c1c !important;
+  border: 1.5px solid #fecaca !important;
+}
+
+
+/* ===================================================================
+   OTIMIZAÇÃO DO ESPAÇO HORIZONTAL (TELA MAIS ESTICADA & SCROLL MAIS À ESQUERDA)
+   Reduz o espaço vazio entre o painel lateral e a tela principal.
+   =================================================================== */
+@media (min-width: 769px) {
+  .wms-sidebar {
+    width: 220px !important;
+    max-width: 220px !important;
+  }
+
+  .sidebar-brand {
+    padding: 16px 12px !important;
+    gap: 9px !important;
+  }
+
+  .sidebar-brand .brand-avatar-glow {
+    width: 34px !important;
+    height: 34px !important;
+  }
+
+  .sidebar-brand .brand-info strong {
+    font-size: 15px !important;
+  }
+
+  .sidebar-brand .brand-info small {
+    font-size: 9px !important;
+  }
+
+  .sidebar-nav {
+    padding: 12px 6px !important;
+  }
+
+  .nav-section-label {
+    padding: 10px 8px 4px !important;
+    font-size: 9.5px !important;
+  }
+
+  .nav-item {
+    padding: 8px 10px !important;
+    gap: 8px !important;
+    font-size: 12.5px !important;
+    border-radius: 8px !important;
+  }
+
+  .nav-item .nav-icon {
+    width: 16px !important;
+    height: 16px !important;
+    flex-shrink: 0 !important;
+  }
+
+  .sidebar-footer {
+    padding: 12px 10px !important;
+  }
+
+  /* Main esticado aproveitando todo o espaço disponível à esquerda */
+  .wms-main {
+    margin-left: 220px !important;
+    width: calc(100% - 220px) !important;
+    max-width: calc(100% - 220px) !important;
+    box-sizing: border-box !important;
+  }
+}
+
+/* Redução do espaçamento interno para o scroll e as tabelas começarem bem mais à esquerda */
+.wms-content {
+  padding: 14px 28px 60px 14px !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  box-sizing: border-box !important;
+}
+
+.wms-panel {
+  padding: 16px 18px !important;
+  margin-bottom: 16px !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  box-sizing: border-box !important;
+}
+
+.table-wrap,
+.wms-table-wrap,
+.orders-table-wrapper,
+.table-panel {
+  margin-left: 0 !important;
+  padding-left: 0 !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  box-sizing: border-box !important;
+}
+
+/* Assegura que o cabeçalho do painel também ocupe 100% da largura esticada */
+.panel-header {
+  margin-bottom: 14px !important;
+  width: 100% !important;
+}
+
+
+/* ===================================================================
+   DANFE & IMPRESSÃO OFICIAL SEFAZ: 100% LIMPO, NÍTIDO E SEM FUNDO PRETO
+   =================================================================== */
+.danfe-sheet,
+#danfeModal .danfe-sheet,
+#dacceModal .danfe-sheet,
+body:not(.tema-claro) .danfe-sheet,
+body.tema-claro .danfe-sheet {
+  background: #ffffff !important;
+  color: #000000 !important;
+  border: 1px solid #000000 !important;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15) !important;
+}
+
+.danfe-sheet *,
+#danfeModal .danfe-sheet *,
+#dacceModal .danfe-sheet *,
+body:not(.tema-claro) .danfe-sheet *,
+body.tema-claro .danfe-sheet * {
+  color: #000000 !important;
+}
+
+/* Títulos de seção do DANFE */
+.nf-section-title,
+body:not(.tema-claro) .nf-section-title,
+body.tema-claro .nf-section-title {
+  background: #f1f5f9 !important;
+  color: #000000 !important;
+  font-weight: 700 !important;
+  font-size: 7.5px !important;
+  border: 1px solid #000000 !important;
+  border-bottom: none !important;
+  text-align: center !important;
+}
+
+/* Cabeçalho da tabela de produtos do DANFE — NUNCA PRETO, FONTES CORRETAS E NÃO AMASSADAS */
+.nf-products-table th,
+body:not(.tema-claro) .nf-products-table th,
+body.tema-claro .nf-products-table th {
+  background: #f1f5f9 !important;
+  color: #000000 !important;
+  font-size: 6.5px !important;
+  font-weight: 700 !important;
+  letter-spacing: 0 !important;
+  padding: 3.5px 2px !important;
+  border-bottom: 1px solid #000000 !important;
+  border-right: 1px solid #000000 !important;
+  border-top: 1px solid #000000 !important;
+  text-align: center !important;
+  line-height: 1.1 !important;
+  white-space: normal !important;
+}
+
+.nf-products-table th:last-child,
+body:not(.tema-claro) .nf-products-table th:last-child {
+  border-right: none !important;
+}
+
+.nf-products-table td,
+body:not(.tema-claro) .nf-products-table td,
+body.tema-claro .nf-products-table td {
+  background: #ffffff !important;
+  color: #000000 !important;
+  font-size: 8px !important;
+  border-right: 1px solid #000000 !important;
+  padding: 3px 3px !important;
+}
+
+.nf-products-table td:last-child,
+body:not(.tema-claro) .nf-products-table td:last-child {
+  border-right: none !important;
+}
+
+/* Marca d'água homologação limpa e transparente sem caixa branca cobrindo a tabela */
+.nf-watermark-overlay,
+body:not(.tema-claro) .nf-watermark-overlay,
+body.tema-claro .nf-watermark-overlay {
+  position: absolute !important;
+  top: 55% !important;
+  left: 50% !important;
+  transform: translate(-50%, -50%) !important;
+  font-size: 32px !important;
+  font-weight: 900 !important;
+  color: rgba(0, 0, 0, 0.07) !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  border: none !important;
+  text-align: center !important;
+  pointer-events: none !important;
+  line-height: 1.2 !important;
+  letter-spacing: 2px !important;
+  font-family: Arial, Helvetica, sans-serif !important;
+  z-index: 1 !important;
+  white-space: nowrap !important;
+}
+
+/* REGRAS DE IMPRESSÃO LIMPAS AO MÁXIMO (@media print) */
+@media print {
+  * {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  html, body {
+    background: #ffffff !important;
+    color: #000000 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  /* Oculta tudo que não for o documento sendo impresso */
+  .wms-layout,
+  .wms-sidebar,
+  .wms-topbar,
+  .wms-main,
+  .no-print,
+  .modal-danfe-actions,
+  .login-wrap {
+    display: none !important;
+  }
+
+  .modal-overlay {
+    position: static !important;
+    background: transparent !important;
+    box-shadow: none !important;
+    border: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    display: block !important;
+  }
+
+  .modal-danfe-container,
+  .danfe-scroll-viewport {
+    background: transparent !important;
+    box-shadow: none !important;
+    border: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+
+  .danfe-sheet {
+    box-shadow: none !important;
+    border: 1px solid #000000 !important;
+    margin: 0 auto !important;
+    padding: 10px !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    background: #ffffff !important;
+  }
+
+  .danfe-sheet * {
+    color: #000000 !important;
+  }
+
+  .nf-products-table th {
+    background: #f1f5f9 !important;
+    color: #000000 !important;
+    font-size: 6.5px !important;
+    border: 1px solid #000000 !important;
+  }
+
+  .nf-products-table td {
+    background: #ffffff !important;
+    color: #000000 !important;
+    border: 1px solid #000000 !important;
+  }
+
+  .nf-watermark-overlay {
+    display: none !important;
+  }
+}

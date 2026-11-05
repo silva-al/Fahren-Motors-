@@ -3189,7 +3189,6 @@ function moneyNum(v) {
 }
 
 function generateCode128Svg(codeText, height = 36) {
-  const text = String(codeText);
   const patterns = [
     [2,1,2,2,2,2],[2,2,2,1,2,2],[2,2,2,2,2,1],[1,2,1,2,2,3],[1,2,1,3,2,2],[1,3,1,2,2,2],[1,2,2,2,1,3],[1,2,2,3,1,2],[1,3,2,2,1,2],[2,2,1,2,1,3],
     [2,2,1,3,1,2],[2,3,1,2,1,2],[1,1,2,2,3,2],[1,2,2,1,3,2],[1,2,2,2,3,1],[1,1,3,2,2,2],[1,2,3,1,2,2],[1,2,3,2,2,1],[2,2,3,2,1,1],[2,2,1,1,3,2],
@@ -3203,20 +3202,44 @@ function generateCode128Svg(codeText, height = 36) {
     [2,1,4,1,2,1],[4,1,2,1,2,1],[1,1,1,1,4,3],[1,1,1,3,4,1],[1,3,1,1,4,1],[1,1,4,1,1,3],[1,1,4,3,1,1],[4,1,1,1,1,3],[4,1,1,3,1,1],[1,1,3,1,4,1],
     [1,1,4,1,3,1],[3,1,1,1,4,1],[4,1,1,1,3,1],[2,1,1,4,1,2],[2,1,1,2,1,4],[2,1,1,2,3,2],[2,3,3,1,1,1,2]
   ];
-  // Code 128 Subset B (Start B = 104) — encodes full ASCII (space to DEL)
-  const startCode = 104;
-  let checksum = startCode;
-  const sequence = [startCode];
-  for (let i = 0; i < text.length; i++) {
-    const charCode = text.charCodeAt(i) - 32;
-    if (charCode >= 0 && charCode <= 95) {
-      sequence.push(charCode);
-      checksum += charCode * (i + 1);
+
+  const digitsOnly = String(codeText).replace(/\D/g, '');
+  const isNumeric = digitsOnly.length >= 4 && digitsOnly.length % 2 === 0 && digitsOnly.length === String(codeText).trim().length;
+
+  let sequence = [];
+  let checksum = 0;
+
+  if (isNumeric) {
+    // Code 128 Subset C (Par de dígitos = 1 símbolo) — SEFAZ / DANFE Padrão Oficial
+    const startCode = 105;
+    checksum = startCode;
+    sequence.push(startCode);
+    let pos = 1;
+    for (let i = 0; i < digitsOnly.length; i += 2) {
+      const val = parseInt(digitsOnly.substr(i, 2), 10);
+      sequence.push(val);
+      checksum += val * pos;
+      pos++;
+    }
+  } else {
+    // Code 128 Subset B (Alfanumérico)
+    const text = String(codeText);
+    const startCode = 104;
+    checksum = startCode;
+    sequence.push(startCode);
+    for (let i = 0; i < text.length; i++) {
+      const charCode = text.charCodeAt(i) - 32;
+      if (charCode >= 0 && charCode <= 95) {
+        sequence.push(charCode);
+        checksum += charCode * (i + 1);
+      }
     }
   }
+
   checksum %= 103;
   sequence.push(checksum);
   sequence.push(106); // Stop
+
   let modules = [];
   sequence.forEach(code => {
     const pattern = patterns[code];
@@ -3227,8 +3250,9 @@ function generateCode128Svg(codeText, height = 36) {
       isBar = !isBar;
     }
   });
+
   const totalWidth = modules.length;
-  let svg = `<svg viewBox="0 0 ${totalWidth} ${height}" preserveAspectRatio="none" style="width:100%;height:${height}px;display:block;">`;
+  let svg = '<svg viewBox="0 0 ' + totalWidth + ' ' + height + '" preserveAspectRatio="none" style="width:100%;height:' + height + 'px;display:block;">';
   let currentX = 0;
   for (let i = 0; i < modules.length; i++) {
     if (modules[i] === 1) {
@@ -3237,16 +3261,15 @@ function generateCode128Svg(codeText, height = 36) {
         len++;
         i++;
       }
-      svg += `<rect x="${currentX}" y="0" width="${len}" height="${height}" fill="#000" />`;
+      svg += '<rect x="' + currentX + '" y="0" width="' + len + '" height="' + height + '" fill="#000" />';
       currentX += len;
     } else {
       currentX++;
     }
   }
-  svg += `</svg>`;
+  svg += '</svg>';
   return svg;
 }
-
 
 // ---------- MODAL DE IMPRESSÃO DO DANFE OFICIAL ----------
 // Fechar modal, cancelar edição ou voltar de telas/abas com tecla ESC
