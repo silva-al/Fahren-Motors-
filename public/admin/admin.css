@@ -12485,20 +12485,7 @@ body.tema-claro .order-status-badge-select.novo {
    BADGE VISÍVEL DE BUILD / VERSÃO ATIVA NO TOPO DO PAINEL WMS
    =================================================================== */
 .wms-build-badge {
-  display: inline-flex !important;
-  align-items: center !important;
-  gap: 6px !important;
-  background: rgba(0, 230, 118, 0.12) !important;
-  border: 1px solid rgba(0, 230, 118, 0.35) !important;
-  color: #00e676 !important;
-  padding: 6px 12px !important;
-  border-radius: 8px !important;
-  font-size: 11.5px !important;
-  font-weight: 800 !important;
-  letter-spacing: 0.5px !important;
-  white-space: nowrap !important;
-  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace !important;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25) !important;
+  display: none !important;
 }
 
 .wms-build-dot {

@@ -253,10 +253,6 @@ function startLiveClock() {
         year: 'numeric'
       });
     }
-    const buildEl = document.getElementById('wmsBuildVer');
-    if (buildEl && !buildEl.textContent.trim()) {
-      buildEl.textContent = '2026.11.05-v11';
-    }
   }
   update();
   setInterval(update, 1000);
