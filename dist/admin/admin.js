@@ -3369,7 +3369,6 @@ function generateDanfeBarcodeHtml(codeText, height = 48) {
   }
   return generateCode128Svg(codeText, height);
 }
-}
 
 // ---------- MODAL DE IMPRESSÃO DO DANFE OFICIAL ----------
 // Fechar modal, cancelar edição ou voltar de telas/abas com tecla ESC
