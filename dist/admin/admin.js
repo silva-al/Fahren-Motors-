@@ -2046,10 +2046,14 @@ function renderOrdersTable(orders) {
 
     const locationsHtml = items.length
       ? items.map(i => {
-          const loc = i.location ? String(i.location).trim() : '';
-          return `<div class="order-loc-row"><span class="order-loc-tag ${loc ? 'has-loc' : 'no-loc'}">📍 ${loc || 'Sem localização'}</span></div>`;
+          const rawLoc = i.location ? String(i.location).trim() : '';
+          const hasLoc = rawLoc && rawLoc.toLowerCase() !== 'sem localização';
+          if (hasLoc) {
+            return `<div class="order-loc-row"><span class="order-loc-tag has-loc">📍 ${rawLoc}</span></div>`;
+          }
+          return `<div class="order-loc-row"><span class="order-loc-tag no-loc"><span class="loc-sem">📍 Sem</span><span class="loc-sub">localização</span></span></div>`;
         }).join('')
-      : '<div class="order-loc-row"><span class="order-loc-tag no-loc">📍 Sem localização</span></div>';
+      : '<div class="order-loc-row"><span class="order-loc-tag no-loc"><span class="loc-sem">📍 Sem</span><span class="loc-sub">localização</span></span></div>';
 
     const payBadge = getPaymentBadgeHtml(o.paymentMethodLabel);
 

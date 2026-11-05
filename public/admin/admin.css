@@ -12017,3 +12017,249 @@ body.tema-claro .nf-watermark-overlay {
     display: none !important;
   }
 }
+
+
+/* ===================================================================
+   OTIMIZAÇÃO RADICAL DE ESPAÇOS: PEDIDO E CLIENTE COMPACTOS & ITENS AMPLO
+   =================================================================== */
+/* 1. PEDIDO: Bem menor, sem espaçamento ocioso */
+.col-th-id, .order-col-id {
+  width: 68px !important;
+  min-width: 65px !important;
+  max-width: 72px !important;
+  white-space: nowrap !important;
+  overflow: visible !important;
+  text-overflow: clip !important;
+  text-align: left !important;
+  padding: 10px 4px 10px 8px !important;
+}
+
+.order-id-badge {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  padding: 3px 7px !important;
+  border-radius: 5px !important;
+  font-size: 12px !important;
+  font-weight: 800 !important;
+}
+
+/* 2. CLIENTE: Colado no pedido, sem distância excessiva */
+.col-th-customer, .order-col-customer {
+  width: 125px !important;
+  min-width: 120px !important;
+  max-width: 135px !important;
+  text-align: left !important;
+  white-space: nowrap !important;
+  padding: 10px 8px 10px 2px !important;
+}
+
+.order-cust-name {
+  font-size: 12.5px !important;
+  font-weight: 700 !important;
+  line-height: 1.25 !important;
+}
+
+.order-cust-phone {
+  font-size: 11px !important;
+  margin-top: 1px !important;
+}
+
+/* 3. LOCALIZAÇÃO: Otimizada (Sem localização em 2 linhas verticais para economizar espaço) */
+.col-th-location, .order-col-location {
+  width: 95px !important;
+  min-width: 90px !important;
+  max-width: 105px !important;
+  text-align: center !important;
+  white-space: nowrap !important;
+  padding: 8px 4px !important;
+}
+
+.order-loc-tag {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  padding: 3px 6px !important;
+  border-radius: 6px !important;
+  font-size: 11px !important;
+  font-weight: 700 !important;
+  box-sizing: border-box !important;
+}
+
+.order-loc-tag.no-loc {
+  flex-direction: column !important;
+  padding: 2px 6px !important;
+  gap: 0 !important;
+  line-height: 1.1 !important;
+}
+
+.order-loc-tag .loc-sem {
+  font-size: 10.5px !important;
+  font-weight: 800 !important;
+  display: block !important;
+}
+
+.order-loc-tag .loc-sub {
+  font-size: 9px !important;
+  opacity: 0.85 !important;
+  display: block !important;
+}
+
+/* 4. TOTAL, PAGAMENTO, DATA E STATUS COMPACTOS */
+.col-th-total, .order-col-total {
+  width: 95px !important;
+  min-width: 90px !important;
+  max-width: 100px !important;
+  text-align: center !important;
+  padding: 10px 4px !important;
+}
+
+.col-th-pay, .order-col-pay {
+  width: 110px !important;
+  min-width: 105px !important;
+  max-width: 115px !important;
+  text-align: center !important;
+  padding: 10px 4px !important;
+}
+
+.col-th-date, .order-col-date {
+  width: 100px !important;
+  min-width: 95px !important;
+  max-width: 105px !important;
+  text-align: center !important;
+  padding: 10px 4px !important;
+}
+
+.col-th-status, .order-col-status {
+  width: 115px !important;
+  min-width: 110px !important;
+  max-width: 120px !important;
+  text-align: center !important;
+  padding: 10px 4px !important;
+}
+
+/* 5. REMOÇÃO TOTAL DA BORDA INTERNA NO STATUS NOVO */
+.order-status-badge-select,
+.order-status-badge-select.novo,
+.status-badge-wrap select,
+.status-badge-wrap .order-status-badge-select,
+body:not(.tema-claro) .order-status-badge-select,
+body:not(.tema-claro) .order-status-badge-select.novo,
+body.tema-claro .order-status-badge-select,
+body.tema-claro .order-status-badge-select.novo {
+  border: none !important;
+  outline: none !important;
+  box-shadow: none !important;
+  background: transparent !important;
+  -webkit-appearance: none !important;
+  appearance: none !important;
+}
+
+/* 6. COLUNA DE ITENS: GANHA TODO O ESPAÇO ECONOMIZADO */
+.col-th-items, .order-col-items {
+  width: auto !important;
+  min-width: 440px !important;
+  max-width: none !important;
+  text-align: left !important;
+  padding: 10px 12px 10px 6px !important;
+}
+
+.order-item-title {
+  font-size: 13.5px !important;
+  font-weight: 700 !important;
+  line-height: 1.35 !important;
+  white-space: normal !important;
+  word-break: break-word !important;
+}
+
+/* ===================================================================
+   IMPRESSÃO DEFINITIVA: ELIMINAÇÃO DA PÁGINA 1 EM BRANCO (EXATAMENTE 1 PÁGINA)
+   =================================================================== */
+@media print {
+  @page {
+    size: A4 portrait !important;
+    margin: 4mm 5mm !important;
+  }
+
+  html, body {
+    height: auto !important;
+    min-height: 0 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    overflow: visible !important;
+    background: #ffffff !important;
+  }
+
+  /* Oculta tudo que não seja o modal de impressão ativo */
+  .wms-layout,
+  .wms-sidebar,
+  .wms-topbar,
+  .wms-main,
+  .no-print,
+  .modal-danfe-actions,
+  .login-wrap,
+  .modal-overlay.hidden,
+  .modal-overlay:not(#danfeModal):not(#dacceModal) {
+    display: none !important;
+  }
+
+  #danfeModal, #dacceModal {
+    position: static !important;
+    display: block !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    border: none !important;
+    box-shadow: none !important;
+    width: 100% !important;
+    background: transparent !important;
+  }
+
+  .modal-danfe-container,
+  .danfe-scroll-viewport {
+    position: static !important;
+    display: block !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    border: none !important;
+    box-shadow: none !important;
+    max-height: none !important;
+    height: auto !important;
+    overflow: visible !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    background: transparent !important;
+  }
+
+  .danfe-sheet {
+    display: block !important;
+    position: static !important;
+    margin: 0 auto !important;
+    padding: 0 !important;
+    border: 1px solid #000000 !important;
+    box-shadow: none !important;
+    height: auto !important;
+    max-height: none !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    background: #ffffff !important;
+    page-break-before: avoid !important;
+    break-before: avoid !important;
+    page-break-inside: auto !important;
+    break-inside: auto !important;
+    page-break-after: avoid !important;
+    break-after: avoid !important;
+  }
+
+  .nf-products-container {
+    min-height: 170px !important;
+    flex: none !important;
+  }
+
+  .nf-products-table {
+    height: auto !important;
+  }
+
+  .nf-watermark-overlay {
+    display: none !important;
+  }
+}
