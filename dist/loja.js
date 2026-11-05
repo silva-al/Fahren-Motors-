@@ -1972,33 +1972,37 @@ function initProductViewer() {
     return e.type.includes('mouse') ? e.pageX : (e.touches && e.touches[0] ? e.touches[0].clientX : 0);
   }
 
+  let touchMoved = false;
+  let touchStartTime = 0;
   let startY = 0;
 
   function touchStart(e) {
+    touchMoved = false;
+    touchStartTime = Date.now();
     const slides = track.querySelectorAll('.gallery-slide');
-    if (slides.length <= 1) return;
     if (e.touches && e.touches.length > 1) {
       isDragging = false;
       return;
     }
     isDragging = true;
     startX = getPositionX(e);
-    startY = e.touches && e.touches[0] ? e.touches[0].clientY : 0;
+    startY = e.touches && e.touches[0] ? e.touches[0].clientY : (e.clientY || 0);
     track.style.transition = 'none';
   }
 
   function touchMove(e) {
     if (!isDragging) return;
-    const slides = track.querySelectorAll('.gallery-slide');
-    if (slides.length <= 1) return;
-    if (e.touches && e.touches.length > 1) {
-      isDragging = false;
-      return;
-    }
     const currentX = getPositionX(e);
-    const currentY = e.touches && e.touches[0] ? e.touches[0].clientY : 0;
+    const currentY = e.touches && e.touches[0] ? e.touches[0].clientY : (e.clientY || 0);
     const diffX = currentX - startX;
     const diffY = currentY - startY;
+
+    if (Math.abs(diffX) > 8 || Math.abs(diffY) > 8) {
+      touchMoved = true;
+    }
+
+    const slides = track.querySelectorAll('.gallery-slide');
+    if (slides.length <= 1) return;
 
     // Se estiver deslizando para os lados, cancela o scroll vertical para resposta imediata
     if (Math.abs(diffX) > Math.abs(diffY) && e.cancelable) {
@@ -2012,10 +2016,22 @@ function initProductViewer() {
   function touchEnd(e) {
     if (!isDragging) return;
     isDragging = false;
+    const endX = e.type.includes('mouse') ? e.pageX : (e.changedTouches && e.changedTouches[0] ? e.changedTouches[0].clientX : startX);
+    const endY = e.type.includes('mouse') ? e.pageY : (e.changedTouches && e.changedTouches[0] ? e.changedTouches[0].clientY : startY);
+    const diff = endX - startX;
+    const diffY = endY - startY;
+    const elapsed = Date.now() - touchStartTime;
+
+    // Toque/Clique no Mobile ou Desktop (sem arraste longo): ENTRA IMEDIATAMENTE NA IMAGEM INTEIRA COM ZOOM
+    if (!touchMoved && Math.abs(diff) < 14 && Math.abs(diffY) < 14 && elapsed < 650) {
+      if (typeof openLightbox === 'function') {
+        openLightbox();
+        return;
+      }
+    }
+
     const slides = track.querySelectorAll('.gallery-slide');
     if (slides.length <= 1) return;
-    const endX = e.type.includes('mouse') ? e.pageX : (e.changedTouches ? e.changedTouches[0].clientX : startX);
-    const diff = endX - startX;
 
     if (diff < -35) {
       updateGallery((currentSlide + 1) % slides.length);
@@ -2042,7 +2058,6 @@ function initProductViewer() {
   }, { passive: true });
 
   slider.addEventListener('mousedown', (e) => {
-    e.preventDefault();
     touchStart(e);
   });
   window.addEventListener('mousemove', (e) => {

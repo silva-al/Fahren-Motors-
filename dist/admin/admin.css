@@ -1539,8 +1539,9 @@ html.has-admin-session #mainScreen {
 }
 
 .nf-barcode-svg-wrap svg,
-.danfe-barcode-svg,
-.danfe-barcode-img {
+.nf-barcode-svg-wrap .danfe-barcode-svg,
+.danfe-sheet .danfe-barcode-svg,
+.danfe-sheet .danfe-barcode-img {
   width: 80mm !important;
   max-width: 80mm !important;
   height: 48px !important;
@@ -7422,22 +7423,73 @@ body.tema-claro .btn-pv-step {
 }
 
 .pv-barcode-mini-card {
-  display: flex;
+  display: inline-flex;
   align-items: center;
-  gap: 8px;
+  gap: 12px;
+  background: #ffffff;
+  padding: 6px 12px;
+  border-radius: 8px;
+  border: 1px solid #cbd5e1;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+  flex-shrink: 0;
+}
+body.tema-claro .pv-barcode-mini-card {
+  background: #ffffff;
+  border-color: #cbd5e1;
 }
 .pv-barcode-svg-box {
-  width: 110px;
-  background: #ffffff;
-  padding: 4px;
-  border-radius: 4px;
-  border: 1px solid #cbd5e1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 130px;
+  max-width: 150px;
+  overflow: hidden;
+  background: transparent;
+  padding: 0;
+  border: none;
+}
+.pv-barcode-render-wrap {
+  width: 100%;
+  height: 26px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+.pv-barcode-render-wrap svg {
+  width: 100% !important;
+  height: 26px !important;
+  max-width: 100% !important;
+  display: block !important;
+}
+.pv-barcode-sku-caption {
+  font-family: 'Courier New', Courier, monospace;
+  font-size: 9.5px;
+  font-weight: 800;
+  color: #1e293b;
+  letter-spacing: 0.6px;
+  margin-top: 2px;
+  text-align: center;
+  white-space: nowrap;
 }
 .pv-qr-svg-box {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
   background: #ffffff;
-  padding: 3px;
-  border-radius: 4px;
-  border: 1px solid #cbd5e1;
+  padding: 2px;
+  border-radius: 6px;
+  border: 1px solid #e2e8f0;
+  flex-shrink: 0;
+}
+.pv-qr-svg-box img,
+.pv-qr-svg-box svg {
+  width: 38px !important;
+  height: 38px !important;
+  display: block;
 }
 
 .pv-history-header {

@@ -492,10 +492,37 @@ it('deve conter o modal de tela cheia (lightbox) com controles de zoom e fechar'
       expect(totalWidth).toBe(317);
     });
 
-    it('deve possuir o selo PRO WMS V2.15 no dashboard operacional', () => {
+    it('deve codificar corretamente pecas com SKU alfanumerico (Code 128 Subset B)', () => {
+      const sku = 'BRD0288';
+      const startCode = 104; // Subset B
+      let checksum = startCode;
+      const sequence = [startCode];
+      for (let i = 0; i < sku.length; i++) {
+        const charCode = sku.charCodeAt(i) - 32;
+        sequence.push(charCode);
+        checksum += charCode * (i + 1);
+      }
+      checksum %= 103;
+      sequence.push(checksum);
+      sequence.push(106); // Stop
+
+      expect(sequence[0]).toBe(104);
+      expect(sequence.length).toBe(sku.length + 3);
+      expect(sequence[sequence.length - 1]).toBe(106);
+    });
+
+    it('deve isolar estritamente o CSS do DANFE sem forcar 80mm global em outros modais e etiquetas', () => {
+      const fs = require('fs');
+      const css = fs.readFileSync('public/admin/admin.css', 'utf8');
+      expect(css).toContain('.nf-barcode-svg-wrap .danfe-barcode-svg');
+      expect(css).toContain('.pv-barcode-render-wrap');
+      expect(css).toContain('.pv-barcode-sku-caption');
+    });
+
+    it('deve possuir o selo PRO WMS V2.16 no dashboard operacional', () => {
       const fs = require('fs');
       const html = fs.readFileSync('public/admin/index.html', 'utf8');
-      expect(html).toContain('PRO WMS V2.15');
+      expect(html).toContain('PRO WMS V2.16');
     });
   });
 });

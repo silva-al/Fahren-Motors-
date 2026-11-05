@@ -3080,8 +3080,8 @@ body.tema-claro .cat-card-count-box{background:#f8fafc !important;border:1px sol
   .mobile-tabbar .mtb-cart{position:relative}
   .mobile-tabbar .mtb-badge{position:absolute;top:-2px;right:14px;background:#ed1c24;color:#fff;font-size:9px;font-weight:800;border-radius:8px;min-width:15px;height:15px;display:flex;align-items:center;justify-content:center;padding:0 3px}
 
-  /* Botão flutuante do WhatsApp posicionado rente à base */
-  .fp-whatsapp-float{bottom:20px !important;right:16px !important;z-index:2147483647 !important}
+  /* Botão flutuante do WhatsApp elevado acima da barra inferior de navegação e do carrinho */
+  .fp-whatsapp-float{bottom:calc(78px + env(safe-area-inset-bottom, 0px)) !important;right:16px !important;z-index:2147483647 !important}
 }
 
 /* ==========================================================================
@@ -9087,7 +9087,7 @@ body.tema-claro .fp-footer-copy-line {
     width: 48px !important;
     height: 48px !important;
     right: 16px !important;
-    bottom: 20px !important; /* Altura ideal sem barra inferior fixa */
+    bottom: calc(78px + env(safe-area-inset-bottom, 0px)) !important; /* Elevado acima da barra inferior e do carrinho */
     z-index: 2147483647 !important;
   }
   .fp-whatsapp-float svg {

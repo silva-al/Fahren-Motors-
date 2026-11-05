@@ -1299,11 +1299,16 @@ async function openProductViewModal(id) {
     };
   }
 
-  // Gera código de barras e QR code vetorial da peça
+  // Gera código de barras e QR code da peça com separação física total
   const barcodeBox = document.getElementById('pvBarcodeSvg');
   if (barcodeBox) {
-    const rawDigits = (p.code || '789123456789').replace(/\D/g, '').padEnd(12, '0').slice(0, 12);
-    barcodeBox.innerHTML = generateCode128Svg(rawDigits, 24);
+    const pieceCode = String(p.code || ('PROD-' + p.id)).trim();
+    barcodeBox.innerHTML = `
+      <div class="pv-barcode-render-wrap">
+        ${generateCode128Svg(pieceCode, 26, 'wms-barcode-svg')}
+      </div>
+      <span class="pv-barcode-sku-caption">${pieceCode}</span>
+    `;
   }
 
   const qrBox = document.getElementById('pvQrSvg');
@@ -3206,7 +3211,7 @@ function moneyNum(v) {
   return Number(v || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 }
 
-function generateCode128Svg(codeText, height = 52) {
+function generateCode128Svg(codeText, height = 52, customClass = '') {
   const patterns = [
     [2,1,2,2,2,2],[2,2,2,1,2,2],[2,2,2,2,2,1],[1,2,1,2,2,3],[1,2,1,3,2,2],[1,3,1,2,2,2],[1,2,2,2,1,3],[1,2,2,3,1,2],[1,3,2,2,1,2],[2,2,1,2,1,3],
     [2,2,1,3,1,2],[2,3,1,2,1,2],[1,1,2,2,3,2],[1,2,2,1,3,2],[1,2,2,2,3,1],[1,1,3,2,2,2],[1,2,3,1,2,2],[1,2,3,2,2,1],[2,2,3,2,1,1],[2,2,1,1,3,2],
@@ -3221,8 +3226,9 @@ function generateCode128Svg(codeText, height = 52) {
     [1,1,4,1,3,1],[3,1,1,1,4,1],[4,1,1,1,3,1],[2,1,1,4,1,2],[2,1,1,2,1,4],[2,1,1,2,3,2],[2,3,3,1,1,1,2]
   ];
 
-  const digitsOnly = String(codeText).replace(/\D/g, '');
-  const isNumeric = digitsOnly.length >= 4 && digitsOnly.length % 2 === 0 && digitsOnly.length === String(codeText).trim().length;
+  const cleanText = String(codeText || '').trim();
+  const digitsOnly = cleanText.replace(/\D/g, '');
+  const isNumeric = cleanText.length >= 4 && cleanText.length % 2 === 0 && digitsOnly === cleanText;
   const isDanfe = isNumeric && digitsOnly.length === 44;
 
   let sequence = [];
@@ -3240,7 +3246,7 @@ function generateCode128Svg(codeText, height = 52) {
       pos++;
     }
   } else {
-    const text = String(codeText);
+    const text = cleanText;
     const startCode = 104; // Subset B
     checksum = startCode;
     sequence.push(startCode);
@@ -3282,12 +3288,13 @@ function generateCode128Svg(codeText, height = 52) {
     }
   });
 
+  const svgClass = customClass ? customClass : (isDanfe ? 'danfe-barcode-svg' : 'wms-barcode-svg');
   const svgStyle = isDanfe
     ? 'width:88mm;max-width:90mm;height:' + height + 'px;display:block;margin:0 auto;background:#ffffff;'
-    : 'width:100%;max-width:' + Math.max(180, totalWidth * 1.5) + 'px;height:' + height + 'px;display:block;margin:0 auto;background:#ffffff;';
+    : 'width:100%;height:' + height + 'px;display:block;margin:0 auto;background:#ffffff;';
 
   let svg = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ' + totalWidth + ' ' + height + '" ' +
-            'preserveAspectRatio="none" shape-rendering="crispEdges" class="danfe-barcode-svg" ' +
+            'preserveAspectRatio="none" shape-rendering="crispEdges" class="' + svgClass + '" ' +
             'style="' + svgStyle + '">';
   svg += '<rect x="0" y="0" width="' + totalWidth + '" height="' + height + '" fill="#ffffff" shape-rendering="crispEdges"/>';
   svg += rects;
@@ -3295,9 +3302,79 @@ function generateCode128Svg(codeText, height = 52) {
   return svg;
 }
 
-// Renderizador vetorial ótico padrão SEFAZ para o DANFE (leitura imediata em coletores e impressoras)
-function generateDanfeBarcodeHtml(codeText, height = 54) {
-  return generateCode128Svg(codeText, height);
+// Renderizador ultra nítido via Canvas nativo para o DANFE (600 DPI sem anti-aliasing / zero borrão em papel e coletores)
+function generateDanfeBarcodeHtml(codeText, height = 48) {
+  const digitsOnly = String(codeText).replace(/\D/g, '');
+  if (digitsOnly.length === 44 && typeof document !== 'undefined' && document.createElement) {
+    try {
+      const patterns = [
+        [2,1,2,2,2,2],[2,2,2,1,2,2],[2,2,2,2,2,1],[1,2,1,2,2,3],[1,2,1,3,2,2],[1,3,1,2,2,2],[1,2,2,2,1,3],[1,2,2,3,1,2],[1,3,2,2,1,2],[2,2,1,2,1,3],
+        [2,2,1,3,1,2],[2,3,1,2,1,2],[1,1,2,2,3,2],[1,2,2,1,3,2],[1,2,2,2,3,1],[1,1,3,2,2,2],[1,2,3,1,2,2],[1,2,3,2,2,1],[2,2,3,2,1,1],[2,2,1,1,3,2],
+        [2,2,1,2,3,1],[2,1,3,2,1,2],[2,2,3,1,1,2],[3,1,2,1,3,1],[3,1,1,2,2,2],[3,2,1,1,2,2],[3,2,1,2,2,1],[3,1,2,2,1,2],[3,2,2,1,1,2],[3,2,2,2,1,1],
+        [2,1,2,1,2,3],[2,1,2,3,2,1],[2,3,2,1,2,1],[1,1,1,3,2,3],[1,3,1,1,2,3],[1,3,1,3,2,1],[1,1,2,3,1,3],[1,3,2,1,1,3],[1,3,2,3,1,1],[2,1,1,3,1,3],
+        [2,3,1,1,1,3],[2,3,1,3,1,1],[1,1,2,1,3,3],[1,1,2,3,3,1],[1,3,2,1,3,1],[1,1,3,1,2,3],[1,1,3,3,2,1],[1,3,3,1,2,1],[3,1,3,1,2,1],[2,1,1,3,3,1],
+        [2,3,1,1,3,1],[2,1,3,1,1,3],[2,1,3,3,1,1],[2,1,3,1,3,1],[3,1,1,1,2,3],[3,1,1,3,2,1],[3,3,1,1,2,1],[3,1,2,1,1,3],[3,1,2,3,1,1],[3,3,2,1,1,1],
+        [3,1,4,1,1,1],[2,2,1,4,1,1],[4,3,1,1,1,1],[1,1,1,2,2,4],[1,1,1,4,2,2],[1,2,1,1,2,4],[1,2,1,4,2,1],[1,4,1,1,2,2],[1,4,1,2,2,1],[1,1,2,2,1,4],
+        [1,1,2,4,1,2],[1,2,2,1,1,4],[1,2,2,4,1,1],[1,4,2,1,1,2],[1,4,2,2,1,1],[2,4,1,2,1,1],[2,2,1,1,1,4],[4,1,3,1,1,1],[2,4,1,1,1,2],[1,3,4,1,1,1],
+        [1,1,1,2,4,2],[1,2,1,1,4,2],[1,2,1,2,4,1],[1,1,4,2,1,2],[1,2,4,1,1,2],[1,2,4,2,1,1],[4,1,1,2,1,2],[4,2,1,1,1,2],[4,2,1,2,1,1],[2,1,2,1,4,1],
+        [2,1,4,1,2,1],[4,1,2,1,2,1],[1,1,1,1,4,3],[1,1,1,3,4,1],[1,3,1,1,4,1],[1,1,4,1,1,3],[1,1,4,3,1,1],[4,1,1,1,1,3],[4,1,1,3,1,1],[1,1,3,1,4,1],
+        [1,1,4,1,3,1],[3,1,1,1,4,1],[4,1,1,1,3,1],[2,1,1,4,1,2],[2,1,1,2,1,4],[2,1,1,2,3,2],[2,3,3,1,1,1,2]
+      ];
+      const startCode = 105;
+      let checksum = startCode;
+      const sequence = [startCode];
+      let pos = 1;
+      for (let i = 0; i < digitsOnly.length; i += 2) {
+        const val = parseInt(digitsOnly.substr(i, 2), 10);
+        sequence.push(val);
+        checksum += val * pos;
+        pos++;
+      }
+      checksum %= 103;
+      sequence.push(checksum);
+      sequence.push(106);
+
+      const quietZone = 20;
+      const scale = 3; // 3 pixels inteiros por módulo (951px) para padrão ótico de alta definição 600 DPI
+      let totalDataModules = 0;
+      sequence.forEach(code => {
+        const p = patterns[code];
+        if (p) totalDataModules += p.reduce((a, b) => a + b, 0);
+      });
+      const totalModules = totalDataModules + (quietZone * 2);
+      const canvasW = totalModules * scale;
+      const canvasH = height * scale;
+
+      const canvas = document.createElement('canvas');
+      canvas.width = canvasW;
+      canvas.height = canvasH;
+      const ctx = canvas.getContext('2d');
+      ctx.imageSmoothingEnabled = false;
+      ctx.fillStyle = '#ffffff';
+      ctx.fillRect(0, 0, canvasW, canvasH);
+      ctx.fillStyle = '#000000';
+
+      let curX = quietZone * scale;
+      sequence.forEach(code => {
+        const p = patterns[code];
+        if (!p) return;
+        let isBar = true;
+        for (let w of p) {
+          if (isBar) {
+            ctx.fillRect(curX, 0, w * scale, canvasH);
+          }
+          curX += w * scale;
+          isBar = !isBar;
+        }
+      });
+
+      const dataUrl = canvas.toDataURL('image/png');
+      return `<img src="${dataUrl}" class="danfe-barcode-img" alt="Código de Barras Chave de Acesso DANFE" style="width:80mm;max-width:80mm;height:${height}px;display:block;margin:0 auto;image-rendering:pixelated;image-rendering:-webkit-optimize-contrast;image-rendering:crisp-edges;" />`;
+    } catch (e) {
+      console.warn('Canvas barcode fallback:', e);
+    }
+  }
+  return generateCode128Svg(codeText, height, 'danfe-barcode-svg');
 }
 
 // ---------- MODAL DE IMPRESSÃO DO DANFE OFICIAL ----------
@@ -3747,7 +3824,7 @@ function getDanfeStandalonePrintCss() {
     .nf-danfe-sub { font-size: 8px !important; line-height: 1.25 !important; }
     .nf-header-barcode { display: flex !important; flex-direction: column !important; align-items: center !important; justify-content: center !important; padding: 4px 6px !important; text-align: center !important; background: #ffffff !important; }
     .nf-barcode-svg-wrap { width: 100% !important; text-align: center !important; margin-bottom: 2px !important; display: flex !important; justify-content: center !important; align-items: center !important; background: #ffffff !important; }
-    .nf-barcode-svg-wrap svg, .danfe-barcode-svg { width: 88mm !important; max-width: 90mm !important; height: 54px !important; display: block !important; margin: 0 auto !important; shape-rendering: crispEdges !important; }
+    .nf-barcode-svg-wrap svg, .danfe-barcode-svg, .danfe-barcode-img { width: 80mm !important; max-width: 80mm !important; height: 48px !important; display: block !important; margin: 0 auto !important; shape-rendering: crispEdges !important; image-rendering: -webkit-optimize-contrast !important; image-rendering: crisp-edges !important; image-rendering: pixelated !important; }
     .nf-key-label { font-size: 6.8px !important; font-weight: bold !important; text-transform: uppercase !important; letter-spacing: 0.5px !important; text-align: center !important; }
     .nf-key-text { font-family: 'Courier New', Courier, monospace !important; font-size: 8.2px !important; font-weight: bold !important; letter-spacing: 0.5px !important; white-space: nowrap !important; margin: 2px 0 3px 0 !important; text-align: center !important; }
     .nf-consulta-box { font-size: 6.4px !important; line-height: 1.2 !important; color: #000 !important; border-top: 1px solid #000 !important; width: 100% !important; padding-top: 3px !important; margin-top: 2px !important; text-align: center !important; }
