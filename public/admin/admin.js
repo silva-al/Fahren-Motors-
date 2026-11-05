@@ -2066,29 +2066,16 @@ function renderOrdersTable(orders) {
             <span class="order-date-time">${formatTimeOnly(o.createdAt)}</span>
           </div>
         </td>
-        <td class="order-col-status-actions" style="text-align:right">
-          <div class="status-actions-cell-stack">
-            <!-- DANFE e EXCLUIR lado a lado em cima do STATUS -->
-            <div class="actions-top-row">
-              <button class="order-action-btn btn-danfe-action" onclick="openDanfeForOrder(${o.id})" title="Imprimir DANFE / Nota Fiscal">
-                <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.2"><polyline points="6 9 6 2 18 2 18 9"></polyline><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg>
-                <span>DANFE</span>
-              </button>
-              <button class="order-action-btn btn-delete-action" onclick="deleteExpedicaoOrder(${o.id})" title="Excluir Pedido">
-                <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
-              </button>
-            </div>
-            <!-- STATUS logo abaixo -->
-            <div class="status-badge-wrap ${o.status}">
-              <span class="status-dot"></span>
-              <select class="order-status-badge-select ${o.status}" data-order-status="${o.id}">
-                <option value="novo" ${o.status === 'novo' ? 'selected' : ''}>Novo</option>
-                <option value="em_preparacao" ${o.status === 'em_preparacao' ? 'selected' : ''}>Em preparação</option>
-                <option value="pronto" ${o.status === 'pronto' ? 'selected' : ''}>Pronto</option>
-                <option value="entregue" ${o.status === 'entregue' ? 'selected' : ''}>Entregue</option>
-                <option value="cancelado" ${o.status === 'cancelado' ? 'selected' : ''}>Cancelado</option>
-              </select>
-            </div>
+        <td class="order-col-status">
+          <div class="status-badge-wrap ${o.status}">
+            <span class="status-dot"></span>
+            <select class="order-status-badge-select ${o.status}" data-order-status="${o.id}" title="Alterar status do pedido">
+              <option value="novo" ${o.status === 'novo' ? 'selected' : ''}>Novo</option>
+              <option value="em_preparacao" ${o.status === 'em_preparacao' ? 'selected' : ''}>Em preparação</option>
+              <option value="pronto" ${o.status === 'pronto' ? 'selected' : ''}>Pronto</option>
+              <option value="entregue" ${o.status === 'entregue' ? 'selected' : ''}>Entregue</option>
+              <option value="cancelado" ${o.status === 'cancelado' ? 'selected' : ''}>Cancelado</option>
+            </select>
           </div>
         </td>
       </tr>

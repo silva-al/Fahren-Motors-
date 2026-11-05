@@ -3917,7 +3917,8 @@ body.tema-claro .cat-card-count-box{background:#f8fafc !important;border:1px sol
   overflow:hidden;
   border-radius:13px;
 }
-#detailMainImg{
+#detailMainImg,
+.gallery-slide .slide-img-wrap img {
   width:100% !important;
   height:100% !important;
   max-width:100% !important;
@@ -8632,3 +8633,216 @@ body.tema-claro .cart-item-thumb {
     max-height: 105px !important;
   }
 }
+
+
+/* ==========================================================================
+   CARROSSEL DE MÚLTIPLAS FOTOS NO CARD E NA TELA DE DETALHES
+   ========================================================================== */
+
+/* Contador de fotos na linha de dicas */
+.gallery-slide-counter {
+  font-size: 12px;
+  font-weight: 700;
+  color: #9da2aa;
+  background: rgba(255, 255, 255, 0.08);
+  padding: 3px 9px;
+  border-radius: 6px;
+  letter-spacing: 0.5px;
+}
+
+body.tema-claro .gallery-slide-counter {
+  color: #475569;
+  background: rgba(0, 0, 0, 0.06);
+}
+
+/* Miniaturas (Thumbnails) na tela de detalhes */
+.gallery-thumbs-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  margin-top: 12px;
+  overflow-x: auto;
+  padding: 4px;
+}
+
+.gallery-thumb {
+  width: 58px;
+  height: 58px;
+  border-radius: 10px;
+  border: 2px solid rgba(255, 255, 255, 0.15);
+  background: #11141a;
+  overflow: hidden;
+  cursor: pointer;
+  padding: 0;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+}
+
+.gallery-thumb img {
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: cover !important;
+  display: block !important;
+}
+
+.gallery-thumb:hover {
+  border-color: rgba(255, 255, 255, 0.5);
+  transform: translateY(-2px);
+}
+
+.gallery-thumb.active {
+  border-color: #ed1c24 !important;
+  box-shadow: 0 0 10px rgba(237, 28, 36, 0.6) !important;
+  transform: scale(1.06);
+}
+
+body.tema-claro .gallery-thumb {
+  border-color: #cbd5e1;
+  background: #f8fafc;
+}
+
+body.tema-claro .gallery-thumb:hover {
+  border-color: #94a3b8;
+}
+
+body.tema-claro .gallery-thumb.active {
+  border-color: #ed1c24 !important;
+  box-shadow: 0 0 10px rgba(237, 28, 36, 0.4) !important;
+}
+
+/* Carrossel de múltiplas fotos no card do catálogo (#pecas .product) */
+.card-photo-slider {
+  position: relative !important;
+  width: 100% !important;
+  height: 100% !important;
+  overflow: hidden !important;
+  border-radius: inherit !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+
+.card-photo-slider .card-photo-img,
+.part-photo .card-photo-img {
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: cover !important;
+  display: block !important;
+  border-radius: inherit !important;
+  transition: transform 0.25s ease;
+}
+
+.product:hover .card-photo-slider .card-photo-img {
+  transform: scale(1.04);
+}
+
+.card-photo-nav-btn {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 6;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: rgba(15, 23, 42, 0.82);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  color: #ffffff;
+  font-size: 19px;
+  font-weight: 700;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  opacity: 0.88;
+  transition: all 0.2s ease;
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.4);
+  padding: 0;
+  user-select: none;
+}
+
+.card-photo-nav-btn:hover {
+  background: #ed1c24;
+  border-color: #ed1c24;
+  opacity: 1;
+  transform: translateY(-50%) scale(1.15);
+}
+
+.card-photo-nav-btn.card-photo-prev { left: 6px; }
+.card-photo-nav-btn.card-photo-next { right: 6px; }
+
+.card-photo-counter {
+  position: absolute;
+  bottom: 6px;
+  right: 6px;
+  z-index: 6;
+  background: rgba(0, 0, 0, 0.75);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  color: #ffffff;
+  font-size: 10.5px;
+  font-weight: 700;
+  padding: 2px 7px;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  letter-spacing: 0.5px;
+  pointer-events: none;
+}
+
+body.tema-claro .card-photo-nav-btn {
+  background: rgba(255, 255, 255, 0.92);
+  color: #0f172a;
+  border-color: rgba(0, 0, 0, 0.15);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+body.tema-claro .card-photo-nav-btn:hover {
+  background: #ed1c24;
+  color: #ffffff;
+  border-color: #ed1c24;
+}
+
+body.tema-claro .card-photo-counter {
+  background: rgba(255, 255, 255, 0.92);
+  color: #0f172a;
+  border-color: rgba(0, 0, 0, 0.12);
+}
+
+/* Setas de navegação no Lightbox em Tela Cheia */
+.lb-nav-btn {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 50;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: rgba(18, 20, 26, 0.85);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: #ffffff;
+  font-size: 30px;
+  font-weight: 700;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.6);
+  padding: 0;
+  user-select: none;
+}
+
+.lb-nav-btn:hover {
+  background: #ed1c24;
+  border-color: #ed1c24;
+  transform: translateY(-50%) scale(1.1);
+}
+
+.lb-nav-btn.prev { left: 16px; }
+.lb-nav-btn.next { right: 16px; }

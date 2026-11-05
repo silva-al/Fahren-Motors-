@@ -772,22 +772,26 @@ function money(v) { return v.toLocaleString('pt-BR', { style: 'currency', curren
 
 function extractLojaPhotos(product) {
   if (!product) return [];
-  if (product.photos && Array.isArray(product.photos) && product.photos.length) {
-    return product.photos.map(p => normalizeLojaPhoto(p)).filter(Boolean);
+  let list = [];
+  if (Array.isArray(product.photos) && product.photos.length) {
+    list = product.photos;
+  } else {
+    const raw = product.photos || product.photoUrl || product.photo_url || '';
+    if (!raw) return [];
+    const s = String(raw).trim();
+    if (s.startsWith('[')) {
+      try {
+        const arr = JSON.parse(s);
+        if (Array.isArray(arr) && arr.length) list = arr;
+      } catch {}
+    } else if (s.includes(',')) {
+      list = s.split(',');
+    } else if (s) {
+      list = [s];
+    }
   }
-  const raw = product.photoUrl || product.photo_url || '';
-  if (!raw) return [];
-  const s = String(raw).trim();
-  if (s.startsWith('[')) {
-    try {
-      const arr = JSON.parse(s);
-      if (Array.isArray(arr) && arr.length) return arr.map(p => normalizeLojaPhoto(p)).filter(Boolean);
-    } catch {}
-  }
-  if (s.includes(',')) {
-    return s.split(',').map(p => normalizeLojaPhoto(p.trim())).filter(Boolean);
-  }
-  return [normalizeLojaPhoto(s)];
+  const cleanList = list.map(p => normalizeLojaPhoto(p)).filter(Boolean);
+  return Array.from(new Set(cleanList));
 }
 
 function normalizeLojaPhoto(url, fallback = 'images/categorias/filtros.jpg') {
@@ -1208,14 +1212,32 @@ function renderProducts(container, products) {
     return;
   }
   container.innerHTML = products.map(p => {
-    const rawImg = p.photoUrl || CATEGORY_IMAGES[p.category];
-    const img = rawImg ? normalizeLojaPhoto(rawImg) : '';
+    const photos = extractLojaPhotos(p);
+    const hasMultiple = photos.length > 1;
+    let photoHtml = '';
+    if (hasMultiple) {
+      photoHtml = `
+        <div class="card-photo-slider" data-card-id="${p.id}" data-current-index="0">
+          <img src="${photos[0]}" alt="${p.name}" class="card-photo-img" loading="lazy" onerror="this.onerror=null; this.src='images/categorias/filtros.jpg';" />
+          <button type="button" class="card-photo-nav-btn card-photo-prev" aria-label="Foto anterior" title="Foto anterior">‹</button>
+          <button type="button" class="card-photo-nav-btn card-photo-next" aria-label="Próxima foto" title="Próxima foto">›</button>
+          <div class="card-photo-counter">1/${photos.length}</div>
+        </div>
+      `;
+    } else if (photos.length === 1) {
+      photoHtml = `<img src="${photos[0]}" alt="${p.name}" class="card-photo-img" loading="lazy" onerror="this.onerror=null; this.src='images/categorias/filtros.jpg';" />`;
+    } else {
+      const rawImg = p.photoUrl || CATEGORY_IMAGES[p.category];
+      const img = rawImg ? normalizeLojaPhoto(rawImg) : '';
+      photoHtml = img ? `<img src="${img}" alt="${p.name}" class="card-photo-img" loading="lazy" onerror="this.onerror=null; this.src='images/categorias/filtros.jpg';" />` : '🔩';
+    }
+
     const maxQty = p.stockQty || 99;
     const priceVal = typeof p.price === 'number' ? p.price : parseFloat(p.price) || 0;
     const pixVal = priceVal > 0 ? (priceVal * (1 - (PIX_DISCOUNT_RATE || 0.04))) : 0;
     return `
     <div class="product" data-product-id="${p.id}">
-      <div class="part-photo">${img ? `<img src="${img}" alt="${p.name}" loading="lazy" onerror="this.onerror=null; this.src='images/categorias/filtros.jpg';">` : '🔩'}</div>
+      <div class="part-photo">${photoHtml}</div>
       <div class="product-info-wrap">
         <b class="product-name" title="${p.name}">${p.name}</b>
         <small class="product-meta">${p.description || p.category || 'Aplicação compatível'}</small>
@@ -1262,9 +1284,43 @@ function renderProducts(container, products) {
     const addBtn = card.querySelector('.add-cart-btn');
     const max = parseInt(input?.max, 10) || 99;
 
+    // Navegação de fotos diretamente no card do catálogo quando houver múltiplas imagens
+    const sliderWrap = card.querySelector('.card-photo-slider');
+    if (sliderWrap) {
+      const prodItem = products.find(item => String(item.id) === String(id));
+      const cardPhotos = extractLojaPhotos(prodItem);
+      if (cardPhotos.length > 1) {
+        const imgEl = sliderWrap.querySelector('.card-photo-img');
+        const counterEl = sliderWrap.querySelector('.card-photo-counter');
+        const btnPrev = sliderWrap.querySelector('.card-photo-prev');
+        const btnNext = sliderWrap.querySelector('.card-photo-next');
+        let cardIdx = 0;
+
+        const updateCardPhoto = (newIdx) => {
+          cardIdx = (newIdx + cardPhotos.length) % cardPhotos.length;
+          sliderWrap.dataset.currentIndex = cardIdx;
+          if (imgEl) imgEl.src = cardPhotos[cardIdx];
+          if (counterEl) counterEl.textContent = `${cardIdx + 1}/${cardPhotos.length}`;
+        };
+
+        if (btnPrev) {
+          btnPrev.addEventListener('click', (e) => {
+            e.stopPropagation();
+            updateCardPhoto(cardIdx - 1);
+          });
+        }
+        if (btnNext) {
+          btnNext.addEventListener('click', (e) => {
+            e.stopPropagation();
+            updateCardPhoto(cardIdx + 1);
+          });
+        }
+      }
+    }
+
     // Ao clicar na foto, nome ou card da peça, abre a tela completa com hiper zoom
     card.addEventListener('click', (e) => {
-      if (e.target.closest('.product-qty-row') || e.target.closest('.add-cart-btn') || e.target.closest('button')) {
+      if (e.target.closest('.product-qty-row') || e.target.closest('.add-cart-btn') || e.target.closest('.card-photo-nav-btn') || e.target.closest('button')) {
         return;
       }
       const prod = products.find(p => String(p.id) === String(id));
@@ -1348,7 +1404,7 @@ async function openProductDetails(productId, cachedProduct = null, push = true) 
     track.innerHTML = photosToRender.map((pUrl, idx) => `
       <div class="gallery-slide" data-slide-index="${idx}">
         <div class="slide-img-wrap">
-          <img ${idx === 0 ? 'id="detailMainImg"' : ''} src="${pUrl}" alt="${product.name} - Foto ${idx + 1}" loading="${idx === 0 ? 'eager' : 'lazy'}" draggable="false" />
+          <img ${idx === 0 ? 'id="detailMainImg"' : ''} src="${pUrl}" alt="${product.name} - Foto ${idx + 1}" loading="${idx === 0 ? 'eager' : 'lazy'}" draggable="false" onerror="this.onerror=null; this.src='images/categorias/filtros.jpg';" />
         </div>
       </div>
     `).join('');
@@ -1365,11 +1421,39 @@ async function openProductDetails(productId, cachedProduct = null, push = true) 
     }
   }
 
+  const thumbsRow = document.getElementById('galleryThumbsRow');
+  if (thumbsRow) {
+    if (photosToRender.length > 1) {
+      thumbsRow.innerHTML = photosToRender.map((pUrl, i) => `
+        <button type="button" class="gallery-thumb ${i === 0 ? 'active' : ''}" data-index="${i}" aria-label="Ver foto ${i + 1}" title="Foto ${i + 1}">
+          <img src="${pUrl}" alt="Miniatura ${i + 1}" loading="lazy" onerror="this.onerror=null; this.src='images/categorias/filtros.jpg';" />
+        </button>
+      `).join('');
+      thumbsRow.style.display = 'flex';
+    } else {
+      thumbsRow.innerHTML = '';
+      thumbsRow.style.display = 'none';
+    }
+  }
+
   const prevBtn = document.getElementById('galleryPrevBtn');
   const nextBtn = document.getElementById('galleryNextBtn');
   if (prevBtn && nextBtn) {
     prevBtn.style.display = photosToRender.length > 1 ? 'flex' : 'none';
     nextBtn.style.display = photosToRender.length > 1 ? 'flex' : 'none';
+  }
+
+  const counterEl = document.getElementById('detailSlideCounter');
+  if (counterEl) {
+    counterEl.textContent = `1 / ${photosToRender.length}`;
+    counterEl.style.display = photosToRender.length > 1 ? 'inline-block' : 'none';
+  }
+
+  const lbPrevBtn = document.getElementById('lbPrevBtn');
+  const lbNextBtn = document.getElementById('lbNextBtn');
+  if (lbPrevBtn && lbNextBtn) {
+    lbPrevBtn.style.display = photosToRender.length > 1 ? 'flex' : 'none';
+    lbNextBtn.style.display = photosToRender.length > 1 ? 'flex' : 'none';
   }
 
   const mainImg = document.getElementById('detailMainImg');
@@ -1573,14 +1657,15 @@ function initProductViewer() {
   const prevBtn = document.getElementById('galleryPrevBtn');
   const nextBtn = document.getElementById('galleryNextBtn');
   const dotsRow = document.getElementById('galleryDotsRow');
+  const thumbsRow = document.getElementById('galleryThumbsRow');
   const counter = document.getElementById('detailSlideCounter');
   const badgeText = document.getElementById('viewerBadgeText');
   const zoomBtn = document.getElementById('galleryZoomBtn');
+  const lbPrevBtn = document.getElementById('lbPrevBtn');
+  const lbNextBtn = document.getElementById('lbNextBtn');
 
   if (!slider || !track) return;
 
-  // Conta os slides que realmente existem (hoje: só a foto da peça).
-  const totalSlides = Math.max(1, track.querySelectorAll('.gallery-slide').length);
   let currentSlide = 0;
   let startX = 0;
   let isDragging = false;
@@ -1588,7 +1673,7 @@ function initProductViewer() {
   function updateGallery(index) {
     const slides = track.querySelectorAll('.gallery-slide');
     const total = Math.max(1, slides.length);
-    currentSlide = Math.max(0, Math.min(total - 1, index));
+    currentSlide = (index + total) % total;
     track.style.transition = 'transform 0.35s cubic-bezier(0.2, 0.8, 0.25, 1)';
     track.style.transform = `translateX(-${currentSlide * 100}%)`;
 
@@ -1598,11 +1683,29 @@ function initProductViewer() {
       lbImg.src = activeSlideImg.src;
     }
 
-    if (counter) counter.textContent = `${currentSlide + 1} / ${total}`;
+    if (counter) {
+      counter.textContent = `${currentSlide + 1} / ${total}`;
+      counter.style.display = total > 1 ? 'inline-block' : 'none';
+    }
     if (dotsRow) {
       dotsRow.querySelectorAll('.g-dot').forEach((d, i) => {
         d.classList.toggle('active', i === currentSlide);
       });
+      dotsRow.style.display = total > 1 ? 'flex' : 'none';
+    }
+    if (thumbsRow) {
+      thumbsRow.querySelectorAll('.gallery-thumb').forEach((th, i) => {
+        th.classList.toggle('active', i === currentSlide);
+      });
+      thumbsRow.style.display = total > 1 ? 'flex' : 'none';
+    }
+    if (prevBtn && nextBtn) {
+      prevBtn.style.display = total > 1 ? 'flex' : 'none';
+      nextBtn.style.display = total > 1 ? 'flex' : 'none';
+    }
+    if (lbPrevBtn && lbNextBtn) {
+      lbPrevBtn.style.display = total > 1 ? 'flex' : 'none';
+      lbNextBtn.style.display = total > 1 ? 'flex' : 'none';
     }
 
     if (badgeText) {
@@ -1614,19 +1717,26 @@ function initProductViewer() {
     }
   }
 
+  window.updateProductGallery = updateGallery;
   window.resetProductGallery = function() {
     updateGallery(0);
   };
   window.resetViewer = window.resetProductGallery;
 
-  prevBtn?.addEventListener('click', () => {
-    const total = Math.max(1, track.querySelectorAll('.gallery-slide').length);
-    if (currentSlide > 0) updateGallery(currentSlide - 1);
+  prevBtn?.addEventListener('click', (e) => {
+    e.stopPropagation();
+    const slides = track.querySelectorAll('.gallery-slide');
+    const total = slides.length;
+    if (total <= 1) return;
+    updateGallery((currentSlide - 1 + total) % total);
   });
 
-  nextBtn?.addEventListener('click', () => {
-    const total = Math.max(1, track.querySelectorAll('.gallery-slide').length);
-    if (currentSlide < total - 1) updateGallery(currentSlide + 1);
+  nextBtn?.addEventListener('click', (e) => {
+    e.stopPropagation();
+    const slides = track.querySelectorAll('.gallery-slide');
+    const total = slides.length;
+    if (total <= 1) return;
+    updateGallery((currentSlide + 1) % total);
   });
 
   dotsRow?.addEventListener('click', (e) => {
@@ -1634,6 +1744,29 @@ function initProductViewer() {
     if (dot && dot.dataset.index != null) {
       updateGallery(parseInt(dot.dataset.index, 10));
     }
+  });
+
+  thumbsRow?.addEventListener('click', (e) => {
+    const thumb = e.target.closest('.gallery-thumb');
+    if (thumb && thumb.dataset.index != null) {
+      updateGallery(parseInt(thumb.dataset.index, 10));
+    }
+  });
+
+  lbPrevBtn?.addEventListener('click', (e) => {
+    e.stopPropagation();
+    const slides = track.querySelectorAll('.gallery-slide');
+    const total = slides.length;
+    if (total <= 1) return;
+    updateGallery((currentSlide - 1 + total) % total);
+  });
+
+  lbNextBtn?.addEventListener('click', (e) => {
+    e.stopPropagation();
+    const slides = track.querySelectorAll('.gallery-slide');
+    const total = slides.length;
+    if (total <= 1) return;
+    updateGallery((currentSlide + 1) % total);
   });
 
   // Touch & Mouse Dragging manual e suave

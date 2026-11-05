@@ -607,10 +607,20 @@
                 </div>
               </div>
             </div>
+            <!-- Setas de navegação manual entre fotos -->
+            <button type="button" class="gallery-nav-btn prev" id="galleryPrevBtn" aria-label="Foto anterior" title="Foto anterior" style="display:none;">‹</button>
+            <button type="button" class="gallery-nav-btn next" id="galleryNextBtn" aria-label="Próxima foto" title="Próxima foto" style="display:none;">›</button>
           </div>
+
+          <!-- Dots de navegação -->
+          <div class="gallery-dots-row" id="galleryDotsRow" style="display:none;"></div>
+
+          <!-- Miniaturas (Thumbnails) para visualização rápida das fotos cadastradas -->
+          <div class="gallery-thumbs-row" id="galleryThumbsRow" style="display:none;"></div>
 
           <!-- Dica de arrastar e botão de tela cheia -->
           <div class="gallery-hints-row">
+            <span class="gallery-slide-counter" id="detailSlideCounter" style="display:none;">1 / 1</span>
             <button type="button" class="gallery-zoom-btn" id="galleryZoomBtn" title="Inspecionar em alta resolução">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/><path d="M11 8v6M8 11h6"/></svg>
               Ver foto inteira
@@ -760,7 +770,9 @@
       </div>
     </div>
     <div class="fp-lightbox-viewport" id="lightboxViewport">
+      <button type="button" class="lb-nav-btn prev" id="lbPrevBtn" aria-label="Foto anterior" title="Foto anterior" style="display:none">‹</button>
       <img id="lightboxImg" src="" alt="Visualização máxima da peça" draggable="false" />
+      <button type="button" class="lb-nav-btn next" id="lbNextBtn" aria-label="Próxima foto" title="Próxima foto" style="display:none">›</button>
     </div>
   </div>
 </div>

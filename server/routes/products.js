@@ -18,6 +18,21 @@ function toCents(reais) {
 function toReais(cents) {
   return Math.round(cents) / 100;
 }
+function formatPhotoUrlForDb(body) {
+  if (!body) return null;
+  if (Array.isArray(body.photos) && body.photos.length) {
+    return body.photos.map(s => String(s).trim()).filter(Boolean).join(', ');
+  }
+  const val = body.photoUrl !== undefined ? body.photoUrl : body.photo_url;
+  if (Array.isArray(val)) {
+    return val.map(s => String(s).trim()).filter(Boolean).join(', ');
+  }
+  if (typeof val === 'string') {
+    return val.trim() || null;
+  }
+  return null;
+}
+
 function serialize(row) {
   let photos = [];
   if (row.photo_url) {
@@ -214,7 +229,8 @@ router.get('/:id', async (req, res) => {
 
 router.post('/', requireRole('admin'), async (req, res) => {
   try {
-    const { name, code, category, description, compatibility, price, stockQty, photoUrl, location } = req.body || {};
+    const { name, code, category, description, compatibility, price, stockQty, location } = req.body || {};
+    const photoUrl = formatPhotoUrlForDb(req.body);
     const itemType = (req.body && (req.body.itemType || req.body.item_type)) || 'peca';
     if (!name) {
       return res.status(400).json({ error: 'O nome da peça/produto é obrigatório.' });
