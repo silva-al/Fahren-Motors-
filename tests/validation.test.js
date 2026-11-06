@@ -372,6 +372,32 @@ it('deve conter o modal de tela cheia (lightbox) com controles de zoom e fechar'
         expect(res.success).toBe(true);
       });
 
+      it('aceita contagem física de inventário enviando physicalQty (compatibilidade frontend WMS)', () => {
+        const res = inventoryCountSchema.safeParse({
+          productId: 1,
+          physicalQty: 22,
+          notes: 'Conferência estante A-01',
+          auditorName: 'Administrador'
+        });
+        expect(res.success).toBe(true);
+      });
+
+      it('aceita conciliação de inventário com countedStock ou reconciledStock', () => {
+        const res1 = inventoryReconcileSchema.safeParse({
+          productId: 1,
+          countedStock: 18,
+          notes: 'Ajuste de inventário'
+        });
+        expect(res1.success).toBe(true);
+
+        const res2 = inventoryReconcileSchema.safeParse({
+          productId: 1,
+          reconciledStock: 18,
+          reason: 'Ajuste de inventário pelo modal WMS'
+        });
+        expect(res2.success).toBe(true);
+      });
+
       it('rejeita contagem física negativa', () => {
         const res = inventoryCountSchema.safeParse({
           productId: 1,

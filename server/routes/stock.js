@@ -337,8 +337,9 @@ router.get('/inventory', requireRole('admin'), async (_req, res) => {
 
 router.post('/inventory/count', requireRole('admin'), validateBody(inventoryCountSchema), async (req, res) => {
   try {
-    const { productId, countedStock, auditorName } = req.body || {};
-    if (!productId || countedStock === undefined || countedStock === null) {
+    const { productId, auditorName } = req.body || {};
+    const rawCount = req.body.countedStock !== undefined ? req.body.countedStock : req.body.physicalQty;
+    if (!productId || rawCount === undefined || rawCount === null) {
       return res.status(400).json({ error: 'Informe a peça e a contagem física.' });
     }
 
@@ -348,7 +349,7 @@ router.post('/inventory/count', requireRole('admin'), validateBody(inventoryCoun
     }
 
     const systemStock = Number(prodRes.rows[0].stock_qty) || 0;
-    const countVal = Math.max(0, parseInt(countedStock, 10) || 0);
+    const countVal = Math.max(0, parseInt(rawCount, 10) || 0);
     const difference = countVal - systemStock;
 
     const insRes = await db.query(
@@ -377,8 +378,12 @@ router.post('/inventory/count', requireRole('admin'), validateBody(inventoryCoun
 router.post('/inventory/reconcile', requireRole('admin'), validateBody(inventoryReconcileSchema), async (req, res) => {
   const client = await db.pool.connect();
   try {
-    const { productId, countedStock, inventoryId, notes } = req.body || {};
-    if (!productId) {
+    const { productId, inventoryId } = req.body || {};
+    const rawCount = req.body.countedStock !== undefined
+      ? req.body.countedStock
+      : (req.body.reconciledStock !== undefined ? req.body.reconciledStock : req.body.physicalQty);
+    const notes = req.body.notes || req.body.reason;
+    if (!productId || rawCount === undefined || rawCount === null) {
       return res.status(400).json({ error: 'Peça não informada para conciliação.' });
     }
 
@@ -390,7 +395,7 @@ router.post('/inventory/reconcile', requireRole('admin'), validateBody(inventory
     }
     const product = prodRes.rows[0];
     const prevStock = Number(product.stock_qty) || 0;
-    const newStock = Math.max(0, parseInt(countedStock, 10) || 0);
+    const newStock = Math.max(0, parseInt(rawCount, 10) || 0);
     const diff = newStock - prevStock;
 
     // Atualiza saldo oficial em products

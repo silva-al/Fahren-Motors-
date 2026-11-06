@@ -15,15 +15,22 @@ const stockOperationSchema = z.object({
 
 const inventoryCountSchema = z.object({
   productId: z.coerce.number().int().positive('ID da peça inválido.'),
-  countedStock: z.coerce.number().int().nonnegative('Quantidade contada não pode ser negativa.'),
-  auditorName: z.string().trim().max(100).optional()
+  countedStock: z.coerce.number().int().nonnegative('Quantidade contada não pode ser negativa.').optional(),
+  physicalQty: z.coerce.number().int().nonnegative('Quantidade contada não pode ser negativa.').optional(),
+  auditorName: z.string().trim().max(100).optional(),
+  notes: z.string().trim().max(255).optional().nullable()
+}).refine(data => data.countedStock !== undefined || data.physicalQty !== undefined, {
+  message: 'Quantidade contada não pode ser negativa.'
 });
 
 const inventoryReconcileSchema = z.object({
   productId: z.coerce.number().int().positive('ID da peça inválido.'),
   countedStock: z.coerce.number().int().nonnegative('Quantidade não pode ser negativa.').optional(),
+  reconciledStock: z.coerce.number().int().nonnegative('Quantidade não pode ser negativa.').optional(),
+  physicalQty: z.coerce.number().int().nonnegative('Quantidade não pode ser negativa.').optional(),
   inventoryId: z.coerce.number().int().positive().optional().nullable(),
-  notes: z.string().trim().max(255).optional().nullable()
+  notes: z.string().trim().max(255).optional().nullable(),
+  reason: z.string().trim().max(255).optional().nullable()
 });
 
 module.exports = {

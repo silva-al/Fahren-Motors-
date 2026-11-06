@@ -306,7 +306,7 @@ function switchTab(tabId, pushHistory = true, resetScroll = true) {
   // Persiste a aba atual para que F5 ou atualização mantenha o usuário exatamente aqui
   try {
     document.documentElement.setAttribute('data-active-tab', tabId);
-    localStorage.setItem('fm_admin_active_tab', tabId);
+    try { localStorage.setItem('fm_admin_active_tab', tabId); } catch (e) {}
     if (window.location.hash !== `#${tabId}`) {
       history.replaceState(null, '', `#${tabId}`);
     }
@@ -961,10 +961,8 @@ function renderProductsTable(products, activeFilter = null) {
       statusHtml = '<span class="status-badge cancelado" style="background:#fef2f2;color:#dc2626;border:1px solid #fecaca">Sem Estoque</span>';
     }
 
-    const safeName = (p.name || '').replace(/'/g, "\\'");
-
     return `
-      <tr data-prod-row="${p.id}" class="prod-row" onclick="selectWarehouseLocation('${loc}', '${safeName}')">
+      <tr data-prod-row="${p.id}" class="prod-row">
         <td style="width:40px;cursor:pointer" data-view="${p.id}" title="Clique para ver detalhes">
           <img src="${photo}" alt="" class="prod-thumb-img" onerror="this.onerror=null; this.src=window.WMS_NO_PHOTO_SVG;"/>
         </td>
@@ -989,7 +987,7 @@ function renderProductsTable(products, activeFilter = null) {
           </div>
         </td>
         <td>
-          <span class="location-badge" onclick="event.stopPropagation();selectWarehouseLocation('${loc}', '${safeName}')" title="Corredor, Estante e Posição no armazém">
+          <span class="location-badge" data-loc-badge="${p.id}" title="Corredor, Estante e Posição no armazém">
             <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
             ${loc}
           </span>
@@ -1016,6 +1014,20 @@ function renderProductsTable(products, activeFilter = null) {
       </tr>
     `;
   }).join('');
+
+  tbody.querySelectorAll('.prod-row').forEach(row => {
+    row.onclick = () => {
+      const p = allProducts.find(x => String(x.id) === String(row.dataset.prodRow));
+      if (p) selectWarehouseLocation(getProductLocation(p), p.name);
+    };
+  });
+  tbody.querySelectorAll('[data-loc-badge]').forEach(badge => {
+    badge.onclick = (e) => {
+      e.stopPropagation();
+      const p = allProducts.find(x => String(x.id) === String(badge.dataset.locBadge));
+      if (p) selectWarehouseLocation(getProductLocation(p), p.name);
+    };
+  });
 
   tbody.querySelectorAll('[data-view]').forEach(b => b.onclick = (e) => {
     e.stopPropagation();
@@ -1225,7 +1237,7 @@ function renderRelatorios() {
         </td>
         <td><span class="cat-pill-badge">${p.category || 'Geral'}</span></td>
         <td>
-          <span class="location-badge" style="cursor:pointer" onclick="switchTab('armazem');selectWarehouseLocation('${loc}', '${safeName}')" title="Ver no armazém 3D">
+          <span class="location-badge" style="cursor:pointer" data-rep-loc="${p.id}" title="Ver no armazém 3D">
             <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="12" r="3"></circle></svg>
             ${loc}
           </span>
@@ -1244,6 +1256,17 @@ function renderRelatorios() {
       </tr>
     `;
   }).join('');
+
+  tbody.querySelectorAll('[data-rep-loc]').forEach(badge => {
+    badge.onclick = (e) => {
+      e.stopPropagation();
+      const p = allProducts.find(x => String(x.id) === String(badge.dataset.repLoc));
+      if (p) {
+        switchTab('armazem');
+        selectWarehouseLocation(getProductLocation(p), p.name);
+      }
+    };
+  });
 }
 window.renderRelatorios = renderRelatorios;
 
@@ -2906,7 +2929,7 @@ function initAutoNfToggle() {
 
     toggle.onchange = () => {
       const enabled = toggle.checked;
-      localStorage.setItem(AUTO_NF_STORAGE_KEY, enabled ? 'true' : 'false');
+      try { localStorage.setItem(AUTO_NF_STORAGE_KEY, enabled ? 'true' : 'false'); } catch (e) {}
       if (badge) {
         badge.textContent = enabled ? 'ATIVADO' : 'DESATIVADO';
         badge.style.color = enabled ? 'var(--accent-green)' : 'var(--text-muted)';
@@ -2932,7 +2955,7 @@ function initAutoNfToggle() {
 
     printToggle.onchange = () => {
       const enabled = printToggle.checked;
-      localStorage.setItem(AUTO_PRINT_NF_STORAGE_KEY, enabled ? 'true' : 'false');
+      try { localStorage.setItem(AUTO_PRINT_NF_STORAGE_KEY, enabled ? 'true' : 'false'); } catch (e) {}
       if (printBadge) {
         printBadge.textContent = enabled ? 'ATIVADO' : 'DESATIVADO';
         printBadge.style.color = enabled ? 'var(--accent-green)' : 'var(--text-muted)';
@@ -2992,7 +3015,7 @@ function markNfAsIssued(orderId) {
       issuedAt: new Date().toISOString(),
       status: 'AUTORIZADA'
     };
-    localStorage.setItem(NF_STORAGE_KEY, JSON.stringify(map));
+    try { localStorage.setItem(NF_STORAGE_KEY, JSON.stringify(map)); } catch (e) {}
   }
 }
 
@@ -3009,7 +3032,7 @@ function markNfAsPrinted(orderIds) {
     }
   });
   if (changed) {
-    localStorage.setItem(NF_STORAGE_KEY, JSON.stringify(map));
+    try { localStorage.setItem(NF_STORAGE_KEY, JSON.stringify(map)); } catch (e) {}
   }
 }
 
@@ -3039,7 +3062,7 @@ function renderFiscalTable() {
       }
     });
     if (hasChanges) {
-      localStorage.setItem(NF_STORAGE_KEY, JSON.stringify(nfsMap));
+      try { localStorage.setItem(NF_STORAGE_KEY, JSON.stringify(nfsMap)); } catch (e) {}
     }
   }
 
@@ -3182,7 +3205,7 @@ document.getElementById('btnSaveEditedNf')?.addEventListener('click', () => {
     status: 'AUTORIZADA'
   };
 
-  localStorage.setItem(NF_STORAGE_KEY, JSON.stringify(nfsMap));
+  try { localStorage.setItem(NF_STORAGE_KEY, JSON.stringify(nfsMap)); } catch (e) {}
   closeEditNfModal();
   renderFiscalTable();
   showToast('Dados da DANFE / Nota Fiscal salvos com sucesso!');
@@ -3316,7 +3339,7 @@ document.getElementById('btnSaveCce')?.addEventListener('click', () => {
     }
   };
 
-  localStorage.setItem(NF_STORAGE_KEY, JSON.stringify(nfsMap));
+  try { localStorage.setItem(NF_STORAGE_KEY, JSON.stringify(nfsMap)); } catch (e) {}
   closeCceModal();
   renderFiscalTable();
   showToast(`Carta de Correção Eletrônica (Seq ${seq}) vinculada com sucesso!`);
@@ -4987,6 +5010,7 @@ async function submitInventoryCount() {
       method: 'POST',
       body: JSON.stringify({
         productId: Number(prodId),
+        countedStock: physicalQty,
         physicalQty,
         notes,
         auditorName: 'Administrador'
@@ -5000,7 +5024,10 @@ async function submitInventoryCount() {
         method: 'POST',
         body: JSON.stringify({
           productId: Number(prodId),
+          countedStock: physicalQty,
           reconciledStock: physicalQty,
+          physicalQty,
+          notes: notes || `Conciliação de inventário: saldo corrigido de ${currentStock} para ${physicalQty} un.`,
           reason: `Conciliação de inventário: saldo corrigido de ${currentStock} para ${physicalQty} un.`
         })
       });
