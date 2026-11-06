@@ -11454,11 +11454,18 @@ body.tema-claro .stock-label-card .label-tag * {
 }
 
 /* Código de barras Code128: fundo branco estrito + barras pretas nítidas */
+.barcode-svg-render,
+.stock-label-card .barcode-svg-render,
+.stock-label-card .label-barcode-left {
+  background: #ffffff !important;
+}
+
 .stock-label-card svg rect.barcode-bg,
 body:not(.tema-claro) .stock-label-card svg rect.barcode-bg,
 body.tema-claro .stock-label-card svg rect.barcode-bg,
 svg rect.barcode-bg {
   fill: #ffffff !important;
+  stroke: none !important;
 }
 
 .stock-label-card svg rect.barcode-bar,
@@ -11466,6 +11473,7 @@ body:not(.tema-claro) .stock-label-card svg rect.barcode-bar,
 body.tema-claro .stock-label-card svg rect.barcode-bar,
 svg rect.barcode-bar {
   fill: #000000 !important;
+  stroke: none !important;
 }
 
 
