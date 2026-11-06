@@ -37,7 +37,7 @@
   <link
     href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@500;700&display=swap"
     rel="stylesheet" />
-  <link href="/admin/admin.css?v=mw44ikq6" rel="stylesheet" />
+  <link href="/admin/admin.css?v=mw4d03d6" rel="stylesheet" />
   <!-- Vercel Web Analytics & Speed Insights -->
   <script>
     window.va = window.va || function () { (window.vaq = window.vaq || []).push(arguments); };
@@ -2408,17 +2408,33 @@
                 confirmado.</p>
             </div>
 
-            <!-- TOGGLE AUTOMÁTICO SOLICITADO PELO USUÁRIO -->
-            <div class="fiscal-toggle-box">
-              <div class="toggle-text">
-                <strong>Lançamento Automático de NF</strong>
-                <small>Emite e gera o DANFE automaticamente assim que o cliente conclui o pedido</small>
+            <!-- GRUPO DE CONFIGURAÇÕES AUTOMÁTICAS FISCAIS -->
+            <div class="fiscal-toggles-wrap">
+              <!-- TOGGLE AUTOMÁTICO: EMISSÃO E GERAÇÃO -->
+              <div class="fiscal-toggle-box">
+                <div class="toggle-text">
+                  <strong>Lançamento Automático de NF</strong>
+                  <small>Emite e gera o DANFE automaticamente assim que o cliente conclui o pedido</small>
+                </div>
+                <label class="switch">
+                  <input type="checkbox" id="autoNfToggle" checked />
+                  <span class="slider round"></span>
+                </label>
+                <span class="toggle-status-badge" id="autoNfStatusBadge">ATIVADO</span>
               </div>
-              <label class="switch">
-                <input type="checkbox" id="autoNfToggle" checked />
-                <span class="slider round"></span>
-              </label>
-              <span class="toggle-status-badge" id="autoNfStatusBadge">ATIVADO</span>
+
+              <!-- TOGGLE AUTOMÁTICO: IMPRESSÃO DIRETA DE DANFE -->
+              <div class="fiscal-toggle-box">
+                <div class="toggle-text">
+                  <strong>Impressão Automática de NF</strong>
+                  <small>Envia o DANFE diretamente para a impressora assim que a NF for gerada</small>
+                </div>
+                <label class="switch">
+                  <input type="checkbox" id="autoPrintNfToggle" />
+                  <span class="slider round"></span>
+                </label>
+                <span class="toggle-status-badge" id="autoPrintNfStatusBadge">DESATIVADO</span>
+              </div>
             </div>
           </div>
 
@@ -2447,6 +2463,9 @@
             </div>
             <button class="btn btn-primary btn-sm" id="emitAllPendingNfBtn">
               ⚡ Emitir Notas Pendentes
+            </button>
+            <button class="btn btn-secondary btn-sm" id="printAllIssuedNfBtn" title="Imprimir lote de notas fiscais autorizadas">
+              🖨️ Imprimir Todas Emitidas
             </button>
           </div>
 
@@ -3692,7 +3711,7 @@
     <span id="wmsToastMsg">Sistema atualizado com sucesso!</span>
   </div>
 
-  <script src="/admin/admin.js?v=mw44ikq6"></script>
+  <script src="/admin/admin.js?v=mw4d03d6"></script>
 </body>
 
 </html>

@@ -146,10 +146,17 @@ function gravarNoDisco(file) {
   return `/uploads/products/${nome}`;
 }
 
-// Ordem: Supabase (se configurado) → banco de dados na Vercel → disco local (com banco como reserva).
+const isCloudRuntime = Boolean(
+  process.env.VERCEL ||
+  process.env.NETLIFY ||
+  process.env.AWS_LAMBDA_FUNCTION_NAME ||
+  process.env.RENDER
+);
+
+// Ordem: Supabase (se configurado) → banco de dados em ambiente cloud/serverless → disco local (com banco como reserva).
 async function salvarImagem(file) {
   if (usarSupabase) return { url: await enviarParaSupabase(file), storage: 'supabase' };
-  if (process.env.VERCEL) return { url: await gravarNoBanco(file), storage: 'banco' };
+  if (isCloudRuntime) return { url: await gravarNoBanco(file), storage: 'banco' };
   try {
     return { url: gravarNoDisco(file), storage: 'disco-local' };
   } catch (_erro) {
@@ -158,7 +165,7 @@ async function salvarImagem(file) {
 }
 
 router.get('/status', (_req, res) =>
-  res.json({ ...statusStorage(), storage: usarSupabase ? 'supabase' : process.env.VERCEL ? 'banco' : 'disco-local' })
+  res.json({ ...statusStorage(), storage: usarSupabase ? 'supabase' : isCloudRuntime ? 'banco' : 'disco-local' })
 );
 
 // Entrega a foto guardada no banco. Público (a loja precisa exibir) e com cache longo,

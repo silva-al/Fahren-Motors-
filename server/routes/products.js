@@ -18,36 +18,47 @@ function toCents(reais) {
 function toReais(cents) {
   return Math.round(cents) / 100;
 }
+function parsePhotoList(rawVal) {
+  if (!rawVal) return [];
+  if (Array.isArray(rawVal)) {
+    return Array.from(new Set(rawVal.map((s) => String(s || '').trim()).filter(Boolean)));
+  }
+  if (typeof rawVal === 'string') {
+    const trimmed = rawVal.trim();
+    if (!trimmed) return [];
+    if (trimmed.startsWith('[')) {
+      try {
+        const parsed = JSON.parse(trimmed);
+        if (Array.isArray(parsed)) {
+          return Array.from(new Set(parsed.map((s) => String(s || '').trim()).filter(Boolean)));
+        }
+      } catch {}
+    }
+    return Array.from(new Set(trimmed.split(',').map((s) => s.trim()).filter(Boolean)));
+  }
+  return [];
+}
+
 function formatPhotoUrlForDb(body) {
   if (!body) return null;
-  if (Array.isArray(body.photos) && body.photos.length) {
-    return body.photos.map(s => String(s).trim()).filter(Boolean).join(', ');
+  if ('photos' in body && Array.isArray(body.photos)) {
+    const list = parsePhotoList(body.photos);
+    return list.length ? list.join(', ') : null;
   }
   const val = body.photoUrl !== undefined ? body.photoUrl : body.photo_url;
-  if (Array.isArray(val)) {
-    return val.map(s => String(s).trim()).filter(Boolean).join(', ');
-  }
-  if (typeof val === 'string') {
-    return val.trim() || null;
-  }
-  return null;
+  const list = parsePhotoList(val);
+  return list.length ? list.join(', ') : null;
+}
+
+function setNoCacheHeaders(res) {
+  res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+  res.setHeader('Pragma', 'no-cache');
+  res.setHeader('Expires', '0');
 }
 
 function serialize(row) {
-  let photos = [];
-  if (row.photo_url) {
-    const raw = String(row.photo_url).trim();
-    if (raw.startsWith('[')) {
-      try {
-        const parsed = JSON.parse(raw);
-        if (Array.isArray(parsed)) photos = parsed;
-      } catch {}
-    } else if (raw.includes(',')) {
-      photos = raw.split(',').map(s => s.trim()).filter(Boolean);
-    } else if (raw) {
-      photos = [raw];
-    }
-  }
+  const photos = parsePhotoList(row.photo_url);
+  const normalizedPhotoUrl = photos.length ? photos.join(', ') : null;
   return {
     id: row.id,
     name: row.name,
@@ -58,8 +69,8 @@ function serialize(row) {
     price: toReais(row.price_cents),
     stockQty: row.stock_qty,
     inStock: row.stock_qty > 0,
-    photoUrl: row.photo_url,
-    photos: photos.length ? photos : (row.photo_url ? [row.photo_url] : []),
+    photoUrl: normalizedPhotoUrl,
+    photos,
     location: row.location || null,
     active: row.active,
     itemType: row.item_type || 'peca',
@@ -151,6 +162,7 @@ router.get('/', async (req, res) => {
 
     const sql = `SELECT * FROM products WHERE ${clauses.join(' AND ')} ORDER BY (CASE WHEN photo_url LIKE '%/api/uploads/%' THEN 0 ELSE 1 END) ASC, name ASC`;
     const result = await db.query(sql, params);
+    setNoCacheHeaders(res);
     res.json({ products: result.rows.map(serialize) });
   } catch (err) {
     console.error(err);
@@ -205,6 +217,7 @@ router.get('/categories/featured', async (_req, res) => {
       LIMIT 40
     `);
     const list = result.rows.map(serialize);
+    setNoCacheHeaders(res);
     res.json({
       categories: list,
       products: list,
@@ -222,6 +235,7 @@ router.get('/categories/featured', async (_req, res) => {
 router.get('/:id', async (req, res) => {
   const result = await db.query('SELECT * FROM products WHERE id = $1', [req.params.id]);
   if (!result.rows.length) return res.status(404).json({ error: 'Peça não encontrada.' });
+  setNoCacheHeaders(res);
   res.json({ product: serialize(result.rows[0]) });
 });
 
@@ -261,8 +275,11 @@ router.post('/', requireRole('admin'), async (req, res) => {
 
 router.put('/:id', requireRole('admin'), async (req, res) => {
   try {
-    const { name, code, category, description, compatibility, price, stockQty, photoUrl, location, active } = req.body || {};
-    const itemType = (req.body && (req.body.itemType || req.body.item_type)) ?? null;
+    const body = req.body || {};
+    const { name, code, category, description, compatibility, price, stockQty, location, active } = body;
+    const hasPhotoField = ('photoUrl' in body) || ('photo_url' in body) || ('photos' in body);
+    const nextPhotoUrl = hasPhotoField ? formatPhotoUrlForDb(body) : null;
+    const itemType = (body.itemType || body.item_type) ?? null;
     const prevRes = await db.query('SELECT stock_qty, location FROM products WHERE id = $1', [req.params.id]);
     const prevProd = prevRes.rows[0];
 
@@ -275,7 +292,7 @@ router.put('/:id', requireRole('admin'), async (req, res) => {
          compatibility = COALESCE($5, compatibility),
          price_cents = COALESCE($6, price_cents),
          stock_qty = COALESCE($7, stock_qty),
-         photo_url = COALESCE($8, photo_url),
+         photo_url = CASE WHEN $13::boolean THEN $8 ELSE photo_url END,
          location = COALESCE($9, location),
          active = COALESCE($10, active),
          item_type = COALESCE($11, item_type),
@@ -289,11 +306,12 @@ router.put('/:id', requireRole('admin'), async (req, res) => {
         compatibility ?? null,
         (price !== undefined && price !== null && price !== '') ? toCents(price) : null,
         stockQty !== undefined ? stockQty : null,
-        photoUrl ?? null,
+        nextPhotoUrl,
         location ?? null,
         active !== undefined ? active : null,
         itemType,
         req.params.id,
+        hasPhotoField,
       ]
     );
     if (!result.rows.length) return res.status(404).json({ error: 'Peça não encontrada.' });

@@ -2408,17 +2408,33 @@
                 confirmado.</p>
             </div>
 
-            <!-- TOGGLE AUTOMÁTICO SOLICITADO PELO USUÁRIO -->
-            <div class="fiscal-toggle-box">
-              <div class="toggle-text">
-                <strong>Lançamento Automático de NF</strong>
-                <small>Emite e gera o DANFE automaticamente assim que o cliente conclui o pedido</small>
+            <!-- GRUPO DE CONFIGURAÇÕES AUTOMÁTICAS FISCAIS -->
+            <div class="fiscal-toggles-wrap">
+              <!-- TOGGLE AUTOMÁTICO: EMISSÃO E GERAÇÃO -->
+              <div class="fiscal-toggle-box">
+                <div class="toggle-text">
+                  <strong>Lançamento Automático de NF</strong>
+                  <small>Emite e gera o DANFE automaticamente assim que o cliente conclui o pedido</small>
+                </div>
+                <label class="switch">
+                  <input type="checkbox" id="autoNfToggle" checked />
+                  <span class="slider round"></span>
+                </label>
+                <span class="toggle-status-badge" id="autoNfStatusBadge">ATIVADO</span>
               </div>
-              <label class="switch">
-                <input type="checkbox" id="autoNfToggle" checked />
-                <span class="slider round"></span>
-              </label>
-              <span class="toggle-status-badge" id="autoNfStatusBadge">ATIVADO</span>
+
+              <!-- TOGGLE AUTOMÁTICO: IMPRESSÃO DIRETA DE DANFE -->
+              <div class="fiscal-toggle-box">
+                <div class="toggle-text">
+                  <strong>Impressão Automática de NF</strong>
+                  <small>Envia o DANFE diretamente para a impressora assim que a NF for gerada</small>
+                </div>
+                <label class="switch">
+                  <input type="checkbox" id="autoPrintNfToggle" />
+                  <span class="slider round"></span>
+                </label>
+                <span class="toggle-status-badge" id="autoPrintNfStatusBadge">DESATIVADO</span>
+              </div>
             </div>
           </div>
 
@@ -2447,6 +2463,9 @@
             </div>
             <button class="btn btn-primary btn-sm" id="emitAllPendingNfBtn">
               ⚡ Emitir Notas Pendentes
+            </button>
+            <button class="btn btn-secondary btn-sm" id="printAllIssuedNfBtn" title="Imprimir lote de notas fiscais autorizadas">
+              🖨️ Imprimir Todas Emitidas
             </button>
           </div>
 

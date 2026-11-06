@@ -154,33 +154,41 @@ function formatDate(isoStr) {
   return d.toLocaleDateString('pt-BR') + ' ' + d.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
 }
 
+const WMS_NO_PHOTO_SVG = "data:image/svg+xml;utf8," + encodeURIComponent(
+  '<svg xmlns="http://www.w3.org/2000/svg" width="80" height="80" viewBox="0 0 80 80">' +
+  '<rect width="80" height="80" rx="10" fill="#1e2430"/>' +
+  '<rect x="18" y="22" width="44" height="36" rx="5" fill="none" stroke="#64748b" stroke-width="2.5"/>' +
+  '<circle cx="31" cy="34" r="4" fill="#64748b"/>' +
+  '<path d="M21 53l12-11 9 8 7-6 10 9" fill="none" stroke="#64748b" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>' +
+  '</svg>'
+);
+window.WMS_NO_PHOTO_SVG = WMS_NO_PHOTO_SVG;
+
 function getProductPhoto(p) {
-  if (!p) return '/images/categorias/filtros.jpg';
+  if (!p) return WMS_NO_PHOTO_SVG;
   let photo = '';
   if (typeof p === 'string') {
     photo = p;
-  } else if (p && p.photos && Array.isArray(p.photos) && p.photos.length) {
-    photo = p.photos[0];
+  } else if (p && Array.isArray(p.photos)) {
+    photo = p.photos.length ? p.photos[0] : (p.photo_url || p.photoUrl || '');
   } else if (p) {
     photo = p.photo_url || p.photoUrl || p.photo || p.product_photo || '';
   }
   if (!photo) {
-    const cat = p && (p.category || p.product_category);
-    if (cat && typeof CATEGORY_IMAGES !== 'undefined' && CATEGORY_IMAGES[cat]) {
-      return CATEGORY_IMAGES[cat];
-    }
-    return '/images/categorias/filtros.jpg';
+    return WMS_NO_PHOTO_SVG;
   }
   photo = String(photo).trim();
   if (photo.startsWith('[')) {
     try {
       const arr = JSON.parse(photo);
-      if (Array.isArray(arr) && arr.length) photo = arr[0];
-    } catch {}
+      photo = (Array.isArray(arr) && arr.length) ? arr[0] : '';
+    } catch {
+      photo = '';
+    }
   } else if (photo.includes(',')) {
     photo = photo.split(',')[0].trim();
   }
-  if (!photo) return '/images/categorias/freios.jpg';
+  if (!photo) return WMS_NO_PHOTO_SVG;
   if (photo.startsWith('http://') || photo.startsWith('https://') || photo.startsWith('data:')) {
     return photo;
   }
@@ -194,6 +202,7 @@ function getProductPhoto(p) {
   }
   return photo;
 }
+window.getProductPhoto = getProductPhoto;
 
 // ---------- Controle de Telas (Login vs Main) ----------
 function showLogin() {
@@ -382,14 +391,19 @@ document.querySelectorAll('.sidebar-nav .nav-item').forEach(btn => {
 });
 
 // ---------- Carregamento Global de Dados ----------
+let _pendingPhotoSaveCount = 0;
+
 async function refreshAllData() {
   const initialTab = currentTabId;
   const currentY = window.pageYOffset || document.documentElement.scrollTop || 0;
   
-  // 1. Renderização Otimista: carrega instantaneamente do cache local para não haver tela vazia no F5
+  // 1. Renderização Otimista APENAS no carregamento frio inicial (memória vazia),
+  // nunca sobrescrevendo allProducts já carregado em memória com cache antigo do localStorage.
   try {
-    const cachedProducts = localStorage.getItem('fm_cache_products');
-    const cachedOrders = localStorage.getItem('fm_cache_orders');
+    const needColdProducts = !Array.isArray(allProducts) || allProducts.length === 0;
+    const needColdOrders = !Array.isArray(allOrders) || allOrders.length === 0;
+    const cachedProducts = needColdProducts ? localStorage.getItem('fm_cache_products') : null;
+    const cachedOrders = needColdOrders ? localStorage.getItem('fm_cache_orders') : null;
     if (cachedProducts) {
       allProducts = JSON.parse(cachedProducts);
       renderProductsTable(allProducts);
@@ -422,16 +436,16 @@ async function refreshAllData() {
       api('/orders?_t=' + Date.now())
     ]);
 
-    if (productsRes.status === 'fulfilled' && productsRes.value) {
+    if (productsRes.status === 'fulfilled' && productsRes.value && _pendingPhotoSaveCount === 0) {
       allProducts = productsRes.value.products || [];
-      localStorage.setItem('fm_cache_products', JSON.stringify(allProducts));
+      try { localStorage.setItem('fm_cache_products', JSON.stringify(allProducts)); } catch (e) {}
       renderProductsTable(allProducts);
       renderCommercialProductsTable(allProducts);
       fillCategoryList(allProducts);
     }
     if (ordersRes.status === 'fulfilled' && ordersRes.value) {
       allOrders = ordersRes.value.orders || [];
-      localStorage.setItem('fm_cache_orders', JSON.stringify(allOrders));
+      try { localStorage.setItem('fm_cache_orders', JSON.stringify(allOrders)); } catch (e) {}
       renderOrdersTable(allOrders);
       const badge = document.getElementById('ordersCountBadge');
       if (badge) badge.textContent = allOrders.filter(o => o.status !== 'cancelado').length;
@@ -457,6 +471,7 @@ async function refreshAllData() {
     console.error('Erro ao atualizar dados:', err);
   }
 }
+window.refreshAllData = refreshAllData;
 
 // Notificação toast elegante e moderna
 function showToast(msg = 'Sistema atualizado com sucesso!') {
@@ -947,7 +962,7 @@ function renderProductsTable(products, activeFilter = null) {
     return `
       <tr data-prod-row="${p.id}" class="prod-row" onclick="selectWarehouseLocation('${loc}', '${safeName}')">
         <td style="width:40px;cursor:pointer" data-view="${p.id}" title="Clique para ver detalhes">
-          <img src="${photo}" alt="" class="prod-thumb-img" onerror="this.onerror=null; this.src='/images/categorias/freios.jpg';"/>
+          <img src="${photo}" alt="" class="prod-thumb-img" onerror="this.onerror=null; this.src=window.WMS_NO_PHOTO_SVG;"/>
         </td>
         <td style="cursor:pointer" data-view="${p.id}" title="Clique para ver detalhes">
           <strong class="prod-name-strong">${p.name}</strong>
@@ -1197,7 +1212,7 @@ function renderRelatorios() {
         <td><strong class="rep-code-val" style="font-family:monospace;font-size:12px;">${p.code || 'S/CÓD'}</strong></td>
         <td>
           <div style="display:flex;align-items:center;gap:10px;cursor:pointer" onclick="openProductViewModal(${p.id})">
-            <img src="${getProductPhoto(p)}" style="width:34px;height:34px;min-width:34px;min-height:34px;border-radius:6px;object-fit:cover;border:1px solid var(--panel-border);aspect-ratio:1;flex-shrink:0" onerror="this.onerror=null; this.src='/images/categorias/freios.jpg';"/>
+            <img src="${getProductPhoto(p)}" style="width:34px;height:34px;min-width:34px;min-height:34px;border-radius:6px;object-fit:cover;border:1px solid var(--panel-border);aspect-ratio:1;flex-shrink:0" onerror="this.onerror=null; this.src=window.WMS_NO_PHOTO_SVG;"/>
             <div>
               <strong style="font-size:13px;display:block;color:var(--text-primary,#fff)">${p.name}</strong>
               <small style="font-size:11px;color:var(--text-muted,#8c929a)">${p.compatibility ? p.compatibility.slice(0, 45) + '...' : 'Compatível'}</small>
@@ -1243,7 +1258,7 @@ async function openProductViewModal(id) {
   const photoEl = document.getElementById('pvPhoto');
   if (photoEl) {
     photoEl.src = photo;
-    photoEl.onerror = function() { this.onerror = null; this.src = '/images/categorias/freios.jpg'; };
+    photoEl.onerror = function() { this.onerror = null; this.src = WMS_NO_PHOTO_SVG; };
   }
   
   const catEl = document.getElementById('pvCategory');
@@ -1605,7 +1620,7 @@ function startEdit(id) {
   const locEl = document.getElementById('pLocation');
   if (locEl) locEl.value = p.location || getProductLocation(p);
   
-  const photoVal = (p.photos && p.photos.length) ? p.photos : (p.photoUrl || p.photo_url || '');
+  const photoVal = Array.isArray(p.photos) ? (p.photos.length ? p.photos : (p.photoUrl || p.photo_url || '')) : (p.photoUrl || p.photo_url || '');
   currentProductImages = parseProductImages(photoVal);
   renderProductPhotoGallery();
 
@@ -1623,21 +1638,92 @@ function startEdit(id) {
     document.getElementById('pName')?.focus();
   }, 180);
 }
+window.startEdit = startEdit;
 
 // Gerenciamento de Múltiplas Imagens da Peça
 let currentProductImages = [];
 
 function parseProductImages(val) {
   if (!val) return [];
-  if (Array.isArray(val)) return val.filter(Boolean).map(s => String(s).trim());
+  if (Array.isArray(val)) return Array.from(new Set(val.filter(Boolean).map(s => String(s).trim()).filter(Boolean)));
   val = String(val).trim();
+  if (!val) return [];
   if (val.startsWith('[')) {
     try {
       const arr = JSON.parse(val);
-      if (Array.isArray(arr)) return arr.filter(Boolean).map(s => String(s).trim());
+      if (Array.isArray(arr)) return Array.from(new Set(arr.filter(Boolean).map(s => String(s).trim()).filter(Boolean)));
     } catch {}
   }
-  return val.split(',').map(s => s.trim()).filter(Boolean);
+  return Array.from(new Set(val.split(',').map(s => s.trim()).filter(Boolean)));
+}
+
+function applyUpdatedProductToState(updatedProduct) {
+  if (!updatedProduct || updatedProduct.id === undefined) return;
+  const normalizedPhotos = Array.isArray(updatedProduct.photos)
+    ? parseProductImages(updatedProduct.photos)
+    : parseProductImages(updatedProduct.photoUrl || updatedProduct.photo_url || '');
+  const normalizedPhotoUrl = normalizedPhotos.length ? normalizedPhotos.join(', ') : null;
+  const merged = {
+    ...updatedProduct,
+    photos: normalizedPhotos,
+    photoUrl: normalizedPhotoUrl,
+    photo_url: normalizedPhotoUrl,
+  };
+  const idx = allProducts.findIndex(item => String(item.id) === String(merged.id));
+  if (idx >= 0) {
+    allProducts[idx] = { ...allProducts[idx], ...merged };
+  } else {
+    allProducts.unshift(merged);
+  }
+  try {
+    localStorage.setItem('fm_cache_products', JSON.stringify(allProducts));
+  } catch (e) {}
+  renderProductsTable(allProducts);
+  renderCommercialProductsTable(allProducts);
+  renderRelatorios();
+  updateStockTabsBadges();
+  updateDashboardMetrics();
+  broadcastSync('PRODUCT_SAVED');
+}
+
+async function persistEditingProductPhotos(toastMsg) {
+  if (!editingProductId) {
+    if (toastMsg) showToast(toastMsg);
+    return;
+  }
+  const targetId = editingProductId;
+  const snapshotPhotos = [...currentProductImages];
+  const nextPhotoUrl = snapshotPhotos.length ? snapshotPhotos.join(', ') : null;
+
+  // Atualiza estado em memória e cache imediatamente para impedir reversão visual
+  const existing = allProducts.find(item => String(item.id) === String(targetId));
+  if (existing) {
+    applyUpdatedProductToState({
+      ...existing,
+      photos: snapshotPhotos,
+      photoUrl: nextPhotoUrl,
+    });
+  }
+
+  _pendingPhotoSaveCount += 1;
+  try {
+    const res = await api('/products/' + targetId, {
+      method: 'PUT',
+      body: JSON.stringify({
+        photoUrl: nextPhotoUrl,
+        photos: snapshotPhotos,
+      }),
+    });
+    if (res && res.product) {
+      applyUpdatedProductToState(res.product);
+    }
+    if (toastMsg) showToast(toastMsg);
+  } catch (err) {
+    console.error('Erro ao persistir fotos da peça:', err);
+    showToast(err.message || 'Erro ao salvar alteração de imagem no servidor');
+  } finally {
+    _pendingPhotoSaveCount = Math.max(0, _pendingPhotoSaveCount - 1);
+  }
 }
 
 function renderProductPhotoGallery() {
@@ -1682,21 +1768,21 @@ function renderProductPhotoGallery() {
   }).join('');
 }
 
-function removeProductPhoto(index) {
+async function removeProductPhoto(index) {
   if (index >= 0 && index < currentProductImages.length) {
     currentProductImages.splice(index, 1);
     renderProductPhotoGallery();
-    showToast('Imagem removida.');
+    await persistEditingProductPhotos('Imagem removida.');
   }
 }
 window.removeProductPhoto = removeProductPhoto;
 
-function setPrimaryProductPhoto(index) {
+async function setPrimaryProductPhoto(index) {
   if (index > 0 && index < currentProductImages.length) {
     const [picked] = currentProductImages.splice(index, 1);
     currentProductImages.unshift(picked);
     renderProductPhotoGallery();
-    showToast('Foto definida como capa principal!');
+    await persistEditingProductPhotos('Foto definida como capa principal!');
   }
 }
 window.setPrimaryProductPhoto = setPrimaryProductPhoto;
@@ -1709,9 +1795,9 @@ function clearAllProductPhotos() {
 }
 window.clearAllProductPhotos = clearAllProductPhotos;
 
-document.getElementById('btnClearAllPhotos')?.addEventListener('click', () => {
+document.getElementById('btnClearAllPhotos')?.addEventListener('click', async () => {
   clearAllProductPhotos();
-  showToast('Todas as fotos foram removidas.');
+  await persistEditingProductPhotos('Todas as fotos foram removidas.');
 });
 
 function resetProductForm() {
@@ -1775,7 +1861,7 @@ async function comprimirImagem(file, maxLado = 1200, qualidade = 0.78) {
 async function enviarUmaImagem(file, campo = 'photos') {
   const formData = new FormData();
   formData.append(campo, await comprimirImagem(file));
-  const res = await fetch('/api/uploads', { method: 'POST', body: formData });
+  const res = await fetch('/api/uploads', { method: 'POST', credentials: 'include', body: formData });
   let data = {};
   try { data = await res.json(); } catch (_e) { /* resposta não-JSON */ }
   if (!res.ok) {
@@ -1819,7 +1905,8 @@ document.getElementById('pPhotoFile')?.addEventListener('change', async (e) => {
         }
       });
       renderProductPhotoGallery();
-      showToast(`${newUrls.length} ${newUrls.length === 1 ? 'imagem anexada' : 'imagens anexadas'} com sucesso!`);
+      const msg = `${newUrls.length} ${newUrls.length === 1 ? 'imagem anexada' : 'imagens anexadas'} com sucesso!`;
+      await persistEditingProductPhotos(msg);
     }
   } catch (err) {
     console.error('Erro no upload de fotos:', err);
@@ -1850,7 +1937,10 @@ document.getElementById('saveProductBtn')?.addEventListener('click', async () =>
   const price = parseFloat(document.getElementById('pPrice').value.replace(',', '.'));
   const stockQty = parseInt(document.getElementById('pStock').value, 10);
   const location = (document.getElementById('pLocation')?.value || '').trim();
-  const photoUrl = currentProductImages.join(', ') || document.getElementById('pPhoto').value.trim();
+  const finalPhotos = currentProductImages.length
+    ? [...currentProductImages]
+    : parseProductImages(document.getElementById('pPhoto')?.value || '');
+  const photoUrl = finalPhotos.length ? finalPhotos.join(', ') : null;
   const description = document.getElementById('pDescription').value.trim();
   const compatibility = document.getElementById('pCompatibility').value.trim();
 
@@ -1860,17 +1950,21 @@ document.getElementById('saveProductBtn')?.addEventListener('click', async () =>
     return;
   }
 
-  const payload = { name, code, category, price, stockQty, location, photoUrl, description, compatibility, inStock: stockQty > 0 };
+  const payload = { name, code, category, price, stockQty, location, photoUrl, photos: finalPhotos, description, compatibility, inStock: stockQty > 0 };
 
   try {
+    let savedRes;
     if (editingProductId) {
-      await api('/products/' + editingProductId, { method: 'PUT', body: JSON.stringify(payload) });
+      savedRes = await api('/products/' + editingProductId, { method: 'PUT', body: JSON.stringify(payload) });
       msgEl.textContent = 'Peça atualizada com sucesso!';
       showToast('Peça atualizada com sucesso!');
     } else {
-      await api('/products', { method: 'POST', body: JSON.stringify(payload) });
+      savedRes = await api('/products', { method: 'POST', body: JSON.stringify(payload) });
       msgEl.textContent = 'Peça cadastrada com sucesso!';
       showToast('Nova peça cadastrada com sucesso!');
+    }
+    if (savedRes && savedRes.product) {
+      applyUpdatedProductToState(savedRes.product);
     }
     msgEl.classList.remove('hidden');
     const wasEditing = Boolean(editingProductId);
@@ -2521,7 +2615,7 @@ function renderTopProductsRanking() {
     return `
       <div class="top-prod-item">
         <span class="top-prod-rank ${rankClass}">${idx + 1}</span>
-        <div class="top-prod-thumb"><img src="${photo}" alt="${p.name}" onerror="this.onerror=null; this.src='/images/categorias/freios.jpg';"/></div>
+        <div class="top-prod-thumb"><img src="${photo}" alt="${p.name}" onerror="this.onerror=null; this.src=window.WMS_NO_PHOTO_SVG;"/></div>
         <div class="top-prod-info">
           <strong>${p.name}</strong>
           <span class="top-prod-cat">${p.category || 'Geral'}</span>
@@ -2749,38 +2843,65 @@ function renderFinances() {
 // ---------- 6. NOTAS FISCAIS & DANFE (NOVA SOLICITAÇÃO) ----------
 const NF_STORAGE_KEY = 'fahren_issued_nfs';
 const AUTO_NF_STORAGE_KEY = 'fahren_auto_nf_enabled';
+const AUTO_PRINT_NF_STORAGE_KEY = 'fahren_auto_print_nf_enabled';
 
 function isAutoNfEnabled() {
   return localStorage.getItem(AUTO_NF_STORAGE_KEY) !== 'false';
 }
 
+function isAutoPrintNfEnabled() {
+  return localStorage.getItem(AUTO_PRINT_NF_STORAGE_KEY) === 'true';
+}
+
 function initAutoNfToggle() {
   const toggle = document.getElementById('autoNfToggle');
   const badge = document.getElementById('autoNfStatusBadge');
-  if (!toggle) return;
+  if (toggle) {
+    const active = isAutoNfEnabled();
+    toggle.checked = active;
+    if (badge) {
+      badge.textContent = active ? 'ATIVADO' : 'DESATIVADO';
+      badge.style.color = active ? 'var(--accent-green)' : 'var(--text-muted)';
+    }
 
-  const active = isAutoNfEnabled();
-  toggle.checked = active;
-  if (badge) {
-    badge.textContent = active ? 'ATIVADO' : 'DESATIVADO';
-    badge.style.color = active ? 'var(--accent-green)' : 'var(--text-muted)';
+    toggle.onchange = () => {
+      const enabled = toggle.checked;
+      localStorage.setItem(AUTO_NF_STORAGE_KEY, enabled ? 'true' : 'false');
+      if (badge) {
+        badge.textContent = enabled ? 'ATIVADO' : 'DESATIVADO';
+        badge.style.color = enabled ? 'var(--accent-green)' : 'var(--text-muted)';
+      }
+      if (enabled) {
+        allOrders.forEach(o => {
+          if (o.status !== 'cancelado') markNfAsIssued(o.id);
+        });
+        renderFiscalTable();
+      }
+    };
   }
 
-  toggle.onchange = () => {
-    const enabled = toggle.checked;
-    localStorage.setItem(AUTO_NF_STORAGE_KEY, enabled ? 'true' : 'false');
-    if (badge) {
-      badge.textContent = enabled ? 'ATIVADO' : 'DESATIVADO';
-      badge.style.color = enabled ? 'var(--accent-green)' : 'var(--text-muted)';
+  const printToggle = document.getElementById('autoPrintNfToggle');
+  const printBadge = document.getElementById('autoPrintNfStatusBadge');
+  if (printToggle) {
+    const printActive = isAutoPrintNfEnabled();
+    printToggle.checked = printActive;
+    if (printBadge) {
+      printBadge.textContent = printActive ? 'ATIVADO' : 'DESATIVADO';
+      printBadge.style.color = printActive ? 'var(--accent-green)' : 'var(--text-muted)';
     }
-    // Se ativou, emite automaticamente para os pedidos existentes
-    if (enabled) {
-      allOrders.forEach(o => {
-        if (o.status !== 'cancelado') markNfAsIssued(o.id);
-      });
-      renderFiscalTable();
-    }
-  };
+
+    printToggle.onchange = () => {
+      const enabled = printToggle.checked;
+      localStorage.setItem(AUTO_PRINT_NF_STORAGE_KEY, enabled ? 'true' : 'false');
+      if (printBadge) {
+        printBadge.textContent = enabled ? 'ATIVADO' : 'DESATIVADO';
+        printBadge.style.color = enabled ? 'var(--accent-green)' : 'var(--text-muted)';
+      }
+      showToast(enabled
+        ? 'Impressão automática de NF ativada! Novas notas serão enviadas à impressora.'
+        : 'Impressão automática de NF desativada.');
+    };
+  }
 }
 
 function getIssuedNfsMap() {
@@ -2835,12 +2956,31 @@ function markNfAsIssued(orderId) {
   }
 }
 
+function markNfAsPrinted(orderIds) {
+  const ids = Array.isArray(orderIds) ? orderIds : [orderIds];
+  const map = getIssuedNfsMap();
+  let changed = false;
+  const nowIso = new Date().toISOString();
+  ids.forEach((id) => {
+    if (id !== undefined && id !== null && map[id]) {
+      map[id].printed = true;
+      map[id].printedAt = nowIso;
+      changed = true;
+    }
+  });
+  if (changed) {
+    localStorage.setItem(NF_STORAGE_KEY, JSON.stringify(map));
+  }
+}
+
 function renderFiscalTable() {
   const tbody = document.getElementById('nfTableBody');
   if (!tbody) return;
 
   const nfsMap = getIssuedNfsMap();
   const autoActive = isAutoNfEnabled();
+  const autoPrintActive = isAutoPrintNfEnabled();
+  const newlyIssuedIds = [];
 
   // Garante que pedidos ativos tenham NF se auto estiver ativado
   if (autoActive) {
@@ -2851,14 +2991,22 @@ function renderFiscalTable() {
           nfNumber: 1000 + Number(o.id),
           accessKey: generateNfAccessKey(o.id),
           issuedAt: new Date().toISOString(),
-          status: 'AUTORIZADA'
+          status: 'AUTORIZADA',
+          printed: false
         };
+        newlyIssuedIds.push(o.id);
         hasChanges = true;
       }
     });
     if (hasChanges) {
       localStorage.setItem(NF_STORAGE_KEY, JSON.stringify(nfsMap));
     }
+  }
+
+  if (autoPrintActive && newlyIssuedIds.length > 0 && typeof window.batchPrintDanfes === 'function') {
+    setTimeout(() => {
+      window.batchPrintDanfes(newlyIssuedIds);
+    }, 250);
   }
 
   const updatedMap = nfsMap; // Usa o map já atualizado em memória
@@ -2871,6 +3019,7 @@ function renderFiscalTable() {
   tbody.innerHTML = allOrders.map(o => {
     const nfData = updatedMap[o.id];
     const isIssued = !!nfData && o.status !== 'cancelado';
+    const isPrinted = isIssued && !!nfData.printed;
     const nfNumFormatted = isIssued ? `Nº 000.${String(nfData.nfNumber).padStart(6, '0')} - Série 1` : 'Não emitida';
     const accessKey = isIssued ? nfData.accessKey : 'Pendente de envio SEFAZ';
     const issuedDate = isIssued ? formatDate(nfData.issuedAt) : '-';
@@ -2893,6 +3042,7 @@ function renderFiscalTable() {
           <td class="fiscal-date-text">${issuedDate}</td>
           <td>
             ${isIssued ? '<span class="status-badge nf-emitida">Autorizada</span>' : '<span class="status-badge nf-pendente">Pendente</span>'}
+            ${isIssued ? `<br/><span class="status-badge ${isPrinted ? 'nf-impressa' : 'nf-nao-impressa'}">${isPrinted ? '🖨️ Impressa' : '⏳ Não impressa'}</span>` : ''}
             ${hasCce ? `<br/><span class="status-badge cce-active-badge" title="Carta de Correção Eletrônica Vinculada">📝 CC-e Ativa (Seq ${cceSeq})</span>` : ''}
           </td>
           <td style="text-align:right;white-space:nowrap;vertical-align:middle">
@@ -2928,7 +3078,11 @@ function renderFiscalTable() {
 window.manualEmitNf = (orderId) => {
   markNfAsIssued(orderId);
   renderFiscalTable();
-  openDanfeForOrder(orderId);
+  if (isAutoPrintNfEnabled()) {
+    window.batchPrintDanfes([orderId]);
+  } else {
+    openDanfeForOrder(orderId);
+  }
 };
 
 // Modal de edição da DANFE / NFe
@@ -2995,11 +3149,32 @@ document.getElementById('btnSaveEditedNf')?.addEventListener('click', () => {
 });
 
 document.getElementById('emitAllPendingNfBtn')?.addEventListener('click', () => {
+  const newlyIssued = [];
+  const beforeMap = getIssuedNfsMap();
   allOrders.forEach(o => {
-    if (o.status !== 'cancelado') markNfAsIssued(o.id);
+    if (o.status !== 'cancelado') {
+      if (!beforeMap[o.id]) newlyIssued.push(o.id);
+      markNfAsIssued(o.id);
+    }
   });
   renderFiscalTable();
-  alert('Todas as notas fiscais pendentes foram emitidas e autorizadas com sucesso!');
+  if (isAutoPrintNfEnabled() && newlyIssued.length > 0) {
+    window.batchPrintDanfes(newlyIssued);
+  } else {
+    showToast('Todas as notas fiscais pendentes foram emitidas e autorizadas!');
+  }
+});
+
+document.getElementById('printAllIssuedNfBtn')?.addEventListener('click', () => {
+  const nfsMap = getIssuedNfsMap();
+  const issuedOrderIds = allOrders
+    .filter(o => o.status !== 'cancelado' && !!nfsMap[o.id])
+    .map(o => o.id);
+  if (!issuedOrderIds.length) {
+    showToast('Nenhuma nota fiscal autorizada disponível para impressão.');
+    return;
+  }
+  window.batchPrintDanfes(issuedOrderIds);
 });
 
 // ===================================================================
@@ -3426,9 +3601,10 @@ document.addEventListener('keydown', (e) => {
   });
 });
 
-window.openDanfeForOrder = (orderId) => {
+window.openDanfeForOrder = (orderId, options = {}) => {
   const order = allOrders.find(o => String(o.id) === String(orderId));
-  if (!order) return;
+  if (!order) return '';
+  window._currentDanfeOrderId = order.id;
 
   markNfAsIssued(orderId);
   const nfsMap = getIssuedNfsMap();
@@ -3741,7 +3917,10 @@ window.openDanfeForOrder = (orderId) => {
     </div>
   `;
 
-  document.getElementById('danfeModal')?.classList.remove('hidden');
+  if (!options || !options.silent) {
+    document.getElementById('danfeModal')?.classList.remove('hidden');
+  }
+  return sheet.innerHTML;
 };
 
 
@@ -3873,6 +4052,10 @@ window.printDanfeDocument = function() {
     window.print();
     return;
   }
+  if (window._currentDanfeOrderId !== undefined && window._currentDanfeOrderId !== null) {
+    markNfAsPrinted(window._currentDanfeOrderId);
+    renderFiscalTable();
+  }
   
   // Impressão isolada via iframe invisível: 0% de bloqueio de popup, 100% alinhado ao topo (sem scroll residual)
   let iframe = document.getElementById('danfe-print-frame');
@@ -3904,6 +4087,55 @@ window.printDanfeDocument = function() {
       window.print();
     }
   }, 350);
+};
+
+window.batchPrintDanfes = function(orderIds) {
+  const ids = (Array.isArray(orderIds) ? orderIds : [orderIds]).filter(id => id !== undefined && id !== null);
+  if (!ids.length) return;
+
+  const sheetsHtml = ids.map((id, idx) => {
+    const html = window.openDanfeForOrder(id, { silent: true });
+    if (!html) return '';
+    const pageBreakStyle = idx < ids.length - 1 ? 'page-break-after:always;break-after:page;margin-bottom:8mm;' : '';
+    return '<div class="danfe-sheet" style="' + pageBreakStyle + '">' + html + '</div>';
+  }).filter(Boolean).join('');
+
+  if (!sheetsHtml) return;
+
+  markNfAsPrinted(ids);
+  renderFiscalTable();
+  showToast(ids.length === 1
+    ? `Enviando DANFE do Pedido #${ids[0]} para a impressora...`
+    : `Enviando lote de ${ids.length} DANFEs para a impressora...`);
+
+  let iframe = document.getElementById('danfe-print-frame');
+  if (iframe) iframe.remove();
+
+  iframe = document.createElement('iframe');
+  iframe.id = 'danfe-print-frame';
+  iframe.style.position = 'fixed';
+  iframe.style.top = '-9999px';
+  iframe.style.left = '-9999px';
+  iframe.style.width = '1000px';
+  iframe.style.height = '1400px';
+  iframe.style.border = '0';
+  iframe.style.opacity = '0';
+  iframe.style.pointerEvents = 'none';
+  document.body.appendChild(iframe);
+
+  const doc = iframe.contentWindow.document;
+  doc.open();
+  doc.write('<!DOCTYPE html><html lang="pt-BR"><head><meta charset="utf-8"><meta http-equiv="Content-Type" content="text/html; charset=utf-8"><title>Lote DANFE - Fahren Motors</title><style>' + getDanfeStandalonePrintCss() + '</style></head><body>' + sheetsHtml + '</body></html>');
+  doc.close();
+
+  setTimeout(() => {
+    try {
+      iframe.contentWindow.focus();
+      iframe.contentWindow.print();
+    } catch (e) {
+      console.warn('Fallback impressão em lote:', e);
+    }
+  }, 380);
 };
 
 window.printDacceDocument = function() {
@@ -4209,7 +4441,7 @@ function renderMovementsTable(movements) {
         </td>
         <td>
           <div style="display:flex;align-items:center;gap:10px;cursor:pointer;" onclick="openProductViewModal(${m.product_id})">
-            <img src="${photo}" alt="" style="width:32px;height:32px;border-radius:6px;object-fit:cover;border:1px solid var(--panel-border);aspect-ratio:1;flex-shrink:0;" onerror="this.onerror=null; this.src='/images/categorias/freios.jpg';"/>
+            <img src="${photo}" alt="" style="width:32px;height:32px;border-radius:6px;object-fit:cover;border:1px solid var(--panel-border);aspect-ratio:1;flex-shrink:0;" onerror="this.onerror=null; this.src=window.WMS_NO_PHOTO_SVG;"/>
             <div>
               <strong style="font-size:13px;display:block;color:var(--text-primary);">${m.product_name || 'Produto Removido'}</strong>
               <small style="font-family:monospace;font-size:11px;color:var(--text-muted);">${m.product_code || 'S/SKU'}</small>
@@ -4560,7 +4792,7 @@ function renderInventoryTable(items) {
   }
 
   tbody.innerHTML = filtered.map(item => {
-    const photo = item.photo ? getProductPhoto({ photo: item.photo }) : '/images/categorias/freios.jpg';
+    const photo = item.photo ? getProductPhoto({ photo: item.photo }) : WMS_NO_PHOTO_SVG;
     let statusBadge = '';
     if (item.audit_status === 'ok') {
       statusBadge = '<span class="status-badge pronto" style="background:#ecfdf5;color:#059669;border:1px solid #a7f3d0;">Conferido (OK)</span>';
@@ -4581,7 +4813,7 @@ function renderInventoryTable(items) {
       <tr>
         <td>
           <div style="display:flex;align-items:center;gap:10px;">
-            <img src="${photo}" alt="" style="width:32px;height:32px;border-radius:6px;object-fit:cover;border:1px solid var(--panel-border);aspect-ratio:1;flex-shrink:0;" onerror="this.onerror=null; this.src='/images/categorias/freios.jpg';"/>
+            <img src="${photo}" alt="" style="width:32px;height:32px;border-radius:6px;object-fit:cover;border:1px solid var(--panel-border);aspect-ratio:1;flex-shrink:0;" onerror="this.onerror=null; this.src=window.WMS_NO_PHOTO_SVG;"/>
             <div>
               <strong style="font-size:13px;display:block;color:var(--text-primary);">${item.name}</strong>
               <small style="font-family:monospace;font-size:11px;color:var(--text-muted);">${item.code || 'S/SKU'}</small>
@@ -4946,13 +5178,13 @@ function renderAlertsTable() {
       actionBtn = `<button class="btn btn-secondary btn-sm" onclick="openNewInventoryModal(${item.id})">Conciliar</button>`;
     }
 
-    const photo = item.photo ? getProductPhoto({ photo: item.photo }) : '/images/categorias/freios.jpg';
+    const photo = item.photo ? getProductPhoto({ photo: item.photo }) : WMS_NO_PHOTO_SVG;
 
     return `
       <tr>
         <td>
           <div style="display:flex;align-items:center;gap:10px;cursor:pointer;" onclick="openProductViewModal(${item.id})">
-            <img src="${photo}" alt="" style="width:32px;height:32px;border-radius:6px;object-fit:cover;border:1px solid var(--panel-border);aspect-ratio:1;flex-shrink:0;" onerror="this.onerror=null; this.src='/images/categorias/freios.jpg';"/>
+            <img src="${photo}" alt="" style="width:32px;height:32px;border-radius:6px;object-fit:cover;border:1px solid var(--panel-border);aspect-ratio:1;flex-shrink:0;" onerror="this.onerror=null; this.src=window.WMS_NO_PHOTO_SVG;"/>
             <div>
               <strong style="font-size:13px;display:block;color:var(--text-primary);">${item.name}</strong>
               <small style="font-family:monospace;font-size:11px;color:var(--text-muted);">${item.code || 'S/SKU'}</small>
@@ -5063,7 +5295,7 @@ function renderWarehouseLocation() {
       <tr>
         <td>
           <div style="display:flex;align-items:center;gap:10px;cursor:pointer;" onclick="openProductViewModal(${p.id})">
-            <img src="${photo}" alt="" style="width:32px;height:32px;border-radius:6px;object-fit:cover;border:1px solid var(--panel-border);aspect-ratio:1;flex-shrink:0;" onerror="this.onerror=null; this.src='/images/categorias/freios.jpg';"/>
+            <img src="${photo}" alt="" style="width:32px;height:32px;border-radius:6px;object-fit:cover;border:1px solid var(--panel-border);aspect-ratio:1;flex-shrink:0;" onerror="this.onerror=null; this.src=window.WMS_NO_PHOTO_SVG;"/>
             <div>
               <strong style="font-size:13px;display:block;color:var(--text-primary);">${p.name}</strong>
               <small style="font-family:monospace;font-size:11px;color:var(--text-muted);">${p.code || 'S/SKU'}</small>
@@ -5763,7 +5995,7 @@ function renderCommercialProductsTable(products = allProducts) {
     return `
       <tr>
         <td style="width:45px">
-          <img src="${photo}" alt="" class="prod-thumb-img" onerror="this.onerror=null; this.src='/images/categorias/freios.jpg';"/>
+          <img src="${photo}" alt="" class="prod-thumb-img" onerror="this.onerror=null; this.src=window.WMS_NO_PHOTO_SVG;"/>
         </td>
         <td>
           <strong class="prod-name-strong">${p.name}</strong>
@@ -5869,7 +6101,9 @@ async function saveCommercialProduct() {
   const priceRaw = document.getElementById('cpPrice')?.value?.trim();
   const stockQtyRaw = document.getElementById('cpStock')?.value?.trim();
   const active = document.getElementById('cpActive')?.value === 'true';
-  const photoUrl = document.getElementById('cpPhoto')?.value?.trim() || null;
+  const rawCpPhoto = document.getElementById('cpPhoto')?.value?.trim() || '';
+  const cpPhotos = parseProductImages(rawCpPhoto);
+  const photoUrl = cpPhotos.length ? cpPhotos.join(', ') : null;
   const description = document.getElementById('cpDescription')?.value?.trim() || null;
 
   if (!name) {
@@ -5913,6 +6147,7 @@ async function saveCommercialProduct() {
     stockQty,
     active,
     photoUrl,
+    photos: cpPhotos,
     description,
     itemType: 'produto'
   };
@@ -5921,16 +6156,19 @@ async function saveCommercialProduct() {
     const btn = document.getElementById('saveCommProductBtn');
     if (btn) btn.disabled = true;
 
+    const wasEditingComm = Boolean(editingCommercialProductId);
     let res;
     if (editingCommercialProductId) {
       res = await fetch(`/api/products/${editingCommercialProductId}`, {
         method: 'PUT',
+        credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
       });
     } else {
       res = await fetch('/api/products', {
         method: 'POST',
+        credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
       });
@@ -5939,11 +6177,15 @@ async function saveCommercialProduct() {
     const data = await res.json();
     if (!res.ok) throw new Error(data.error || 'Erro ao salvar produto');
 
+    if (data && data.product) {
+      applyUpdatedProductToState(data.product);
+    }
+
     closeCommercialProductForm();
     await refreshAllData();
     broadcastSync('PRODUCT_SAVED');
     renderCommercialProductsTable(allProducts);
-    alert(editingCommercialProductId ? 'Produto comercial atualizado!' : 'Produto comercial cadastrado!');
+    alert(wasEditingComm ? 'Produto comercial atualizado!' : 'Produto comercial cadastrado!');
   } catch (err) {
     if (errEl) {
       errEl.textContent = err.message;
@@ -5979,10 +6221,19 @@ document.getElementById('cpPhotoFile')?.addEventListener('change', async (e) => 
 
     const photoInput = document.getElementById('cpPhoto');
     if (photoInput) photoInput.value = data.url;
+    if (editingCommercialProductId && data.url) {
+      const saved = await api('/products/' + editingCommercialProductId, {
+        method: 'PUT',
+        body: JSON.stringify({ photoUrl: data.url, photos: [data.url] })
+      });
+      if (saved && saved.product) applyUpdatedProductToState(saved.product);
+    }
     showToast('Imagem do produto anexada com sucesso!');
   } catch (err) {
     console.error('Erro no upload de foto comercial:', err);
     showToast(err.message || 'Erro ao enviar imagem');
+  } finally {
+    e.target.value = '';
   }
 });
 
@@ -6037,7 +6288,7 @@ function initProductCombobox(cfg) {
 
       return `
         <div class="combobox-item ${isSelected ? 'selected' : ''}" data-prod-id="${p.id}">
-          <img src="${photo}" alt="" class="combobox-thumb" onerror="this.src='/images/categorias/freios.jpg';"/>
+          <img src="${photo}" alt="" class="combobox-thumb" onerror="this.onerror=null; this.src=window.WMS_NO_PHOTO_SVG;"/>
           <div class="combobox-item-body">
             <div class="combobox-item-title">${p.name}</div>
             <div class="combobox-item-meta">
