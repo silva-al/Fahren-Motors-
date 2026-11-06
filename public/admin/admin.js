@@ -2634,13 +2634,15 @@ function renderTopProductsRanking() {
   const listEl = document.querySelector('.top-prods-list');
   if (!listEl) return;
 
-  const topCandidates = (allProducts.length ? allProducts : [
-    { name: 'Bobina de Ignição', category: 'Ignição & Elétrica', price: 268.13, photoUrl: '/images/categorias/eletrica.jpg' },
-    { name: 'Pastilha de Freio Cerâmica', category: 'Sistema de Freios', price: 240.00, photoUrl: '/images/categorias/freios.jpg' },
-    { name: 'Filtro de Óleo', category: 'Filtros Automotivos', price: 160.00, photoUrl: '/images/categorias/filtros.jpg' },
-    { name: 'Sensor ABS Dianteiro', category: 'Sensores & Injeção', price: 180.00, photoUrl: '/images/categorias/sensores.jpg' },
-    { name: 'Amortecedor Dianteiro', category: 'Suspensão & Direção', price: 212.85, photoUrl: '/images/categorias/suspensao.jpg' }
-  ]).slice(0, 5);
+  const topCandidates = (Array.isArray(allProducts) && allProducts.length ? allProducts : []).slice(0, 5);
+  if (!topCandidates.length) {
+    listEl.innerHTML = `
+      <div style="padding:18px;text-align:center;color:var(--text-muted);font-size:12.5px;">
+        Nenhum produto cadastrado no momento.
+      </div>
+    `;
+    return;
+  }
 
   const mockSales = [32, 28, 24, 19, 14];
 

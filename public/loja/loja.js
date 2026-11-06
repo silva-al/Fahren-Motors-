@@ -2885,23 +2885,19 @@ function renderFallbackCardForm(amounts, container, statusEl) {
 
 // ---------- Carrinho ----------
 function getCartItemImage(i) {
-  if (i && i.image) return i.image;
+  if (i && i.image) return normalizeLojaPhoto(i.image);
   if (typeof CATALOG_FALLBACK_PRODUCTS !== 'undefined') {
     const found = CATALOG_FALLBACK_PRODUCTS.find(p => String(p.id) === String(i && i.productId));
-    if (found && found.photoUrl) return normalizeLojaPhoto(found.photoUrl);
+    if (found) return getLojaPrimaryPhoto(found);
   }
-  if (i && i.category && typeof CATEGORY_IMAGES !== 'undefined' && CATEGORY_IMAGES[i.category]) {
-    return CATEGORY_IMAGES[i.category];
-  }
-  return 'images/categorias/filtros.jpg';
+  return typeof LOJA_NO_PHOTO_SVG !== 'undefined' ? LOJA_NO_PHOTO_SVG : '';
 }
 
 function addToCart(productId, productsList, quantity = 1, triggerBtn = null) {
   const product = (productsList || []).find(p => String(p.id) === String(productId));
   if (!product || !product.inStock) return;
   const qty = Math.max(1, parseInt(quantity, 10) || 1);
-  const rawImg = product.photoUrl || (typeof CATEGORY_IMAGES !== 'undefined' ? CATEGORY_IMAGES[product.category] : '');
-  const image = rawImg ? normalizeLojaPhoto(rawImg) : (product.image || '');
+  const image = getLojaPrimaryPhoto(product);
   const existing = cart.find(i => String(i.productId) === String(productId));
   if (existing) {
     existing.quantity += qty;
@@ -3026,7 +3022,7 @@ function renderCart() {
         <div class="cart-row modern-cart-card" data-id="${i.productId}">
           <div class="cart-item-thumb">
             <span class="cart-thumb-badge">-4% PIX</span>
-            <img src="${itemImg}" alt="${i.name}" loading="lazy" onerror="this.onerror=null; this.src='images/categorias/filtros.jpg';" />
+            <img src="${itemImg}" alt="${i.name}" loading="lazy" onerror="this.onerror=null; this.src=window.LOJA_NO_PHOTO_SVG;" />
           </div>
           <div class="cart-item-details">
             <div class="cart-item-head">
@@ -3782,7 +3778,7 @@ init();
       }
 
       list.innerHTML = items.map(p => {
-        const photo = normalizeLojaPhoto(p.photoUrl || CATEGORY_IMAGES[p.category] || 'images/categorias/filtros.jpg');
+        const photo = getLojaPrimaryPhoto(p);
         const priceVal = typeof p.price === 'number' ? p.price : parseFloat(p.price) || 0;
         const pixVal = priceVal * (1 - (PIX_DISCOUNT_RATE || 0.04));
         const pixStr = money(pixVal).replace('R$', '').trim();
@@ -3808,7 +3804,7 @@ init();
             <div class="offer-card-note">ou ${money(priceVal)} em até 12x no cartão</div>
           </div>
           <div class="offer-card-img">
-            <img src="${photo}" alt="${p.name}" loading="lazy" onerror="this.onerror=null; this.src='images/categorias/filtros.jpg';">
+            <img src="${photo}" alt="${p.name}" loading="lazy" onerror="this.onerror=null; this.src=window.LOJA_NO_PHOTO_SVG;">
             <span class="offer-img-badge">OFERTA</span>
           </div>
         </button>`;
@@ -3991,12 +3987,12 @@ init();
     let timer = null;
 
     function cardHtml(p) {
-      const photo = normalizeLojaPhoto(p.photoUrl || (typeof CATEGORY_IMAGES !== 'undefined' && CATEGORY_IMAGES[p.category]) || 'images/categorias/filtros.jpg');
+      const photo = getLojaPrimaryPhoto(p);
       const priceVal = typeof p.price === 'number' ? p.price : parseFloat(p.price) || 0;
       const pixVal = priceVal * (1 - (typeof PIX_DISCOUNT_RATE !== 'undefined' ? PIX_DISCOUNT_RATE : 0.04));
       return `
         <button type="button" class="hero-side-card" data-product-id="${p.id}" title="${p.name}">
-          <span class="hsc-img"><img src="${photo}" alt="${p.name}" loading="lazy" onerror="this.onerror=null; this.src='images/categorias/filtros.jpg';"></span>
+          <span class="hsc-img"><img src="${photo}" alt="${p.name}" loading="lazy" onerror="this.onerror=null; this.src=window.LOJA_NO_PHOTO_SVG;"></span>
           <span class="hsc-text">
             <span class="hsc-cat">${p.category || 'Peça'}</span>
             <span class="hsc-name">${p.name}</span>

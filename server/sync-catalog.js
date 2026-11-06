@@ -25,8 +25,8 @@ async function syncCatalog(force = false) {
     const totalCount = (countRes.rows[0] && countRes.rows[0].count) || 0;
 
     // Só realiza a inserção inicial se o banco estiver 100% vazio e sem nenhuma peça,
-    // garantindo que peças excluídas ou editadas pelo usuário NUNCA voltem sozinhas.
-    if (totalCount === 0 || force) {
+    // garantindo que peças excluídas ou fotos alteradas pelo usuário NUNCA voltem sozinhas.
+    if (totalCount === 0) {
       console.log(`[SyncCatalog] Sincronizando catálogo oficial (${INITIAL_PRODUCTS.length} peças)...`);
       for (const p of INITIAL_PRODUCTS) {
         await db.query(
