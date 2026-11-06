@@ -17,6 +17,15 @@ const _wmsTabRenderCache = {
 const API = '/api';
 let currentAdmin = null;
 let allProducts = [];
+try {
+  Object.defineProperty(window, 'allProducts', {
+    get: () => allProducts,
+    set: (val) => { allProducts = Array.isArray(val) ? val : []; },
+    configurable: true,
+  });
+} catch (e) {
+  window.allProducts = allProducts;
+}
 let allOrders = [];
 let editingProductId = null;
 
@@ -513,18 +522,13 @@ const refreshBtn = document.getElementById('refreshBtn');
 if (refreshBtn) {
   refreshBtn.addEventListener('click', async () => {
     refreshBtn.classList.add('is-refreshing');
-    showToast('Sincronizando catálogo e atualizando dados...');
+    showToast('Atualizando dados em tempo real...');
     try {
-      try {
-        await api('/products/sync-catalog', { method: 'POST' });
-      } catch (syncErr) {
-        console.warn('Sincronização de catálogo:', syncErr);
-      }
       await refreshAllData();
-      showToast('Catálogo sincronizado e dados atualizados com sucesso!');
+      showToast('Dados atualizados com sucesso!');
     } catch (err) {
-      console.error('Erro ao sincronizar/atualizar dados:', err);
-      showToast('Erro ao sincronizar dados: ' + (err.message || err));
+      console.error('Erro ao atualizar dados:', err);
+      showToast('Erro ao atualizar dados: ' + (err.message || err));
     } finally {
       setTimeout(() => {
         refreshBtn.classList.remove('is-refreshing');
@@ -993,7 +997,7 @@ function renderProductsTable(products, activeFilter = null) {
         <td>
           ${statusHtml}
         </td>
-        <td style="text-align:right;white-space:nowrap;vertical-align:middle">
+        <td class="col-td-actions" style="text-align:center;white-space:nowrap;vertical-align:middle">
           <div class="prod-actions-stack">
             <button class="btn btn-secondary btn-sm btn-prod-action btn-prod-view" data-view="${p.id}" title="Ver detalhes completos da peça">
               <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" style="pointer-events:none"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
@@ -1253,12 +1257,37 @@ async function openProductViewModal(id) {
   const priceVal = Number(p.price) || 0;
   const pixVal = priceVal * 0.96;
   const photo = getProductPhoto(p);
+  const allPiecePhotos = parseProductImages(
+    Array.isArray(p.photos) && p.photos.length ? p.photos : (p.photoUrl || p.photo_url || '')
+  );
   const loc = getProductLocation(p);
 
   const photoEl = document.getElementById('pvPhoto');
   if (photoEl) {
     photoEl.src = photo;
     photoEl.onerror = function() { this.onerror = null; this.src = WMS_NO_PHOTO_SVG; };
+  }
+
+  const pvThumbsEl = document.getElementById('pvPhotoThumbs');
+  if (pvThumbsEl) {
+    if (allPiecePhotos.length > 1) {
+      pvThumbsEl.classList.remove('hidden');
+      pvThumbsEl.innerHTML = allPiecePhotos.map((u, idx) => `
+        <button type="button" class="pv-thumb-btn ${idx === 0 ? 'active' : ''}" data-pv-idx="${idx}" title="Ver foto ${idx + 1}">
+          <img src="${u}" alt="Foto ${idx + 1}" loading="lazy" onerror="this.onerror=null; this.src=window.WMS_NO_PHOTO_SVG;" />
+        </button>
+      `).join('');
+      pvThumbsEl.querySelectorAll('.pv-thumb-btn').forEach(btn => {
+        btn.onclick = () => {
+          const i = Number(btn.dataset.pvIdx) || 0;
+          if (photoEl && allPiecePhotos[i]) photoEl.src = allPiecePhotos[i];
+          pvThumbsEl.querySelectorAll('.pv-thumb-btn').forEach(b => b.classList.toggle('active', b === btn));
+        };
+      });
+    } else {
+      pvThumbsEl.classList.add('hidden');
+      pvThumbsEl.innerHTML = '';
+    }
   }
   
   const catEl = document.getElementById('pvCategory');
@@ -1859,8 +1888,12 @@ async function comprimirImagem(file, maxLado = 1200, qualidade = 0.78) {
 }
 
 async function enviarUmaImagem(file, campo = 'photos') {
+  const compressed = await comprimirImagem(file);
+  if (compressed && compressed.size > 5 * 1024 * 1024) {
+    throw new Error(`A imagem "${file?.name || 'selecionada'}" excede 5MB mesmo após compressão.`);
+  }
   const formData = new FormData();
-  formData.append(campo, await comprimirImagem(file));
+  formData.append(campo, compressed);
   const res = await fetch('/api/uploads', { method: 'POST', credentials: 'include', body: formData });
   let data = {};
   try { data = await res.json(); } catch (_e) { /* resposta não-JSON */ }
@@ -1878,25 +1911,20 @@ document.getElementById('pPhotoFile')?.addEventListener('change', async (e) => {
   const btnLabel = document.getElementById('btnAttachPhoto');
   const originalText = btnText ? btnText.textContent : 'ANEXAR';
 
-  // Validação de limite individual de 5MB por arquivo
-  const tooBig = files.filter(f => f.size > 5 * 1024 * 1024);
-  if (tooBig.length > 0) {
-    showToast(`${tooBig.length} arquivo(s) excedem o limite de 5MB por imagem.`);
-  }
-  const validFiles = files.filter(f => f.size <= 5 * 1024 * 1024);
-  if (!validFiles.length) {
-    e.target.value = '';
-    return;
-  }
-
   try {
-    if (btnText) btnText.textContent = validFiles.length === 1 ? 'Enviando...' : `Enviando (${validFiles.length})...`;
+    if (btnText) btnText.textContent = files.length === 1 ? 'Enviando...' : `Enviando (${files.length})...`;
     if (btnLabel) btnLabel.classList.add('is-uploading');
 
     const newUrls = [];
-    for (let i = 0; i < validFiles.length; i++) {
-      if (btnText && validFiles.length > 1) btnText.textContent = `Enviando ${i + 1}/${validFiles.length}...`;
-      newUrls.push(...(await enviarUmaImagem(validFiles[i], 'photos')));
+    const failedFiles = [];
+    for (let i = 0; i < files.length; i++) {
+      if (btnText && files.length > 1) btnText.textContent = `Enviando ${i + 1}/${files.length}...`;
+      try {
+        newUrls.push(...(await enviarUmaImagem(files[i], 'photos')));
+      } catch (fileErr) {
+        console.warn('Falha ao enviar arquivo individual:', fileErr);
+        failedFiles.push(fileErr.message || files[i].name);
+      }
     }
     if (newUrls.length > 0) {
       newUrls.forEach(url => {
@@ -1907,6 +1935,9 @@ document.getElementById('pPhotoFile')?.addEventListener('change', async (e) => {
       renderProductPhotoGallery();
       const msg = `${newUrls.length} ${newUrls.length === 1 ? 'imagem anexada' : 'imagens anexadas'} com sucesso!`;
       await persistEditingProductPhotos(msg);
+    }
+    if (failedFiles.length > 0) {
+      showToast(failedFiles[0]);
     }
   } catch (err) {
     console.error('Erro no upload de fotos:', err);
@@ -1985,6 +2016,13 @@ async function removeProduct(id) {
   if (!confirm(`Tem certeza que deseja excluir "${name}" do catálogo?\n\nEsta operação removerá o item do sistema.`)) return;
   try {
     await api('/products/' + id, { method: 'DELETE' });
+    // Remove localmente de imediato para não reaparecer na tela nem no cache
+    allProducts = allProducts.filter(item => String(item.id) !== String(id));
+    try { localStorage.setItem('fm_cache_products', JSON.stringify(allProducts)); } catch (e) {}
+    renderProductsTable(allProducts);
+    renderCommercialProductsTable(allProducts);
+    updateDashboardMetrics();
+    updateStockTabsBadges();
     showToast(`Peça "${name}" excluída com sucesso!`);
     await refreshAllData();
     broadcastSync('PRODUCT_SAVED');
@@ -3464,7 +3502,7 @@ function generateCode128Svg(codeText, height = 52, customClass = '') {
     let isBar = true;
     for (let w of pattern) {
       if (isBar) {
-        rects += '<rect x="' + currentX + '" y="0" width="' + w + '" height="' + height + '" fill="#000000" shape-rendering="crispEdges"/>';
+        rects += '<rect class="barcode-bar" x="' + currentX + '" y="0" width="' + w + '" height="' + height + '" fill="#000000" shape-rendering="crispEdges"/>';
       }
       currentX += w;
       isBar = !isBar;
@@ -3479,7 +3517,7 @@ function generateCode128Svg(codeText, height = 52, customClass = '') {
   let svg = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ' + totalWidth + ' ' + height + '" ' +
             'preserveAspectRatio="none" shape-rendering="crispEdges" class="' + svgClass + '" ' +
             'style="' + svgStyle + '">';
-  svg += '<rect x="0" y="0" width="' + totalWidth + '" height="' + height + '" fill="#ffffff" shape-rendering="crispEdges"/>';
+  svg += '<rect class="barcode-bg" x="0" y="0" width="' + totalWidth + '" height="' + height + '" fill="#ffffff" shape-rendering="crispEdges"/>';
   svg += rects;
   svg += '</svg>';
   return svg;
@@ -5652,6 +5690,14 @@ function printStockLabel() {
           align-items: center;
           overflow: hidden;
         }
+        .stock-label-card svg rect.barcode-bg,
+        svg rect.barcode-bg {
+          fill: #ffffff !important;
+        }
+        .stock-label-card svg rect.barcode-bar,
+        svg rect.barcode-bar {
+          fill: #000000 !important;
+        }
         .label-card-padrao .barcode-svg-render svg {
           width: 100%;
           height: 22px;
@@ -6008,22 +6054,32 @@ function renderCommercialProductsTable(products = allProducts) {
           <span style="font-weight:700;font-size:12.5px;color:${stockNum > 0 ? 'var(--text-primary)' : '#dc2626'}">${stockNum} un</span>
         </td>
         <td>${statusBadge}</td>
-        <td style="text-align:right;white-space:nowrap">
-          <div style="display:inline-flex;gap:4px">
-            <button class="btn btn-secondary btn-sm" onclick="window.open(window.location.origin + '/', '_blank')" title="Ver produto na vitrine pública da loja">
-              🌐 Loja
+        <td class="col-td-actions" style="text-align:center;white-space:nowrap;vertical-align:middle">
+          <div class="prod-actions-stack">
+            <button class="btn btn-secondary btn-sm btn-prod-action btn-prod-view" onclick="openProductViewModal(${p.id})" title="Ver detalhes do produto">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" style="pointer-events:none"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+              <span style="pointer-events:none">Ver</span>
             </button>
-            <button class="btn btn-secondary btn-sm" onclick="editCommercialProduct(${p.id})" title="Editar dados do produto comercial">
-              ✏️ Editar
+            <button class="btn btn-secondary btn-sm btn-prod-action btn-prod-edit" onclick="editCommercialProduct(${p.id})" title="Editar dados do produto comercial">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" style="pointer-events:none"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+              <span style="pointer-events:none">Editar</span>
             </button>
             <button class="btn btn-sm btn-prod-delete" data-remove="${p.id}" title="Excluir produto">
-              🗑️
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" style="pointer-events:none"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+              <span style="pointer-events:none">Excluir</span>
             </button>
           </div>
         </td>
       </tr>
     `;
   }).join('');
+
+  tbody.querySelectorAll('[data-remove]').forEach(b => {
+    b.onclick = (e) => {
+      e.stopPropagation();
+      removeProduct(b.dataset.remove);
+    };
+  });
 }
 window.renderCommercialProductsTable = renderCommercialProductsTable;
 
@@ -6204,31 +6260,29 @@ function triggerSyncCatalog() {
 }
 window.triggerSyncCatalog = triggerSyncCatalog;
 
-// Anexo de Foto do Produto Comercial
+// Anexo de Foto(s) do Produto Comercial (suporta múltiplas fotos ilimitadas)
 document.getElementById('cpPhotoFile')?.addEventListener('change', async (e) => {
-  const file = e.target.files?.[0];
-  if (!file) return;
-
-  if (file.size > 5 * 1024 * 1024) {
-    showToast('A imagem deve ter no máximo 5MB.');
-    e.target.value = '';
-    return;
-  }
+  const files = Array.from(e.target.files || []);
+  if (!files.length) return;
 
   try {
-    const urls = await enviarUmaImagem(file, 'photo');
-    const data = { url: urls[0] };
-
+    const newUrls = [];
+    for (let i = 0; i < files.length; i++) {
+      newUrls.push(...(await enviarUmaImagem(files[i], 'photos')));
+    }
     const photoInput = document.getElementById('cpPhoto');
-    if (photoInput) photoInput.value = data.url;
-    if (editingCommercialProductId && data.url) {
+    const existing = parseProductImages(photoInput ? photoInput.value : '');
+    const merged = Array.from(new Set([...existing, ...newUrls]));
+    if (photoInput) photoInput.value = merged.join(', ');
+    if (editingCommercialProductId && merged.length) {
       const saved = await api('/products/' + editingCommercialProductId, {
         method: 'PUT',
-        body: JSON.stringify({ photoUrl: data.url, photos: [data.url] })
+        body: JSON.stringify({ photoUrl: merged.join(', '), photos: merged })
       });
       if (saved && saved.product) applyUpdatedProductToState(saved.product);
+      broadcastSync('PRODUCT_SAVED');
     }
-    showToast('Imagem do produto anexada com sucesso!');
+    showToast(`${newUrls.length} ${newUrls.length === 1 ? 'imagem anexada' : 'imagens anexadas'} com sucesso!`);
   } catch (err) {
     console.error('Erro no upload de foto comercial:', err);
     showToast(err.message || 'Erro ao enviar imagem');

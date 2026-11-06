@@ -928,13 +928,28 @@ function prioritizeRealProducts(list) {
 
 function money(v) { return v.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }); }
 
+const LOJA_NO_PHOTO_SVG =
+  "data:image/svg+xml;utf8," +
+  encodeURIComponent(
+    '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 240" width="320" height="240">' +
+      '<rect width="320" height="240" fill="#141821"/>' +
+      '<rect x="116" y="64" width="88" height="68" rx="10" fill="none" stroke="#475569" stroke-width="4"/>' +
+      '<circle cx="143" cy="88" r="8" fill="#475569"/>' +
+      '<path d="M124 122l22-22 18 16 14-12 18 18" fill="none" stroke="#475569" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>' +
+      '<text x="160" y="164" text-anchor="middle" fill="#94a3b8" font-family="Arial, sans-serif" font-size="14" font-weight="700">Sem foto cadastrada</text>' +
+    '</svg>'
+  );
+if (typeof window !== 'undefined') {
+  window.LOJA_NO_PHOTO_SVG = LOJA_NO_PHOTO_SVG;
+}
+
 function extractLojaPhotos(product) {
   if (!product) return [];
   let list = [];
   if (Array.isArray(product.photos) && product.photos.length) {
     list = product.photos;
   } else {
-    const raw = product.photos || product.photoUrl || product.photo_url || '';
+    const raw = (!Array.isArray(product.photos) && product.photos) || product.photoUrl || product.photo_url || '';
     if (!raw) return [];
     const s = String(raw).trim();
     if (s.startsWith('[')) {
@@ -948,11 +963,16 @@ function extractLojaPhotos(product) {
       list = [s];
     }
   }
-  const cleanList = list.map(p => normalizeLojaPhoto(p)).filter(Boolean);
+  const cleanList = list.map(p => normalizeLojaPhoto(p, '')).filter(Boolean);
   return Array.from(new Set(cleanList));
 }
 
-function normalizeLojaPhoto(url, fallback = 'images/categorias/filtros.jpg') {
+function getLojaPrimaryPhoto(product) {
+  const photos = extractLojaPhotos(product);
+  return photos.length ? photos[0] : LOJA_NO_PHOTO_SVG;
+}
+
+function normalizeLojaPhoto(url, fallback = LOJA_NO_PHOTO_SVG) {
   if (!url) return fallback;
   url = String(url).trim();
   if (url.startsWith('[')) {
@@ -1034,13 +1054,13 @@ async function loadCategoryCarousel() {
     if (wrap) wrap.style.display = '';
 
     const cardHtml = (c, hidden) => {
-      const photo = normalizeLojaPhoto(c.photoUrl || CATEGORY_IMAGES[c.category] || 'images/categorias/filtros.jpg');
+      const photo = getLojaPrimaryPhoto(c);
       const priceVal = typeof c.price === 'number' ? c.price : (c.price_cents ? c.price_cents / 100 : 0);
       const pixVal = priceVal > 0 ? (priceVal * (1 - (PIX_DISCOUNT_RATE || 0.04))) : 0;
       const installmentVal = priceVal > 0 ? priceVal / 6 : 0;
       return `<div class="card cat-card" data-product-id="${c.id || ''}" data-category="${c.category || ''}"${hidden ? ' aria-hidden="true"' : ''}>
         <div class="cat-card-img-wrap">
-          <img alt="${hidden ? '' : c.name}" loading="lazy" src="${photo}" onerror="this.onerror=null; this.src='images/categorias/filtros.jpg';">
+          <img alt="${hidden ? '' : c.name}" loading="lazy" src="${photo}" onerror="this.onerror=null; this.src=window.LOJA_NO_PHOTO_SVG;">
           ${priceVal > 0 ? `<span class="cat-card-pix-badge">-4% PIX</span>` : ''}
         </div>
         <small class="cat-card-category">${c.category || 'Peça'}</small>
@@ -1154,13 +1174,13 @@ async function loadRecommendedProducts(product) {
 
     section.style.display = 'block';
     grid.innerHTML = recommended.map(p => {
-      const photo = normalizeLojaPhoto(p.photoUrl || CATEGORY_IMAGES[p.category] || 'images/categorias/filtros.jpg');
+      const photo = getLojaPrimaryPhoto(p);
       const priceVal = typeof p.price === 'number' ? p.price : (p.price_cents ? p.price_cents / 100 : 0);
       const pixVal = priceVal > 0 ? (priceVal * (1 - (PIX_DISCOUNT_RATE || 0.04))) : 0;
       return `
         <div class="fp-rec-card" data-rec-id="${p.id}" role="button" tabindex="0">
           <div class="fp-rec-card-img-wrap">
-            <img src="${photo}" alt="${p.name}" loading="lazy" onerror="this.onerror=null; this.src='images/categorias/filtros.jpg';" />
+            <img src="${photo}" alt="${p.name}" loading="lazy" onerror="this.onerror=null; this.src=window.LOJA_NO_PHOTO_SVG;" />
           </div>
           <div class="fp-rec-card-body">
             <span class="fp-rec-card-cat">${p.category || 'Peça'}</span>
@@ -1376,18 +1396,16 @@ function renderProducts(container, products) {
     if (hasMultiple) {
       photoHtml = `
         <div class="card-photo-slider" data-card-id="${p.id}" data-current-index="0">
-          <img src="${photos[0]}" alt="${p.name}" class="card-photo-img" loading="lazy" onerror="this.onerror=null; this.src='images/categorias/filtros.jpg';" />
+          <img src="${photos[0]}" alt="${p.name}" class="card-photo-img" loading="lazy" onerror="this.onerror=null; this.src=window.LOJA_NO_PHOTO_SVG;" />
           <button type="button" class="card-photo-nav-btn card-photo-prev" aria-label="Foto anterior" title="Foto anterior">‹</button>
           <button type="button" class="card-photo-nav-btn card-photo-next" aria-label="Próxima foto" title="Próxima foto">›</button>
           <div class="card-photo-counter">1/${photos.length}</div>
         </div>
       `;
     } else if (photos.length === 1) {
-      photoHtml = `<img src="${photos[0]}" alt="${p.name}" class="card-photo-img" loading="lazy" onerror="this.onerror=null; this.src='images/categorias/filtros.jpg';" />`;
+      photoHtml = `<img src="${photos[0]}" alt="${p.name}" class="card-photo-img" loading="lazy" onerror="this.onerror=null; this.src=window.LOJA_NO_PHOTO_SVG;" />`;
     } else {
-      const rawImg = p.photoUrl || CATEGORY_IMAGES[p.category];
-      const img = rawImg ? normalizeLojaPhoto(rawImg) : '';
-      photoHtml = img ? `<img src="${img}" alt="${p.name}" class="card-photo-img" loading="lazy" onerror="this.onerror=null; this.src='images/categorias/filtros.jpg';" />` : '🔩';
+      photoHtml = `<img src="${LOJA_NO_PHOTO_SVG}" alt="${p.name}" class="card-photo-img is-placeholder" loading="lazy" />`;
     }
 
     const maxQty = p.stockQty || 99;
@@ -1548,14 +1566,17 @@ function renderProducts(container, products) {
 let currentProduct = null;
 
 async function openProductDetails(productId, cachedProduct = null, push = true) {
-  let product = cachedProduct;
-  if (!product) {
+  let product = null;
+  if (productId !== undefined && productId !== null && productId !== '') {
     try {
       const data = await api('/api/products/' + productId);
-      product = data.product;
+      if (data && data.product) product = data.product;
     } catch (err) {
-      console.error('Erro ao buscar detalhes da peça:', err);
+      console.warn('Usando cache local da peça após falha na API:', err);
     }
+  }
+  if (!product) {
+    product = cachedProduct;
   }
 
   if (!product) {
@@ -1564,7 +1585,6 @@ async function openProductDetails(productId, cachedProduct = null, push = true) 
   }
 
   currentProduct = product;
-  const img = product.photoUrl || CATEGORY_IMAGES[product.category] || 'images/categorias/filtros.jpg';
   const priceVal = typeof product.price === 'number' ? product.price : parseFloat(product.price) || 0;
   const pixPrice = priceVal * (1 - (PIX_DISCOUNT_RATE || 0.04));
   const installmentVal = priceVal > 0 ? (priceVal / 12) : 0;
@@ -1588,16 +1608,16 @@ async function openProductDetails(productId, cachedProduct = null, push = true) 
   if (titleEl) titleEl.textContent = product.name;
   if (subtitleEl) subtitleEl.textContent = product.description || 'Aplicação compatível e procedência certificada com garantia.';
 
-  // Imagens e Galeria de Fotos
+  // Imagens e Galeria de Fotos (suporte a quantidade ilimitada de imagens)
   const allPhotos = extractLojaPhotos(product);
-  const photosToRender = allPhotos.length ? allPhotos : [normalizeLojaPhoto(img)];
+  const photosToRender = allPhotos.length ? allPhotos : [LOJA_NO_PHOTO_SVG];
   
   const track = document.getElementById('gallerySlidesTrack');
   if (track) {
     track.innerHTML = photosToRender.map((pUrl, idx) => `
       <div class="gallery-slide" data-slide-index="${idx}" style="cursor:zoom-in;">
         <div class="slide-img-wrap" style="cursor:zoom-in;" title="Clique para ver a imagem inteira e dar zoom" onclick="if (typeof openLightbox === 'function') openLightbox();">
-          <img ${idx === 0 ? 'id="detailMainImg"' : ''} src="${pUrl}" alt="${product.name} - Foto ${idx + 1}" loading="${idx === 0 ? 'eager' : 'lazy'}" draggable="false" onerror="this.onerror=null; this.src='images/categorias/filtros.jpg';" />
+          <img ${idx === 0 ? 'id="detailMainImg"' : ''} class="detail-gallery-img" src="${pUrl}" alt="${product.name} - Foto ${idx + 1}" loading="${idx === 0 ? 'eager' : 'lazy'}" draggable="false" onerror="this.onerror=null; this.src=window.LOJA_NO_PHOTO_SVG;" />
         </div>
       </div>
     `).join('');
@@ -1619,7 +1639,7 @@ async function openProductDetails(productId, cachedProduct = null, push = true) 
     if (photosToRender.length > 1) {
       thumbsRow.innerHTML = photosToRender.map((pUrl, i) => `
         <button type="button" class="gallery-thumb ${i === 0 ? 'active' : ''}" data-index="${i}" aria-label="Ver foto ${i + 1}" title="Foto ${i + 1}">
-          <img src="${pUrl}" alt="Miniatura ${i + 1}" loading="lazy" onerror="this.onerror=null; this.src='images/categorias/filtros.jpg';" />
+          <img src="${pUrl}" alt="Miniatura ${i + 1}" loading="lazy" onerror="this.onerror=null; this.src=window.LOJA_NO_PHOTO_SVG;" />
         </button>
       `).join('');
       thumbsRow.style.display = 'flex';
@@ -4149,13 +4169,11 @@ function refreshLojaStockData() {
   try {
     loadCategories();
     loadCategoryCarousel();
-    const searchInput = document.getElementById('catalogSearch');
-    if (searchInput && searchInput.value.trim()) {
-      if (typeof loadCatalog === 'function') loadCatalog();
+    if (typeof loadCatalog === 'function') {
+      loadCatalog();
     }
-    const catSelect = document.getElementById('filterCategory');
-    if (catSelect && catSelect.value) {
-      if (typeof loadCatalog === 'function') loadCatalog();
+    if (currentProduct && currentProduct.id && typeof openProductDetails === 'function') {
+      openProductDetails(currentProduct.id, null, false);
     }
   } catch (e) {}
 }

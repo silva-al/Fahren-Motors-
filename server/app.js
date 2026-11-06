@@ -44,8 +44,8 @@ app.use((_req, res, next) => {
   next();
 });
 
-// Limite de tamanho no corpo da requisição
-app.use(express.json({ limit: '200kb' }));
+// Limite de tamanho no corpo da requisição (suporta listas amplas de fotos e itens)
+app.use(express.json({ limit: '2mb' }));
 app.use(cookieParser());
 
 // ---- API ----

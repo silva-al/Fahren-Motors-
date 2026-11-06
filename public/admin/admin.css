@@ -11453,64 +11453,110 @@ body.tema-claro .stock-label-card .label-tag * {
   color: #ffffff !important;
 }
 
-.stock-label-card svg rect,
-body:not(.tema-claro) .stock-label-card svg rect,
-body.tema-claro .stock-label-card svg rect {
+/* Código de barras Code128: fundo branco estrito + barras pretas nítidas */
+.stock-label-card svg rect.barcode-bg,
+body:not(.tema-claro) .stock-label-card svg rect.barcode-bg,
+body.tema-claro .stock-label-card svg rect.barcode-bg,
+svg rect.barcode-bg {
+  fill: #ffffff !important;
+}
+
+.stock-label-card svg rect.barcode-bar,
+body:not(.tema-claro) .stock-label-card svg rect.barcode-bar,
+body.tema-claro .stock-label-card svg rect.barcode-bar,
+svg rect.barcode-bar {
   fill: #000000 !important;
 }
 
 
 /* ===================================================================
-   RESPONSIVIDADE E ESPAÇAMENTO DE SEGURANÇA À DIREITA (NÃO PASSAR DA TELA)
-   Elimina sobreposição por widgets flutuantes, barras de rolagem ou borda da tela.
+   CONTENÇÃO RESPONSIVA GLOBAL (ZERO TELAS CORTADAS NO DESKTOP E MOBILE)
+   Garante minmax(0, 1fr) e min-width: 0 em grids/colunas para que tabelas
+   largas rolem suavemente dentro de .table-responsive sem cortar a tela.
    =================================================================== */
-.wms-content {
-  padding-right: 48px !important;
+html,
+body,
+.wms-layout {
+  max-width: 100vw !important;
+  overflow-x: hidden !important;
   box-sizing: border-box !important;
 }
 
-.wms-panel {
-  padding-right: 32px !important;
+.wms-main,
+.wms-content,
+.tab-pane,
+.wms-panel,
+.estoque-left-col,
+.pedidos-left-col,
+.warehouse-view-col,
+.warehouse-nav-col,
+.est-table-panel,
+.ped-table-card {
+  min-width: 0 !important;
+  max-width: 100% !important;
   box-sizing: border-box !important;
+}
+
+.estoque-main-grid {
+  grid-template-columns: minmax(0, 1fr) !important;
+  min-width: 0 !important;
   max-width: 100% !important;
 }
 
+.wms-content {
+  padding-right: 24px !important;
+  box-sizing: border-box !important;
+}
+
+@media (max-width: 768px) {
+  .wms-content {
+    padding-left: 12px !important;
+    padding-right: 12px !important;
+  }
+}
+
+.wms-panel {
+  padding-right: 18px !important;
+}
+
+.table-responsive,
 .table-wrap,
 .wms-table-wrap,
 .orders-table-wrapper,
 .table-panel {
   width: 100% !important;
   max-width: 100% !important;
+  min-width: 0 !important;
   overflow-x: auto !important;
   box-sizing: border-box !important;
-  padding-right: 36px !important;
+  padding-right: 8px !important;
   -webkit-overflow-scrolling: touch !important;
 }
 
-/* Coluna de Ações na tabela de Produtos: Linha horizontal compacta sem passar da tela */
+/* Coluna de Ações na tabela de Produtos: Ver, Editar e Excluir UM EM CIMA DO OUTRO */
 .prod-actions-stack {
   display: inline-flex !important;
-  flex-direction: row !important;
-  align-items: center !important;
-  justify-content: flex-end !important;
-  gap: 6px !important;
-  width: auto !important;
+  flex-direction: column !important;
+  align-items: stretch !important;
+  justify-content: center !important;
+  gap: 5px !important;
+  width: 92px !important;
   white-space: nowrap !important;
   vertical-align: middle !important;
 }
 
 .prod-actions-stack .btn-prod-action,
 .prod-actions-stack .btn-prod-delete {
-  display: inline-flex !important;
+  display: flex !important;
   align-items: center !important;
   justify-content: center !important;
-  gap: 4px !important;
-  width: auto !important;
-  height: 28px !important;
-  padding: 4px 9px !important;
+  gap: 5px !important;
+  width: 100% !important;
+  height: 27px !important;
+  padding: 4px 8px !important;
   font-size: 11px !important;
   font-weight: 700 !important;
-  border-radius: 6px !important;
+  border-radius: 7px !important;
   cursor: pointer !important;
   transition: all 0.15s ease !important;
   line-height: 1 !important;
@@ -11518,14 +11564,52 @@ body.tema-claro .stock-label-card svg rect {
   white-space: nowrap !important;
 }
 
-/* Espaçamento extra de segurança na última célula de qualquer tabela */
+.estoque-table th:last-child,
+.estoque-table td:last-child,
 .wms-table th:last-child,
-.wms-table td:last-child,
-.orders-table th:last-child,
-.orders-table td:last-child,
-table th:last-child,
-table td:last-child {
-  padding-right: 32px !important;
+.wms-table td:last-child {
+  padding-right: 12px !important;
+}
+
+/* Miniaturas clicáveis de múltiplas fotos no modal "Ver Peça" (#pvPhotoThumbs) */
+.pv-photo-thumbs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 10px;
+  max-height: 150px;
+  overflow-y: auto;
+  justify-content: center;
+  width: 100%;
+}
+
+.pv-photo-thumbs.hidden {
+  display: none !important;
+}
+
+.pv-thumb-btn {
+  width: 48px;
+  height: 48px;
+  padding: 0;
+  border-radius: 7px;
+  border: 2px solid rgba(255, 255, 255, 0.16);
+  background: #11141a;
+  overflow: hidden;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: all 0.15s ease;
+}
+
+.pv-thumb-btn.active {
+  border-color: #ed1c24;
+  box-shadow: 0 0 8px rgba(237, 28, 36, 0.55);
+}
+
+.pv-thumb-btn img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
 }
 
 /* ===================================================================

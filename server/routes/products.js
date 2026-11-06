@@ -170,7 +170,7 @@ router.get('/', async (req, res) => {
   }
 });
 
-router.post('/sync-catalog', async (_req, res) => {
+router.post('/sync-catalog', requireRole('admin'), async (_req, res) => {
   try {
     await syncCatalog(true);
     res.json({ ok: true, message: 'Catálogo sincronizado com sucesso.' });
@@ -342,14 +342,15 @@ router.put('/:id', requireRole('admin'), async (req, res) => {
 
 router.delete('/:id', requireRole('admin'), async (req, res) => {
   try {
-    try {
-      const del = await db.query('DELETE FROM products WHERE id = $1 RETURNING id', [req.params.id]);
-      if (del.rows.length) return res.json({ ok: true, deleted: true });
-    } catch (e) {
-      // Se estiver vinculado a pedidos, desativa para preservar histórico contábil
-      const result = await db.query('UPDATE products SET active = false WHERE id = $1 RETURNING id', [req.params.id]);
-      if (result.rows.length) return res.json({ ok: true, deactivated: true });
-    }
+    // Marca a peça como desativada (active = false) para garantir integridade referencial com pedidos
+    // e impedir que rotinas de sincronização restaurem a peça pelo código
+    let result = await db.query('UPDATE products SET active = false WHERE id = $1 RETURNING id', [req.params.id]);
+    if (result.rows.length) return res.json({ ok: true, deleted: true, deactivated: true });
+
+    // Fallback: tenta DELETE direto se não foi encontrada pelo update
+    const del = await db.query('DELETE FROM products WHERE id = $1 RETURNING id', [req.params.id]);
+    if (del.rows.length) return res.json({ ok: true, deleted: true });
+
     res.status(404).json({ error: 'Peça não encontrada.' });
   } catch (err) {
     console.error(err);

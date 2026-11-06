@@ -519,10 +519,10 @@ it('deve conter o modal de tela cheia (lightbox) com controles de zoom e fechar'
       expect(css).toContain('.pv-barcode-sku-caption');
     });
 
-    it('deve possuir o selo PRO WMS V2.16 no dashboard operacional', () => {
+    it('deve possuir o selo PRO WMS V2.17 no dashboard operacional', () => {
       const fs = require('fs');
       const html = fs.readFileSync('public/admin/index.html', 'utf8');
-      expect(html).toContain('PRO WMS V2.16');
+      expect(html).toContain('PRO WMS V2.17');
     });
   });
 });
