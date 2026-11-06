@@ -3504,7 +3504,7 @@ function generateCode128Svg(codeText, height = 52, customClass = '') {
     let isBar = true;
     for (let w of pattern) {
       if (isBar) {
-        rects += '<rect class="barcode-bar" x="' + currentX + '" y="0" width="' + w + '" height="' + height + '" fill="#000000" shape-rendering="crispEdges"/>';
+        rects += '<rect class="barcode-bar" x="' + currentX + '" y="0" width="' + w + '" height="' + height + '" fill="#000000" style="fill:#000000 !important; stroke:none !important;" shape-rendering="crispEdges"/>';
       }
       currentX += w;
       isBar = !isBar;
@@ -3513,13 +3513,13 @@ function generateCode128Svg(codeText, height = 52, customClass = '') {
 
   const svgClass = customClass ? customClass : (isDanfe ? 'danfe-barcode-svg' : 'wms-barcode-svg');
   const svgStyle = isDanfe
-    ? 'width:88mm;max-width:90mm;height:' + height + 'px;display:block;margin:0 auto;background:#ffffff;'
-    : 'width:100%;height:' + height + 'px;display:block;margin:0 auto;background:#ffffff;';
+    ? 'width:88mm;max-width:90mm;height:' + height + 'px;display:block;margin:0 auto;background:#ffffff !important;'
+    : 'width:100%;height:' + height + 'px;display:block;margin:0 auto;background:#ffffff !important;';
 
   let svg = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ' + totalWidth + ' ' + height + '" ' +
             'preserveAspectRatio="none" shape-rendering="crispEdges" class="' + svgClass + '" ' +
             'style="' + svgStyle + '">';
-  svg += '<rect class="barcode-bg" x="0" y="0" width="' + totalWidth + '" height="' + height + '" fill="#ffffff" shape-rendering="crispEdges"/>';
+  svg += '<rect class="barcode-bg" x="0" y="0" width="' + totalWidth + '" height="' + height + '" fill="#ffffff" style="fill:#ffffff !important; stroke:none !important;" shape-rendering="crispEdges"/>';
   svg += rects;
   svg += '</svg>';
   return svg;
