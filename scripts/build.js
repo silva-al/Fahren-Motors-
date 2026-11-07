@@ -9,10 +9,33 @@
 const fs = require('fs');
 const path = require('path');
 
+const raiz = path.join(__dirname, '..');
+
+// =========================================================================
+// VERSIONAMENTO AUTOMÁTICO DO WMS (INCREMENTA A CADA BUILD/MODIFICAÇÃO)
+// Lê a versão atual (ex: PRO WMS V2.18) e avança para V2.19, V2.20...
+// =========================================================================
+function incrementarVersaoWms() {
+  const adminHtmlPath = path.join(raiz, 'public', 'admin', 'index.html');
+  if (!fs.existsSync(adminHtmlPath)) return;
+
+  let html = fs.readFileSync(adminHtmlPath, 'utf8');
+  const match = html.match(/PRO WMS V2\.(\d+)/i);
+  if (match) {
+    const minorAtual = parseInt(match[1], 10);
+    const novoMinor = minorAtual + 1;
+    const antigaTag = `PRO WMS V2.${minorAtual}`;
+    const novaTag = `PRO WMS V2.${novoMinor}`;
+    html = html.replace(new RegExp(antigaTag, 'g'), novaTag);
+    fs.writeFileSync(adminHtmlPath, html, 'utf8');
+    console.log(`[Versionamento Automático] WMS atualizado: ${antigaTag} ➔ ${novaTag}`);
+  }
+}
+incrementarVersaoWms();
+
 // Compila os módulos desacoplados de frontend em seus respectivos bundles
 require('./bundle-frontend');
 
-const raiz = path.join(__dirname, '..');
 const dist = path.join(raiz, 'dist');
 
 function copiarPasta(origem, destino) {
