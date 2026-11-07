@@ -1,3 +1,16 @@
+/**
+ * Loja Virtual do Cliente — Bundle Oficial Compilado
+ * Gerado automaticamente a partir dos módulos desacoplados em src/
+ * Total de módulos compilados: 8
+ * Não edite este arquivo diretamente — faça alterações nos módulos em src/ e rode 'npm run bundle'
+ */
+
+
+/* =========================================================================
+ * [MÓDULO: 01-state-and-api.js]
+ * ========================================================================= */
+// Módulo WMS: 01-state-and-api.js
+// Fahren Motors - Painel de Gestão WMS
 
 // Estado global de categoria ativa no catálogo e mapa de normalização canônica
 let activeCatalogCategory = '';
@@ -266,6 +279,11 @@ function showToast(message, onAction) {
 
 // saveCart implementado no topo com persistência unificada (localStorage + sessionStorage)
 
+/* =========================================================================
+ * [MÓDULO: 02-navigation-and-masks.js]
+ * ========================================================================= */
+// Módulo WMS: 02-navigation-and-masks.js
+// Fahren Motors - Painel de Gestão WMS
 
 // ---------- Navegação ----------
 function updateNav() {
@@ -573,6 +591,12 @@ document.addEventListener('input', e => {
   }
 });
 
+/* =========================================================================
+ * [MÓDULO: 03-auth-and-addresses.js]
+ * ========================================================================= */
+// Módulo WMS: 03-auth-and-addresses.js
+// Fahren Motors - Painel de Gestão WMS
+
 // ---------- Cadastro / login ----------
 function openLogin() {
   const login = document.getElementById('fpLogin'), reg = document.getElementById('registerForm');
@@ -751,6 +775,12 @@ document.getElementById('saveDeliveryAddress')?.addEventListener('click', async 
   }
 });
 document.getElementById('editAddressBtn')?.addEventListener('click', () => show('endereco'));
+
+/* =========================================================================
+ * [MÓDULO: 04-catalog-and-categories.js]
+ * ========================================================================= */
+// Módulo WMS: 04-catalog-and-categories.js
+// Fahren Motors - Painel de Gestão WMS
 
 // ---------- Catálogo com busca avançada ----------
 // Foto real da categoria usada quando a peça ainda não tem foto própria cadastrada.
@@ -1561,6 +1591,12 @@ function renderProducts(container, products) {
     }
   });
 }
+
+/* =========================================================================
+ * [MÓDULO: 05-product-detail-and-zoom.js]
+ * ========================================================================= */
+// Módulo WMS: 05-product-detail-and-zoom.js
+// Fahren Motors - Painel de Gestão WMS
 
 // ---------- Detalhes da Peça e Visualizador de Hiper Zoom 3D ----------
 let currentProduct = null;
@@ -2514,6 +2550,12 @@ async function loadCatalog() {
 ['catalogSearch'].forEach(id => document.getElementById(id)?.addEventListener('input', () => { clearTimeout(catalogTimer); catalogTimer = setTimeout(loadCatalog, 300); }));
 document.getElementById('filterCategory')?.addEventListener('change', loadCatalog);
 
+/* =========================================================================
+ * [MÓDULO: 06-payments-pix-and-card.js]
+ * ========================================================================= */
+// Módulo WMS: 06-payments-pix-and-card.js
+// Fahren Motors - Painel de Gestão WMS
+
 // ---------- Pagamento via Pix (código "Copia e Cola" oficial, gerado aqui mesmo) ----------
 // A chave Pix é pública para quem vai pagar (funciona como um número de conta
 // para receber), por isso pode ficar no código do site sem problema.
@@ -2882,6 +2924,12 @@ function renderFallbackCardForm(amounts, container, statusEl) {
     }
   });
 }
+
+/* =========================================================================
+ * [MÓDULO: 07-cart-and-orders.js]
+ * ========================================================================= */
+// Módulo WMS: 07-cart-and-orders.js
+// Fahren Motors - Painel de Gestão WMS
 
 // ---------- Carrinho ----------
 function getCartItemImage(i) {
@@ -3282,6 +3330,12 @@ async function loadMyOrders() {
     el.innerHTML = `<p style="color:#e06a6a">${err.message}</p>`;
   }
 }
+
+/* =========================================================================
+ * [MÓDULO: 08-init-and-redesign.js]
+ * ========================================================================= */
+// Módulo WMS: 08-init-and-redesign.js
+// Fahren Motors - Painel de Gestão WMS
 
 // ---------- Controle da Tela de Carregamento (Splash Screen) ----------
 function hideSplashScreen() {

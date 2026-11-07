@@ -149,11 +149,11 @@ ON CONFLICT (code) DO UPDATE SET
 
 -- Admin padrão do sistema: login "admin" / senha "admin"
 -- O hash abaixo é bcrypt('admin', 10 rounds).
+-- ON CONFLICT DO NOTHING garante que se a senha for alterada em produção,
+-- um restart do servidor JAMAIS reverterá a senha do admin de volta para "admin".
 INSERT INTO admins (name, email, password_hash)
 VALUES ('admin', 'admin@fahrenmotors.com', '$2a$10$jdILRdQycbv51/aHwJ.ZcOczyGDwRylyusDLV/iEvkWAP5b3MDQeK')
-ON CONFLICT (email) DO UPDATE SET
-  name = EXCLUDED.name,
-  password_hash = EXCLUDED.password_hash;
+ON CONFLICT (email) DO NOTHING;
 
 -- ----------------------------------------------------
 -- WMS: MOVIMENTAÇÕES DE ESTOQUE & HISTÓRICO CENTRAL
@@ -199,3 +199,25 @@ CREATE INDEX IF NOT EXISTS idx_stock_inventories_status ON stock_inventories(sta
 CREATE INDEX IF NOT EXISTS idx_orders_status_created_at ON orders (status, created_at DESC);
 CREATE INDEX IF NOT EXISTS idx_products_location ON products (location);
 CREATE INDEX IF NOT EXISTS idx_products_stock_alerts ON products (active, stock_qty);
+
+-- ----------------------------------------------------
+-- NOTAS FISCAIS & DOCUMENTOS (DANFE / DACCE / CC-E)
+-- ----------------------------------------------------
+CREATE TABLE IF NOT EXISTS fiscal_notes (
+  id SERIAL PRIMARY KEY,
+  order_id INTEGER NOT NULL REFERENCES orders(id) ON DELETE CASCADE,
+  nf_number INTEGER NOT NULL,
+  access_key TEXT NOT NULL,
+  status TEXT NOT NULL DEFAULT 'AUTORIZADA' CHECK (status IN ('AUTORIZADA', 'CANCELADA', 'PENDENTE')),
+  printed BOOLEAN NOT NULL DEFAULT false,
+  printed_at TIMESTAMPTZ,
+  cce_text TEXT,
+  issued_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+  CONSTRAINT uq_fiscal_notes_order_id UNIQUE (order_id)
+);
+
+CREATE INDEX IF NOT EXISTS idx_fiscal_notes_order_id ON fiscal_notes(order_id);
+CREATE INDEX IF NOT EXISTS idx_fiscal_notes_nf_number ON fiscal_notes(nf_number);
+CREATE INDEX IF NOT EXISTS idx_fiscal_notes_status ON fiscal_notes(status);

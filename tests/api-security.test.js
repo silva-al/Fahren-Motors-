@@ -51,4 +51,33 @@ describe('Segurança de Cabeçalhos e Rotas da API', () => {
     expect([401, 403]).toContain(res.status);
   });
 
+  it('deve bloquear rotas fiscais /api/fiscal/notes sem token de admin (401/403)', async () => {
+    const res = await request(app).get('/api/fiscal/notes');
+    expect([401, 403]).toContain(res.status);
+  });
+
+  it('deve validar e rejeitar variáveis de ambiente inseguras em produção', () => {
+    const { validateEnv } = require('../server/config/env-guard');
+    const mockEnv = {
+      NODE_ENV: 'production',
+      DATABASE_URL: '',
+      JWT_SECRET: 'curto'
+    };
+    const result = validateEnv(mockEnv);
+    expect(result.isValid).toBe(false);
+    expect(result.errors.length).toBeGreaterThanOrEqual(2);
+  });
+
+  it('deve aprovar variáveis de ambiente quando seguras e completas', () => {
+    const { validateEnv } = require('../server/config/env-guard');
+    const mockEnv = {
+      NODE_ENV: 'production',
+      DATABASE_URL: 'postgres://realuser:realsecret@aws-0-sa-east-1.pooler.supabase.com:6543/postgres',
+      JWT_SECRET: 'esta_eh_uma_chave_super_longa_e_segura_de_mais_de_32_caracteres_123456'
+    };
+    const result = validateEnv(mockEnv);
+    expect(result.isValid).toBe(true);
+    expect(result.errors.length).toBe(0);
+  });
+
 });

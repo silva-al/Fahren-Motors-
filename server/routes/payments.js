@@ -7,6 +7,7 @@ const { validateBody } = require('../middleware/validate');
 const { cardPaymentSchema } = require('../validators/payment-schema');
 
 // Proteção de Idempotência: impede requisições concorrentes duplicadas para o mesmo pedido
+const redisService = require('../services/redis-service');
 const activeCardPayments = new Set();
 const {
   createPixPayment,
@@ -68,7 +69,9 @@ router.post('/card', validateBody(cardPaymentSchema), async (req, res) => {
     const orderId = body.orderId;
     if (!orderId) return res.status(400).json({ error: 'Informe o pedido.' });
 
-    if (activeCardPayments.has(Number(orderId))) {
+    const lockKey = `lock:card-payment:${orderId}`;
+    const acquiredLock = await redisService.acquireLock(lockKey, 30);
+    if (!acquiredLock || activeCardPayments.has(Number(orderId))) {
       return res.status(409).json({ error: 'Processamento de pagamento já em andamento para este pedido. Aguarde.' });
     }
     activeCardPayments.add(Number(orderId));
@@ -120,6 +123,7 @@ router.post('/card', validateBody(cardPaymentSchema), async (req, res) => {
   } finally {
     if (req.body && req.body.orderId) {
       activeCardPayments.delete(Number(req.body.orderId));
+      await redisService.releaseLock(`lock:card-payment:${req.body.orderId}`);
     }
   }
 });

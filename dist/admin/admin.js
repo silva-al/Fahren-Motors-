@@ -1,3 +1,16 @@
+/**
+ * Painel de Gestão WMS (Admin) — Bundle Oficial Compilado
+ * Gerado automaticamente a partir dos módulos desacoplados em src/
+ * Total de módulos compilados: 13
+ * Não edite este arquivo diretamente — faça alterações nos módulos em src/ e rode 'npm run bundle'
+ */
+
+
+/* =========================================================================
+ * [MÓDULO: 01-state-and-helpers.js]
+ * ========================================================================= */
+// Módulo WMS: 01-state-and-helpers.js
+// Fahren Motors - Painel de Gestão WMS
 
 // Cache de renderização de abas para troca instantânea (0ms) sem travamentos
 const _wmsTabRenderCache = {
@@ -213,6 +226,12 @@ function getProductPhoto(p) {
 }
 window.getProductPhoto = getProductPhoto;
 
+/* =========================================================================
+ * [MÓDULO: 02-navigation-and-screens.js]
+ * ========================================================================= */
+// Módulo WMS: 02-navigation-and-screens.js
+// Fahren Motors - Painel de Gestão WMS
+
 // ---------- Controle de Telas (Login vs Main) ----------
 function showLogin() {
   document.documentElement.classList.remove('has-admin-session');
@@ -399,6 +418,12 @@ document.querySelectorAll('.sidebar-nav .nav-item').forEach(btn => {
   btn.addEventListener('click', () => switchTab(btn.dataset.tab));
 });
 
+/* =========================================================================
+ * [MÓDULO: 03-data-sync.js]
+ * ========================================================================= */
+// Módulo WMS: 03-data-sync.js
+// Fahren Motors - Painel de Gestão WMS
+
 // ---------- Carregamento Global de Dados ----------
 let _pendingPhotoSaveCount = 0;
 
@@ -469,6 +494,7 @@ async function refreshAllData() {
     renderVendas();
     renderRelatorios();
     updateStockTabsBadges();
+    fetchIssuedNfsFromApi();
 
     // Mantém a rolagem exatamente no mesmo lugar onde o usuário estava SOMENTE se ainda estiver na mesma aba
     if (currentY > 0 && currentTabId === initialTab) {
@@ -536,6 +562,12 @@ if (refreshBtn) {
     }
   });
 }
+
+/* =========================================================================
+ * [MÓDULO: 04-dashboard.js]
+ * ========================================================================= */
+// Módulo WMS: 04-dashboard.js
+// Fahren Motors - Painel de Gestão WMS
 
 // ---------- 1. DASHBOARD WMS ----------
 function updateDashboardMetrics() {
@@ -733,6 +765,12 @@ function renderRecentOrders() {
     `;
   }).join('');
 }
+
+/* =========================================================================
+ * [MÓDULO: 05-products-and-stock.js]
+ * ========================================================================= */
+// Módulo WMS: 05-products-and-stock.js
+// Fahren Motors - Painel de Gestão WMS
 
 // ---------- 2. ESTOQUE & PRODUTOS (WMS & LOCALIZAÇÃO) ----------
 
@@ -1089,6 +1127,7 @@ async function quickUpdateStock(id, newQty) {
     renderProductsTable(allProducts);
     renderRelatorios();
     updateStockTabsBadges();
+    fetchIssuedNfsFromApi();
     updateDashboardMetrics();
     showToast(`Estoque de "${prod.name}" atualizado para ${qty} un.`);
   } catch (err) {
@@ -1530,6 +1569,7 @@ document.getElementById('btnSaveStockModal')?.addEventListener('click', async ()
     renderProductsTable(allProducts);
     renderRelatorios();
     updateStockTabsBadges();
+    fetchIssuedNfsFromApi();
     updateDashboardMetrics();
     closeStockModal();
     await refreshAllData();
@@ -1691,6 +1731,12 @@ function startEdit(id) {
   }, 180);
 }
 window.startEdit = startEdit;
+
+/* =========================================================================
+ * [MÓDULO: 06-product-images-wms.js]
+ * ========================================================================= */
+// Módulo WMS: 06-product-images-wms.js
+// Fahren Motors - Painel de Gestão WMS
 
 // Gerenciamento de Múltiplas Imagens da Peça
 let currentProductImages = [];
@@ -2053,6 +2099,12 @@ async function removeProduct(id) {
     showToast(err.message || 'Erro ao excluir peça');
   }
 }
+
+/* =========================================================================
+ * [MÓDULO: 07-orders-and-sales.js]
+ * ========================================================================= */
+// Módulo WMS: 07-orders-and-sales.js
+// Fahren Motors - Painel de Gestão WMS
 
 // ---------- 3. PEDIDOS & VENDAS ----------
 const ORDER_STATUS_LABEL = {
@@ -2691,6 +2743,11 @@ function renderTopProductsRanking() {
 }
 window.renderTopProductsRanking = renderTopProductsRanking;
 
+/* =========================================================================
+ * [MÓDULO: 08-expedicao.js]
+ * ========================================================================= */
+// Módulo WMS: 08-expedicao.js
+// Fahren Motors - Painel de Gestão WMS
 
 // ---------- 4. EXPEDIÇÃO ----------
 let expedicaoFilter = 'todos';
@@ -2850,6 +2907,12 @@ async function updateOrderStatusQuick(orderId, status) {
   }
 }
 
+/* =========================================================================
+ * [MÓDULO: 09-financeiro.js]
+ * ========================================================================= */
+// Módulo WMS: 09-financeiro.js
+// Fahren Motors - Painel de Gestão WMS
+
 // ---------- 5. FINANCEIRO (NOVO MÓDULO) ----------
 function renderFinances() {
   const totalRevEl = document.getElementById('finTotalRevenue');
@@ -2902,6 +2965,12 @@ function renderFinances() {
     `;
   }).join('');
 }
+
+/* =========================================================================
+ * [MÓDULO: 10-fiscal-and-danfe.js]
+ * ========================================================================= */
+// Módulo WMS: 10-fiscal-and-danfe.js
+// Fahren Motors - Painel de Gestão WMS
 
 // ---------- 6. NOTAS FISCAIS & DANFE (NOVA SOLICITAÇÃO) ----------
 const NF_STORAGE_KEY = 'fahren_issued_nfs';
@@ -3006,16 +3075,46 @@ function generateNfAccessKey(orderId) {
   return fullKey.match(/.{1,4}/g).join(' ');
 }
 
+async function fetchIssuedNfsFromApi() {
+  try {
+    const res = await fetch('/api/fiscal/notes');
+    if (!res.ok) return;
+    const data = await res.json();
+    if (data && data.notesMap) {
+      const localMap = getIssuedNfsMap();
+      const merged = { ...localMap, ...data.notesMap };
+      try { localStorage.setItem(NF_STORAGE_KEY, JSON.stringify(merged)); } catch (e) {}
+      renderFiscalTable();
+    }
+  } catch (err) {
+    console.warn('[Fiscal:Sync] Operando com cache local de notas fiscais.');
+  }
+}
+
 function markNfAsIssued(orderId) {
   const map = getIssuedNfsMap();
   if (!map[orderId]) {
-    map[orderId] = {
+    const noteData = {
       nfNumber: 1000 + Number(orderId),
       accessKey: generateNfAccessKey(orderId),
       issuedAt: new Date().toISOString(),
       status: 'AUTORIZADA'
     };
+    map[orderId] = noteData;
     try { localStorage.setItem(NF_STORAGE_KEY, JSON.stringify(map)); } catch (e) {}
+
+    // Persistência permanente no PostgreSQL
+    fetch('/api/fiscal/notes', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        orderId,
+        nfNumber: noteData.nfNumber,
+        accessKey: noteData.accessKey,
+        status: noteData.status,
+        issuedAt: noteData.issuedAt
+      })
+    }).catch((e) => console.warn('[Fiscal:API] Nota salva localmente; erro ao sincronizar no banco:', e));
   }
 }
 
@@ -3033,6 +3132,13 @@ function markNfAsPrinted(orderIds) {
   });
   if (changed) {
     try { localStorage.setItem(NF_STORAGE_KEY, JSON.stringify(map)); } catch (e) {}
+
+    // Persistência de impressão permanente no PostgreSQL
+    fetch('/api/fiscal/notes/mark-printed', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ orderIds: ids })
+    }).catch((e) => console.warn('[Fiscal:API] Impressão salva localmente; erro ao sincronizar no banco:', e));
   }
 }
 
@@ -3240,6 +3346,12 @@ document.getElementById('printAllIssuedNfBtn')?.addEventListener('click', () => 
   window.batchPrintDanfes(issuedOrderIds);
 });
 
+/* =========================================================================
+ * [MÓDULO: 11-theme-and-wms-operations.js]
+ * ========================================================================= */
+// Módulo WMS: 11-theme-and-wms-operations.js
+// Fahren Motors - Painel de Gestão WMS
+
 // ===================================================================
 // CARTA DE CORREÇÃO ELETRÔNICA (CC-e) E DACCE
 // ===================================================================
@@ -3340,6 +3452,14 @@ document.getElementById('btnSaveCce')?.addEventListener('click', () => {
   };
 
   try { localStorage.setItem(NF_STORAGE_KEY, JSON.stringify(nfsMap)); } catch (e) {}
+  
+  // Persistência permanente da CC-e no PostgreSQL
+  fetch(`/api/fiscal/notes/${orderId}/cce`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ cceText: text })
+  }).catch((e) => console.warn('[Fiscal:API] CC-e salva localmente; erro ao sincronizar no banco:', e));
+
   closeCceModal();
   renderFiscalTable();
   showToast(`Carta de Correção Eletrônica (Seq ${seq}) vinculada com sucesso!`);
@@ -4417,6 +4537,12 @@ function generateMiniQrSvg(text, size = 48) {
   return svg;
 }
 window.generateMiniQrSvg = generateMiniQrSvg;
+
+/* =========================================================================
+ * [MÓDULO: 12-barcode-and-labels.js]
+ * ========================================================================= */
+// Módulo WMS: 12-barcode-and-labels.js
+// Fahren Motors - Painel de Gestão WMS
 
 // -------------------------------------------------------------------
 // 1. MOVIMENTAÇÕES DE ESTOQUE (HISTÓRICO GERAL - TELA 4)
@@ -5967,6 +6093,12 @@ function printStockLabel() {
   };
 }
 window.printStockLabel = printStockLabel;
+
+/* =========================================================================
+ * [MÓDULO: 13-commercial-and-picking.js]
+ * ========================================================================= */
+// Módulo WMS: 13-commercial-and-picking.js
+// Fahren Motors - Painel de Gestão WMS
 
 // ==========================================
 // Gestão de Produtos Comerciais (Loja Virtual)

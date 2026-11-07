@@ -14,6 +14,10 @@ const vehicleRoutes = require('./routes/vehicles');
 const paymentRoutes = require('./routes/payments');
 const uploadRoutes = require('./routes/uploads');
 const stockRoutes = require('./routes/stock');
+const fiscalRoutes = require('./routes/fiscal');
+const { enforceEnvGuard } = require('./config/env-guard');
+
+enforceEnvGuard();
 
 const app = express();
 
@@ -59,6 +63,7 @@ app.use('/api/payments', paymentRoutes);
 app.use('/api/uploads', uploadRoutes);
 app.use('/api/admin/upload', uploadRoutes);
 app.use('/api/stock', stockRoutes);
+app.use('/api/fiscal', fiscalRoutes);
 
 app.get('/api/health', (_req, res) => res.json({ ok: true }));
 

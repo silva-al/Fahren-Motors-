@@ -1,14 +1,10 @@
-// Limitador de tentativas simples, em memória — sem dependência nova.
-// Serve para travar ataque de força bruta nas telas de login: alguém rodando
-// um script com milhares de senhas contra a conta de um cliente ou do admin.
-//
-// Como é em memória, o contador zera quando o servidor reinicia e não é
-// compartilhado entre instâncias. Para uma loja deste tamanho isso basta;
-// se um dia rodar em várias instâncias, trocar por Redis.
+// Limitador de tentativas com suporte a Redis distribuído e fallback em memória.
+// Trava ataques de força bruta nas telas de login e checkout mesmo em arquitetura serverless.
+const redisService = require('../services/redis-service');
 
 const buckets = new Map();
 
-// Limpeza periódica para a memória não crescer sem parar.
+// Limpeza periódica em memória para evitar memory leak
 const CLEANUP_INTERVAL_MS = 10 * 60 * 1000;
 const cleanupTimer = setInterval(() => {
   const now = Date.now();
@@ -16,11 +12,9 @@ const cleanupTimer = setInterval(() => {
     if (now > entry.resetAt) buckets.delete(key);
   }
 }, CLEANUP_INTERVAL_MS);
-// Não segura o processo aberto por causa do timer.
 if (typeof cleanupTimer.unref === 'function') cleanupTimer.unref();
 
 function clientKey(req) {
-  // Atrás do proxy do Render o IP real vem no X-Forwarded-For.
   const forwarded = (req.headers['x-forwarded-for'] || '').split(',')[0].trim();
   return forwarded || req.ip || req.socket?.remoteAddress || 'desconhecido';
 }
@@ -31,17 +25,53 @@ function clientKey(req) {
  * @param {number} options.max       tentativas permitidas na janela
  * @param {string} options.message   mensagem devolvida ao estourar
  * @param {boolean} options.countOnlyFailures  se true, só conta respostas 4xx/5xx
- *        (um login que deu certo não gasta tentativa)
  */
 function rateLimit({ windowMs, max, message, countOnlyFailures = false }) {
-  return (req, res, next) => {
-    const key = `${req.baseUrl}${req.path}|${clientKey(req)}`;
-    const now = Date.now();
+  const windowSec = Math.max(1, Math.ceil(windowMs / 1000));
 
-    let entry = buckets.get(key);
+  return async (req, res, next) => {
+    const rawKey = `${req.baseUrl || ''}${req.path || ''}|${clientKey(req)}`;
+    const redisKey = `ratelimit:${rawKey}`;
+
+    if (countOnlyFailures) {
+      // Monitora apenas respostas com falha (4xx/5xx)
+      res.on('finish', async () => {
+        if (res.statusCode >= 400) {
+          if (redisService.isRedisAvailable()) {
+            await redisService.incrWithTtl(redisKey, windowSec);
+          } else {
+            const now = Date.now();
+            let entry = buckets.get(rawKey);
+            if (!entry || now > entry.resetAt) {
+              entry = { count: 0, resetAt: now + windowMs };
+              buckets.set(rawKey, entry);
+            }
+            entry.count += 1;
+          }
+        }
+      });
+      return next();
+    }
+
+    if (redisService.isRedisAvailable()) {
+      try {
+        const { count, ttl } = await redisService.incrWithTtl(redisKey, windowSec);
+        if (count > max) {
+          res.set('Retry-After', String(ttl));
+          return res.status(429).json({ error: message });
+        }
+        return next();
+      } catch (err) {
+        console.warn('[RateLimit] Falha no Redis, usando fallback local:', err.message);
+      }
+    }
+
+    // Fallback local em memória
+    const now = Date.now();
+    let entry = buckets.get(rawKey);
     if (!entry || now > entry.resetAt) {
       entry = { count: 0, resetAt: now + windowMs };
-      buckets.set(key, entry);
+      buckets.set(rawKey, entry);
     }
 
     if (entry.count >= max) {
@@ -50,14 +80,7 @@ function rateLimit({ windowMs, max, message, countOnlyFailures = false }) {
       return res.status(429).json({ error: message });
     }
 
-    if (countOnlyFailures) {
-      res.on('finish', () => {
-        if (res.statusCode >= 400) entry.count += 1;
-      });
-    } else {
-      entry.count += 1;
-    }
-
+    entry.count += 1;
     next();
   };
 }

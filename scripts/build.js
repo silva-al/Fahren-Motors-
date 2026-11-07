@@ -1,4 +1,4 @@
-// Script de build para montar a pasta "dist" para deploy no Vercel.
+// Script de build para montar a pasta "dist" para deploy no Vercel/Netlify.
 //
 // O Vercel publica a pasta declarada em "outputDirectory": "dist".
 // Como a loja fica em public/loja e o painel em public/admin,
@@ -8,6 +8,9 @@
 //   dist/uploads/    <- uploads de imagens
 const fs = require('fs');
 const path = require('path');
+
+// Compila os módulos desacoplados de frontend em seus respectivos bundles
+require('./bundle-frontend');
 
 const raiz = path.join(__dirname, '..');
 const dist = path.join(raiz, 'dist');

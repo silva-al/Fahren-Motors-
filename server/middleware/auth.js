@@ -1,13 +1,31 @@
 // Funções auxiliares de autenticação: geração/verificação de token (JWT em cookie httpOnly)
 // e middlewares que protegem rotas de cliente e de admin.
+const crypto = require('crypto');
 const jwt = require('jsonwebtoken');
 
 const COOKIE_NAME = 'fp_token';
 const ADMIN_COOKIE_NAME = 'fp_admin_token';
-const SECRET = process.env.JWT_SECRET || 'c7f5d68019e1456a9bc247385aef130d71ef60d5b4a2e584f2963ad9';
 
-if (!SECRET || SECRET.trim().length < 32) {
-  console.warn('AVISO: JWT_SECRET curto demais. Usando chave segura de fallback.');
+const isProduction = process.env.NODE_ENV === 'production' || Boolean(process.env.VERCEL) || Boolean(process.env.NETLIFY);
+const rawSecret = (process.env.JWT_SECRET || '').trim();
+
+let SECRET;
+if (rawSecret && rawSecret.length >= 32) {
+  SECRET = rawSecret;
+} else if (isProduction) {
+  console.error('[Segurança Crítica] ERRO FATAL: JWT_SECRET ausente ou com menos de 32 caracteres em ambiente de produção.');
+  console.error('[Segurança Crítica] Defina uma chave segura de 32+ caracteres em suas variáveis de ambiente.');
+  process.exit(1);
+} else {
+  // Em ambiente local de desenvolvimento ou teste: gera uma chave criptográfica forte efêmera em memória.
+  // NUNCA usa segredos hardcoded públicos do Git.
+  if (!global.__FP_DEV_JWT_SECRET__) {
+    global.__FP_DEV_JWT_SECRET__ = crypto.randomBytes(32).toString('hex');
+    if (!rawSecret) {
+      console.warn('[Segurança Dev] AVISO: JWT_SECRET não informado no .env. Gerada chave efêmera de 256 bits para desenvolvimento/testes.');
+    }
+  }
+  SECRET = global.__FP_DEV_JWT_SECRET__;
 }
 
 // Mesmas opções usadas para criar o cookie — o navegador só apaga um cookie
