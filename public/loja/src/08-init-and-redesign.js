@@ -886,7 +886,10 @@ function refreshLojaStockData() {
     if (typeof loadCatalog === 'function') {
       loadCatalog();
     }
-    if (currentProduct && currentProduct.id && typeof openProductDetails === 'function') {
+    // BLINDAGEM ESTREITA CONTRA ROUBO DE FOCO / TELA:
+    // Só atualiza os dados da peça se o usuário estiver EFETIVAMENTE na tela do produto (#produto).
+    // Jamais force a abertura do produto se o cliente estiver navegando no carrinho (#carrinho), checkout ou catálogo!
+    if (typeof currentScreenId !== 'undefined' && currentScreenId === 'produto' && currentProduct && currentProduct.id && typeof openProductDetails === 'function') {
       openProductDetails(currentProduct.id, null, false);
     }
   } catch (e) {}

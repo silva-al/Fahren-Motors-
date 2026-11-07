@@ -317,14 +317,26 @@ navDepth = window.history.state.depth || 0;
 window.addEventListener('popstate', e => {
   // Se o lightbox em tela cheia estiver aberto, fecha-o no botão voltar do celular sem sair da peça
   const lbModal = document.getElementById('detailLightboxModal');
-  if (lbModal && lbModal.style.display !== 'none') {
-    if (typeof window.closeLightbox === 'function') window.closeLightbox(false);
-    else lbModal.style.display = 'none';
+  if (lbModal && (lbModal.style.display === 'flex' || lbModal.style.display === 'block')) {
+    if (typeof window.closeLightbox === 'function') window.closeLightbox(true);
+    else {
+      lbModal.style.display = 'none';
+      document.documentElement.style.overflow = '';
+      document.body.style.overflow = '';
+    }
+    // Permanece no produto atual, nunca vai para o início
     return;
   }
 
   const st = e.state || { screen: 'inicio', depth: 0 };
   navDepth = st.depth || 0;
+
+  // Se o estado for do lightbox recém fechado, apenas ignore para manter a tela do produto
+  if (st.modal === 'lightbox') {
+    if (typeof window.closeLightbox === 'function') window.closeLightbox(true);
+    return;
+  }
+
   if (st.screen === 'produto' && st.productId) {
     openProductDetails(st.productId, null, false);
   } else {
@@ -333,12 +345,17 @@ window.addEventListener('popstate', e => {
 });
 
 backBtn?.addEventListener('click', () => {
-  if (currentScreenId === 'produto') {
-    show('pecas');
-  } else if (navDepth > 0) {
+  const lbModal = document.getElementById('detailLightboxModal');
+  if (lbModal && (lbModal.style.display === 'flex' || lbModal.style.display === 'block')) {
+    if (typeof window.closeLightbox === 'function') window.closeLightbox(false);
+    return;
+  }
+  if (navDepth > 0) {
     window.history.back();
-  } else {
+  } else if (currentScreenId === 'produto') {
     show('pecas');
+  } else {
+    show('inicio');
   }
 });
 
@@ -346,9 +363,13 @@ backBtn?.addEventListener('click', () => {
 window.addEventListener('keydown', (e) => {
   if (e.key === 'Escape') {
     const lbModal = document.getElementById('detailLightboxModal');
-    if (lbModal && lbModal.style.display !== 'none') {
-      if (typeof window.closeLightbox === 'function') window.closeLightbox(true);
-      else lbModal.style.display = 'none';
+    if (lbModal && (lbModal.style.display === 'flex' || lbModal.style.display === 'block')) {
+      if (typeof window.closeLightbox === 'function') window.closeLightbox(false);
+      else {
+        lbModal.style.display = 'none';
+        document.documentElement.style.overflow = '';
+        document.body.style.overflow = '';
+      }
       return;
     }
     const zoomModal = document.getElementById('zoomModal');
@@ -357,12 +378,12 @@ window.addEventListener('keydown', (e) => {
       return;
     }
     if (currentScreenId && currentScreenId !== 'inicio' && currentScreenId !== 'welcome') {
-      if (currentScreenId === 'produto') {
-        show('pecas');
-      } else if (navDepth > 0) {
+      if (navDepth > 0) {
         window.history.back();
-      } else {
+      } else if (currentScreenId === 'produto') {
         show('pecas');
+      } else {
+        show('inicio');
       }
     }
   }
@@ -1896,12 +1917,14 @@ async function openProductDetails(productId, cachedProduct = null, push = true) 
     sessionStorage.setItem('fahren-last-product-id', String(product.id));
   } catch {}
 
-  // Navega para a tela do produto
-  show('produto', { push });
-  if (push) {
-    window.history.replaceState({ screen: 'produto', depth: navDepth, productId: product.id }, '', '#produto/' + product.id);
+  // Navega para a tela do produto SOMENTE se push for true OU se o usuário já estiver na tela de produto
+  if (push || (typeof currentScreenId !== 'undefined' && currentScreenId === 'produto')) {
+    show('produto', { push });
+    if (push) {
+      window.history.replaceState({ screen: 'produto', depth: navDepth, productId: product.id }, '', '#produto/' + product.id);
+    }
+    loadRecommendedProducts(product);
   }
-  loadRecommendedProducts(product);
 }
 
 // Inicializador da Galeria de Fotos e Detalhes Deslizável por Arrastar/Toque
@@ -2198,6 +2221,8 @@ function initProductViewer() {
     requestAnimationFrame(runZoomSpringLoop);
   }
 
+  let isLightboxOpen = false;
+
   function openLightbox() {
     if (modal) {
       modal.style.display = 'flex';
@@ -2208,23 +2233,32 @@ function initProductViewer() {
       lbPanY = 0;
       syncZoomTargets();
       updateLbTransform();
+      isLightboxOpen = true;
       try {
-        window.history.pushState({ modal: 'lightbox', depth: navDepth + 1 }, '');
+        const prodId = currentProduct ? currentProduct.id : null;
+        window.history.pushState({ modal: 'lightbox', screen: 'produto', productId: prodId, depth: navDepth + 1 }, '');
       } catch (_) {}
     }
   }
 
-  function closeLightbox(shouldPopHistory = true) {
+  function closeLightbox(fromPopState = false) {
     if (modal) modal.style.display = 'none';
     document.documentElement.style.overflow = '';
     document.body.style.overflow = '';
     lbDragging = false;
     isZoomAnimating = false;
     lbViewport?.classList.remove('is-dragging');
-    if (shouldPopHistory && window.history.state && window.history.state.modal === 'lightbox') {
-      try {
-        window.history.back();
-      } catch (_) {}
+
+    if (isLightboxOpen) {
+      isLightboxOpen = false;
+      // Ao fechar pelo botão X ou overlay (sem popstate), remove o estado modal: 'lightbox'
+      // com replaceState garantindo que o usuário PERMANEÇA na tela do produto e NUNCA vá para a tela inicial!
+      if (!fromPopState && window.history.state && window.history.state.modal === 'lightbox') {
+        try {
+          const prodId = currentProduct ? currentProduct.id : null;
+          window.history.replaceState({ screen: 'produto', depth: navDepth, productId: prodId }, '', prodId ? ('#produto/' + prodId) : '#pecas');
+        } catch (_) {}
+      }
     }
   }
 
@@ -2351,8 +2385,8 @@ function initProductViewer() {
       openLightbox();
     });
   }
-  lbOverlay?.addEventListener('click', () => closeLightbox(true));
-  lbClose?.addEventListener('click', () => closeLightbox(true));
+  lbOverlay?.addEventListener('click', () => closeLightbox(false));
+  lbClose?.addEventListener('click', () => closeLightbox(false));
 
   // Controles de Zoom fino de 0.1 em 0.1 (1.0 -> 1.1 -> 1.2 -> 1.3 -> 1.4 -> 1.5 ...)
   lbZoomIn?.addEventListener('click', () => {
@@ -4222,7 +4256,10 @@ function refreshLojaStockData() {
     if (typeof loadCatalog === 'function') {
       loadCatalog();
     }
-    if (currentProduct && currentProduct.id && typeof openProductDetails === 'function') {
+    // BLINDAGEM ESTREITA CONTRA ROUBO DE FOCO / TELA:
+    // Só atualiza os dados da peça se o usuário estiver EFETIVAMENTE na tela do produto (#produto).
+    // Jamais force a abertura do produto se o cliente estiver navegando no carrinho (#carrinho), checkout ou catálogo!
+    if (typeof currentScreenId !== 'undefined' && currentScreenId === 'produto' && currentProduct && currentProduct.id && typeof openProductDetails === 'function') {
       openProductDetails(currentProduct.id, null, false);
     }
   } catch (e) {}

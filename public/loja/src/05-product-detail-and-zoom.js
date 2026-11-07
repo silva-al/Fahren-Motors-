@@ -299,12 +299,14 @@ async function openProductDetails(productId, cachedProduct = null, push = true) 
     sessionStorage.setItem('fahren-last-product-id', String(product.id));
   } catch {}
 
-  // Navega para a tela do produto
-  show('produto', { push });
-  if (push) {
-    window.history.replaceState({ screen: 'produto', depth: navDepth, productId: product.id }, '', '#produto/' + product.id);
+  // Navega para a tela do produto SOMENTE se push for true OU se o usuário já estiver na tela de produto
+  if (push || (typeof currentScreenId !== 'undefined' && currentScreenId === 'produto')) {
+    show('produto', { push });
+    if (push) {
+      window.history.replaceState({ screen: 'produto', depth: navDepth, productId: product.id }, '', '#produto/' + product.id);
+    }
+    loadRecommendedProducts(product);
   }
-  loadRecommendedProducts(product);
 }
 
 // Inicializador da Galeria de Fotos e Detalhes Deslizável por Arrastar/Toque
@@ -601,6 +603,8 @@ function initProductViewer() {
     requestAnimationFrame(runZoomSpringLoop);
   }
 
+  let isLightboxOpen = false;
+
   function openLightbox() {
     if (modal) {
       modal.style.display = 'flex';
@@ -611,23 +615,32 @@ function initProductViewer() {
       lbPanY = 0;
       syncZoomTargets();
       updateLbTransform();
+      isLightboxOpen = true;
       try {
-        window.history.pushState({ modal: 'lightbox', depth: navDepth + 1 }, '');
+        const prodId = currentProduct ? currentProduct.id : null;
+        window.history.pushState({ modal: 'lightbox', screen: 'produto', productId: prodId, depth: navDepth + 1 }, '');
       } catch (_) {}
     }
   }
 
-  function closeLightbox(shouldPopHistory = true) {
+  function closeLightbox(fromPopState = false) {
     if (modal) modal.style.display = 'none';
     document.documentElement.style.overflow = '';
     document.body.style.overflow = '';
     lbDragging = false;
     isZoomAnimating = false;
     lbViewport?.classList.remove('is-dragging');
-    if (shouldPopHistory && window.history.state && window.history.state.modal === 'lightbox') {
-      try {
-        window.history.back();
-      } catch (_) {}
+
+    if (isLightboxOpen) {
+      isLightboxOpen = false;
+      // Ao fechar pelo botão X ou overlay (sem popstate), remove o estado modal: 'lightbox'
+      // com replaceState garantindo que o usuário PERMANEÇA na tela do produto e NUNCA vá para a tela inicial!
+      if (!fromPopState && window.history.state && window.history.state.modal === 'lightbox') {
+        try {
+          const prodId = currentProduct ? currentProduct.id : null;
+          window.history.replaceState({ screen: 'produto', depth: navDepth, productId: prodId }, '', prodId ? ('#produto/' + prodId) : '#pecas');
+        } catch (_) {}
+      }
     }
   }
 
@@ -754,8 +767,8 @@ function initProductViewer() {
       openLightbox();
     });
   }
-  lbOverlay?.addEventListener('click', () => closeLightbox(true));
-  lbClose?.addEventListener('click', () => closeLightbox(true));
+  lbOverlay?.addEventListener('click', () => closeLightbox(false));
+  lbClose?.addEventListener('click', () => closeLightbox(false));
 
   // Controles de Zoom fino de 0.1 em 0.1 (1.0 -> 1.1 -> 1.2 -> 1.3 -> 1.4 -> 1.5 ...)
   lbZoomIn?.addEventListener('click', () => {

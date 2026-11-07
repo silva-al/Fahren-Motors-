@@ -44,3 +44,4 @@ jobs:
           test -f dist/loja.js || exit 1
           test -f dist/admin/admin.js || exit 1
           echo "Build e artefatos validados com sucesso!"
+

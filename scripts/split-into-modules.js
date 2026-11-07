@@ -84,3 +84,4 @@ console.log('\n--- Modulando Loja do Cliente (loja.js) ---');
 extractSections(lojaLines, lojaBreakpoints, lojaSrcDir);
 
 console.log('\nProcesso de modularização concluído com sucesso!');
+

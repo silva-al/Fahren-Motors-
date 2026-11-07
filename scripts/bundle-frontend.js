@@ -45,3 +45,4 @@ bundleDir(
   path.join(root, 'public', 'loja', 'loja.js'),
   'Loja Virtual do Cliente'
 );
+

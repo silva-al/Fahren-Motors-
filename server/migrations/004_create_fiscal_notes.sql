@@ -19,3 +19,4 @@ CREATE TABLE IF NOT EXISTS fiscal_notes (
 CREATE INDEX IF NOT EXISTS idx_fiscal_notes_order_id ON fiscal_notes(order_id);
 CREATE INDEX IF NOT EXISTS idx_fiscal_notes_nf_number ON fiscal_notes(nf_number);
 CREATE INDEX IF NOT EXISTS idx_fiscal_notes_status ON fiscal_notes(status);
+
