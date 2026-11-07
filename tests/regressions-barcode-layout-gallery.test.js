@@ -479,3 +479,36 @@ describe('3. Fluxo Completo de Imagens Ilimitadas (15+ fotos), Exclusão Real e 
     expect(lastThumbRowBlock).toMatch(/justify-content:\s*flex-start\s*!important/i);
   });
 });
+
+describe('4. Rolagem estável (sem "subir pra cima do nada")', () => {
+  it('sincronização de estoque em segundo plano NÃO rola a tela para o topo na peça, no catálogo nem no carrinho', async () => {
+    let state = [
+      { id: 901, name: 'Pastilha de Freio', code: 'PF-901', category: 'Freios', description: 'x', compatibility: 'Gol', price: 120, stockQty: 5, inStock: true, photoUrl: '/api/uploads/img/1.jpg', photos: ['/api/uploads/img/1.jpg'] },
+    ];
+    const { win } = bootLojaDom(() => state);
+    await new Promise((r) => setTimeout(r, 80));
+
+    // Cliente abre a peça (aqui é esperado ir para o topo)
+    await win.openProductDetails(901, state[0]);
+    await new Promise((r) => setTimeout(r, 30));
+
+    const scrollSpy = vi.fn();
+    win.scrollTo = scrollSpy;
+
+    // Sincronização periódica sem mudança nenhuma
+    await win.refreshLojaStockData();
+    await new Promise((r) => setTimeout(r, 60));
+    const toTop = scrollSpy.mock.calls.filter(([arg]) => arg && typeof arg === 'object' && arg.top === 0);
+    expect(toTop.length).toBe(0);
+
+    // Mudança só de estoque/preço: atualiza no lugar, sem rolar e sem redesenhar a galeria
+    const slideBefore = win.document.querySelector('#gallerySlidesTrack .gallery-slide');
+    state = [{ ...state[0], price: 99, stockQty: 2 }];
+    await win.refreshLojaStockData();
+    await new Promise((r) => setTimeout(r, 60));
+    expect(scrollSpy.mock.calls.filter(([arg]) => arg && arg.top === 0).length).toBe(0);
+    expect(win.document.querySelector('#gallerySlidesTrack .gallery-slide')).toBe(slideBefore);
+    expect(win.document.getElementById('detailPrice')?.textContent).toContain('99');
+  });
+});
+

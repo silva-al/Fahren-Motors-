@@ -4,7 +4,7 @@
 // ---------- Detalhes da Peça e Visualizador de Hiper Zoom 3D ----------
 let currentProduct = null;
 
-async function openProductDetails(productId, cachedProduct = null, push = true) {
+async function openProductDetails(productId, cachedProduct = null, push = true, opts = {}) {
   let product = null;
   if (productId !== undefined && productId !== null && productId !== '') {
     try {
@@ -21,6 +21,52 @@ async function openProductDetails(productId, cachedProduct = null, push = true) 
   if (!product) {
     alert('Não foi possível carregar os dados desta peça no momento.');
     return;
+  }
+
+  // MODO SILENCIOSO (sincronização de estoque em segundo plano):
+  // atualiza apenas preço/estoque no lugar, sem redesenhar galeria, sem trocar de tela e sem mexer na rolagem.
+  if (opts.silent) {
+    if (!currentProduct || String(currentProduct.id) !== String(product.id)) return;
+    const contentSig = (p) => JSON.stringify([p.name, p.code, p.category, p.description, p.compatibility, extractLojaPhotos(p)]);
+    const contentChanged = contentSig(product) !== contentSig(currentProduct);
+    const sig = JSON.stringify([product.price, product.inStock, product.stockQty]);
+    const oldSig = JSON.stringify([currentProduct.price, currentProduct.inStock, currentProduct.stockQty]);
+    if (contentChanged) {
+      // Fotos/descrição mudaram no WMS: redesenha a peça (cai no fluxo completo abaixo), sem trocar de tela
+      opts = { ...opts, silentFull: true };
+    } else {
+      currentProduct = product;
+      if (sig === oldSig) return;
+    const sPrice = typeof product.price === 'number' ? product.price : parseFloat(product.price) || 0;
+    const sInStock = product.inStock !== false && (product.stockQty == null || product.stockQty > 0);
+    const sMax = sInStock ? (product.stockQty > 0 ? product.stockQty : 99) : 0;
+    const pixEl = document.getElementById('detailPixPrice');
+    const regEl = document.getElementById('detailPrice');
+    const instEl = document.getElementById('detailInstallment');
+    if (pixEl) pixEl.textContent = money(sPrice * (1 - (PIX_DISCOUNT_RATE || 0.04)));
+    if (regEl) regEl.textContent = money(sPrice);
+    if (instEl) instEl.textContent = `em até 12x de ${money(sPrice > 0 ? sPrice / 12 : 0)} sem juros`;
+    const specStock = document.getElementById('specStock');
+    if (specStock) specStock.textContent = sInStock ? 'Disponível para pronta entrega' : 'Sob consulta';
+    const addBtn = document.getElementById('detailAddCartBtn');
+    if (addBtn) {
+      addBtn.disabled = !sInStock;
+      addBtn.style.opacity = sInStock ? '1' : '.5';
+      addBtn.style.cursor = sInStock ? 'pointer' : 'not-allowed';
+      addBtn.textContent = sInStock ? '🛒 COLOCAR NO CARRINHO' : 'FORA DE ESTOQUE';
+    }
+    const buyBtn = document.getElementById('detailBuyNowBtn');
+    if (buyBtn) {
+      buyBtn.disabled = !sInStock;
+      buyBtn.style.display = sInStock ? 'inline-block' : 'none';
+    }
+    const qIn = document.getElementById('detailQtyInput');
+    if (qIn) {
+      qIn.max = sMax;
+      if ((parseInt(qIn.value, 10) || 1) > sMax && sMax > 0) qIn.value = sMax;
+    }
+    return;
+    }
   }
 
   currentProduct = product;
@@ -300,8 +346,8 @@ async function openProductDetails(productId, cachedProduct = null, push = true) 
   } catch {}
 
   // Navega para a tela do produto SOMENTE se push for true OU se o usuário já estiver na tela de produto
-  if (push || (typeof currentScreenId !== 'undefined' && currentScreenId === 'produto')) {
-    show('produto', { push });
+  if (!opts.silent && (push || (typeof currentScreenId !== 'undefined' && currentScreenId === 'produto'))) {
+    show('produto', { push, scrollTop: push === true });
     if (push) {
       window.history.replaceState({ screen: 'produto', depth: navDepth, productId: product.id }, '', '#produto/' + product.id);
     }
@@ -960,6 +1006,7 @@ async function loadCatalog() {
 
     renderProducts(container, prioritizeRealProducts(prods));
   } catch (err) {
+    container.__renderSig = null;
     container.innerHTML = `<p style="color:#e06a6a">Não foi possível carregar as peças agora. ${err.message}</p>`;
   }
 }

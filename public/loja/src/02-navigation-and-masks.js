@@ -133,10 +133,15 @@ function show(id, opts = {}) {
     show('inicio');
     return;
   }
+  const previousScreenId = currentScreenId;
   currentScreenId = id;
   screens.forEach(s => s.classList.toggle('active', s.id === id));
   nav.forEach(b => b.classList.toggle('active', b.dataset.screen === id));
-  window.scrollTo({ top: 0, behavior: 'smooth' });
+  // Só volta ao topo quando o cliente REALMENTE troca de tela (ou quando pedido explicitamente).
+  // Atualizações em segundo plano (estoque, carrinho) jamais podem mexer na rolagem.
+  if (opts.scrollTop === true || (opts.scrollTop !== false && previousScreenId !== id)) {
+    window.scrollTo({ top: 0, behavior: 'auto' });
+  }
 
   if (id === 'pecas') {
     if (!opts.keepFilter) {

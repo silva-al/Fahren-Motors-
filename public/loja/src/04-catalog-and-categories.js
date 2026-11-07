@@ -348,6 +348,8 @@ async function loadCategoryCarousel() {
     const baseList = Array.from(uniqueMap.values());
 
     const htmlContent = baseList.map(c => cardHtml(c, false)).join('') + cardAllHtml(false);
+    if (track.__renderSig === htmlContent && track.children.length) return;
+    track.__renderSig = htmlContent;
     track.innerHTML = htmlContent;
     track.style.animation = 'none';
 
@@ -634,6 +636,10 @@ function checkProductCompatibility(product) {
 }
 
 function renderProducts(container, products) {
+  // Evita redesenhar a lista (e fazer a página "pular") quando os dados não mudaram
+  const renderSig = JSON.stringify(products || []);
+  if (container.__renderSig === renderSig && container.children.length) return;
+  container.__renderSig = renderSig;
   if (!products.length) {
     container.innerHTML = '<p style="color:var(--fp-9da2aa)">Nenhuma peça encontrada com esses filtros.</p>';
     return;

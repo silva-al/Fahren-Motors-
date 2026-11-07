@@ -187,7 +187,9 @@ async function syncCartWithServer() {
         updateCartBadge();
         const cartScreen = document.getElementById('carrinho');
         if (cartScreen && cartScreen.classList.contains('active')) {
+          const keepY = window.scrollY;
           renderCart();
+          if (Math.abs(window.scrollY - keepY) > 2) window.scrollTo({ top: keepY, behavior: 'auto' });
         }
       }
       // 2. Primeira conexão do dispositivo com itens do visitante
@@ -417,10 +419,15 @@ function show(id, opts = {}) {
     show('inicio');
     return;
   }
+  const previousScreenId = currentScreenId;
   currentScreenId = id;
   screens.forEach(s => s.classList.toggle('active', s.id === id));
   nav.forEach(b => b.classList.toggle('active', b.dataset.screen === id));
-  window.scrollTo({ top: 0, behavior: 'smooth' });
+  // Só volta ao topo quando o cliente REALMENTE troca de tela (ou quando pedido explicitamente).
+  // Atualizações em segundo plano (estoque, carrinho) jamais podem mexer na rolagem.
+  if (opts.scrollTop === true || (opts.scrollTop !== false && previousScreenId !== id)) {
+    window.scrollTo({ top: 0, behavior: 'auto' });
+  }
 
   if (id === 'pecas') {
     if (!opts.keepFilter) {
@@ -1150,6 +1157,8 @@ async function loadCategoryCarousel() {
     const baseList = Array.from(uniqueMap.values());
 
     const htmlContent = baseList.map(c => cardHtml(c, false)).join('') + cardAllHtml(false);
+    if (track.__renderSig === htmlContent && track.children.length) return;
+    track.__renderSig = htmlContent;
     track.innerHTML = htmlContent;
     track.style.animation = 'none';
 
@@ -1436,6 +1445,10 @@ function checkProductCompatibility(product) {
 }
 
 function renderProducts(container, products) {
+  // Evita redesenhar a lista (e fazer a página "pular") quando os dados não mudaram
+  const renderSig = JSON.stringify(products || []);
+  if (container.__renderSig === renderSig && container.children.length) return;
+  container.__renderSig = renderSig;
   if (!products.length) {
     container.innerHTML = '<p style="color:var(--fp-9da2aa)">Nenhuma peça encontrada com esses filtros.</p>';
     return;
@@ -1622,7 +1635,7 @@ function renderProducts(container, products) {
 // ---------- Detalhes da Peça e Visualizador de Hiper Zoom 3D ----------
 let currentProduct = null;
 
-async function openProductDetails(productId, cachedProduct = null, push = true) {
+async function openProductDetails(productId, cachedProduct = null, push = true, opts = {}) {
   let product = null;
   if (productId !== undefined && productId !== null && productId !== '') {
     try {
@@ -1639,6 +1652,52 @@ async function openProductDetails(productId, cachedProduct = null, push = true) 
   if (!product) {
     alert('Não foi possível carregar os dados desta peça no momento.');
     return;
+  }
+
+  // MODO SILENCIOSO (sincronização de estoque em segundo plano):
+  // atualiza apenas preço/estoque no lugar, sem redesenhar galeria, sem trocar de tela e sem mexer na rolagem.
+  if (opts.silent) {
+    if (!currentProduct || String(currentProduct.id) !== String(product.id)) return;
+    const contentSig = (p) => JSON.stringify([p.name, p.code, p.category, p.description, p.compatibility, extractLojaPhotos(p)]);
+    const contentChanged = contentSig(product) !== contentSig(currentProduct);
+    const sig = JSON.stringify([product.price, product.inStock, product.stockQty]);
+    const oldSig = JSON.stringify([currentProduct.price, currentProduct.inStock, currentProduct.stockQty]);
+    if (contentChanged) {
+      // Fotos/descrição mudaram no WMS: redesenha a peça (cai no fluxo completo abaixo), sem trocar de tela
+      opts = { ...opts, silentFull: true };
+    } else {
+      currentProduct = product;
+      if (sig === oldSig) return;
+    const sPrice = typeof product.price === 'number' ? product.price : parseFloat(product.price) || 0;
+    const sInStock = product.inStock !== false && (product.stockQty == null || product.stockQty > 0);
+    const sMax = sInStock ? (product.stockQty > 0 ? product.stockQty : 99) : 0;
+    const pixEl = document.getElementById('detailPixPrice');
+    const regEl = document.getElementById('detailPrice');
+    const instEl = document.getElementById('detailInstallment');
+    if (pixEl) pixEl.textContent = money(sPrice * (1 - (PIX_DISCOUNT_RATE || 0.04)));
+    if (regEl) regEl.textContent = money(sPrice);
+    if (instEl) instEl.textContent = `em até 12x de ${money(sPrice > 0 ? sPrice / 12 : 0)} sem juros`;
+    const specStock = document.getElementById('specStock');
+    if (specStock) specStock.textContent = sInStock ? 'Disponível para pronta entrega' : 'Sob consulta';
+    const addBtn = document.getElementById('detailAddCartBtn');
+    if (addBtn) {
+      addBtn.disabled = !sInStock;
+      addBtn.style.opacity = sInStock ? '1' : '.5';
+      addBtn.style.cursor = sInStock ? 'pointer' : 'not-allowed';
+      addBtn.textContent = sInStock ? '🛒 COLOCAR NO CARRINHO' : 'FORA DE ESTOQUE';
+    }
+    const buyBtn = document.getElementById('detailBuyNowBtn');
+    if (buyBtn) {
+      buyBtn.disabled = !sInStock;
+      buyBtn.style.display = sInStock ? 'inline-block' : 'none';
+    }
+    const qIn = document.getElementById('detailQtyInput');
+    if (qIn) {
+      qIn.max = sMax;
+      if ((parseInt(qIn.value, 10) || 1) > sMax && sMax > 0) qIn.value = sMax;
+    }
+    return;
+    }
   }
 
   currentProduct = product;
@@ -1918,8 +1977,8 @@ async function openProductDetails(productId, cachedProduct = null, push = true) 
   } catch {}
 
   // Navega para a tela do produto SOMENTE se push for true OU se o usuário já estiver na tela de produto
-  if (push || (typeof currentScreenId !== 'undefined' && currentScreenId === 'produto')) {
-    show('produto', { push });
+  if (!opts.silent && (push || (typeof currentScreenId !== 'undefined' && currentScreenId === 'produto'))) {
+    show('produto', { push, scrollTop: push === true });
     if (push) {
       window.history.replaceState({ screen: 'produto', depth: navDepth, productId: product.id }, '', '#produto/' + product.id);
     }
@@ -2578,6 +2637,7 @@ async function loadCatalog() {
 
     renderProducts(container, prioritizeRealProducts(prods));
   } catch (err) {
+    container.__renderSig = null;
     container.innerHTML = `<p style="color:#e06a6a">Não foi possível carregar as peças agora. ${err.message}</p>`;
   }
 }
@@ -4249,20 +4309,41 @@ function broadcastSync(type, data = {}) {
 }
 window.broadcastSync = broadcastSync;
 
-function refreshLojaStockData() {
+// Detecta se o cliente está tocando/rolando a tela agora (não atualizamos nada nesse momento)
+let __userInteractingUntil = 0;
+['touchstart', 'touchmove', 'touchend', 'wheel', 'keydown'].forEach(evt => {
+  window.addEventListener(evt, () => { __userInteractingUntil = Date.now() + 1500; }, { passive: true });
+});
+
+let __stockRefreshRunning = false;
+async function refreshLojaStockData() {
+  if (__stockRefreshRunning) return;
+  // Se o usuário estiver arrastando a tela, adia a atualização para não "puxar" a rolagem
+  if (Date.now() < __userInteractingUntil) {
+    setTimeout(refreshLojaStockData, 1600);
+    return;
+  }
+  __stockRefreshRunning = true;
+  const savedY = window.scrollY;
   try {
-    loadCategories();
-    loadCategoryCarousel();
+    const tasks = [loadCategories(), loadCategoryCarousel()];
+    // O catálogo só precisa ser atualizado se o cliente estiver olhando para ele
     if (typeof loadCatalog === 'function') {
-      loadCatalog();
+      tasks.push(loadCatalog());
     }
-    // BLINDAGEM ESTREITA CONTRA ROUBO DE FOCO / TELA:
-    // Só atualiza os dados da peça se o usuário estiver EFETIVAMENTE na tela do produto (#produto).
-    // Jamais force a abertura do produto se o cliente estiver navegando no carrinho (#carrinho), checkout ou catálogo!
+    // Na tela da peça: atualiza só preço/estoque, em modo silencioso (sem trocar de tela nem rolar)
     if (typeof currentScreenId !== 'undefined' && currentScreenId === 'produto' && currentProduct && currentProduct.id && typeof openProductDetails === 'function') {
-      openProductDetails(currentProduct.id, null, false);
+      tasks.push(openProductDetails(currentProduct.id, null, false, { silent: true }));
     }
-  } catch (e) {}
+    await Promise.allSettled(tasks);
+  } catch (e) {
+  } finally {
+    __stockRefreshRunning = false;
+    // Garantia final: se algo alterou a rolagem e o usuário não estava mexendo, devolve à posição original
+    if (Date.now() >= __userInteractingUntil && Math.abs(window.scrollY - savedY) > 2) {
+      window.scrollTo({ top: savedY, behavior: 'auto' });
+    }
+  }
 }
 window.refreshLojaStockData = refreshLojaStockData;
 

@@ -176,7 +176,9 @@ async function syncCartWithServer() {
         updateCartBadge();
         const cartScreen = document.getElementById('carrinho');
         if (cartScreen && cartScreen.classList.contains('active')) {
+          const keepY = window.scrollY;
           renderCart();
+          if (Math.abs(window.scrollY - keepY) > 2) window.scrollTo({ top: keepY, behavior: 'auto' });
         }
       }
       // 2. Primeira conexão do dispositivo com itens do visitante

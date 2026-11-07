@@ -879,20 +879,41 @@ function broadcastSync(type, data = {}) {
 }
 window.broadcastSync = broadcastSync;
 
-function refreshLojaStockData() {
+// Detecta se o cliente está tocando/rolando a tela agora (não atualizamos nada nesse momento)
+let __userInteractingUntil = 0;
+['touchstart', 'touchmove', 'touchend', 'wheel', 'keydown'].forEach(evt => {
+  window.addEventListener(evt, () => { __userInteractingUntil = Date.now() + 1500; }, { passive: true });
+});
+
+let __stockRefreshRunning = false;
+async function refreshLojaStockData() {
+  if (__stockRefreshRunning) return;
+  // Se o usuário estiver arrastando a tela, adia a atualização para não "puxar" a rolagem
+  if (Date.now() < __userInteractingUntil) {
+    setTimeout(refreshLojaStockData, 1600);
+    return;
+  }
+  __stockRefreshRunning = true;
+  const savedY = window.scrollY;
   try {
-    loadCategories();
-    loadCategoryCarousel();
+    const tasks = [loadCategories(), loadCategoryCarousel()];
+    // O catálogo só precisa ser atualizado se o cliente estiver olhando para ele
     if (typeof loadCatalog === 'function') {
-      loadCatalog();
+      tasks.push(loadCatalog());
     }
-    // BLINDAGEM ESTREITA CONTRA ROUBO DE FOCO / TELA:
-    // Só atualiza os dados da peça se o usuário estiver EFETIVAMENTE na tela do produto (#produto).
-    // Jamais force a abertura do produto se o cliente estiver navegando no carrinho (#carrinho), checkout ou catálogo!
+    // Na tela da peça: atualiza só preço/estoque, em modo silencioso (sem trocar de tela nem rolar)
     if (typeof currentScreenId !== 'undefined' && currentScreenId === 'produto' && currentProduct && currentProduct.id && typeof openProductDetails === 'function') {
-      openProductDetails(currentProduct.id, null, false);
+      tasks.push(openProductDetails(currentProduct.id, null, false, { silent: true }));
     }
-  } catch (e) {}
+    await Promise.allSettled(tasks);
+  } catch (e) {
+  } finally {
+    __stockRefreshRunning = false;
+    // Garantia final: se algo alterou a rolagem e o usuário não estava mexendo, devolve à posição original
+    if (Date.now() >= __userInteractingUntil && Math.abs(window.scrollY - savedY) > 2) {
+      window.scrollTo({ top: savedY, behavior: 'auto' });
+    }
+  }
 }
 window.refreshLojaStockData = refreshLojaStockData;
 
