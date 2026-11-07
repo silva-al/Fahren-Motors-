@@ -3469,7 +3469,7 @@ async function openCartItemReport(productId) {
   const pixDiff = totalVal - pixVal;
   const cardInstVal = totalVal / 12;
 
-  let addressText = 'Endereço ainda não informado. O cliente poderá preencher antes do pagamento.';
+  let addressText = 'Endereço ainda não preenchido. Você poderá confirmar antes do pagamento.';
   let clientName = (currentUser && (currentUser.name || currentUser.fullName)) || 'Cliente Fahren Motors';
   let clientContact = (currentUser && (currentUser.phone || currentUser.email)) || 'WhatsApp informado no checkout';
 
@@ -3497,14 +3497,17 @@ async function openCartItemReport(productId) {
   modal.id = 'fpCartReportModal';
   modal.className = 'fp-cart-report-modal';
   modal.innerHTML = `
-    <div class="fp-cart-report-card">
+    <div class="fp-cart-report-card" role="dialog" aria-modal="true">
+      <!-- CABEÇALHO COM LOGO OFICIAL DA LOJA (FM + FAHREN MOTORS) -->
       <div class="fp-cart-report-header">
-        <div class="fp-cart-report-title">
-          <span>📋</span>
-          <span>Relatório do Item do Pedido</span>
-          <span class="fp-cart-report-badge">FAHREN MOTORS</span>
+        <div style="display:flex;align-items:center;gap:10px;">
+          <div class="logo-badge" style="width:32px;height:32px;padding:2px;"><div class="logo-badge-inner" style="font-size:11px;font-weight:900;">FM</div></div>
+          <div style="display:flex;flex-direction:column;line-height:1.15;">
+            <div style="font-size:14px;font-weight:900;letter-spacing:0.3px;"><span class="brand-fahren" style="color:#ed1c24;">FAHREN</span> <span class="brand-parts" style="color:var(--fp-fff, #ffffff);">MOTORS</span></div>
+            <span style="font-size:11px;color:#94a3b8;font-weight:600;">Relatório do Item no Carrinho</span>
+          </div>
         </div>
-        <button type="button" class="fp-cart-report-close" aria-label="Fechar resumo">&times;</button>
+        <button type="button" class="fp-cart-report-close" aria-label="Voltar para a sacolinha" title="Voltar para a sacolinha">&times;</button>
       </div>
 
       <div class="fp-cart-report-body">
@@ -3512,39 +3515,41 @@ async function openCartItemReport(productId) {
         <div class="fp-cart-report-prod-row">
           <img src="${itemImg}" alt="${item.name}" class="fp-cart-report-thumb" onerror="this.onerror=null; this.src=window.LOJA_NO_PHOTO_SVG;" />
           <div>
-            <div style="font-size:11.5px;font-weight:800;color:#ed1c24;text-transform:uppercase;margin-bottom:3px">
-              CÓD: #${item.code || item.productId} • DISPONÍVEL PARA ENVIO
+            <div style="font-size:11px;font-weight:800;color:#ed1c24;text-transform:uppercase;margin-bottom:2px">
+              CÓD: #${item.code || item.productId} • EM ESTOQUE
             </div>
             <strong style="font-size:15px;line-height:1.4;display:block">${item.name}</strong>
-            <span style="font-size:12.5px;color:#94a3b8;display:block;margin-top:5px">
-              Quantidade selecionada: <strong style="color:#ffffff">${qty} unidade(s)</strong>
+            <span style="font-size:12.5px;color:#94a3b8;display:block;margin-top:4px">
+              Quantidade: <strong style="color:var(--fp-fff, #ffffff)">${qty} unidade(s)</strong>
             </span>
           </div>
         </div>
 
-        <!-- Discriminação de Valores -->
+        <!-- Discriminação de Valores com AS MESMAS CORES DA TELA ANTERIOR (VERDE NO PIX) -->
         <div>
           <div class="fp-cart-report-sec-title"><span>💰</span> Valores e Condições de Pagamento</div>
           <div class="fp-cart-report-box">
             <div class="fp-cart-report-val-line">
-              <span>Valor Unitário da Peça:</span>
-              <strong>${money(priceVal)}</strong>
+              <span style="color:#94a3b8;">Valor Unitário da Peça:</span>
+              <strong style="color:var(--fp-fff, #ffffff)">${money(priceVal)}</strong>
             </div>
             <div class="fp-cart-report-val-line">
-              <span>Quantidade Solicitada:</span>
+              <span style="color:#94a3b8;">Quantidade Solicitada:</span>
               <span>${qty}x</span>
             </div>
             <div class="fp-cart-report-val-line">
-              <span>Subtotal:</span>
-              <strong>${money(totalVal)}</strong>
+              <span style="color:#94a3b8;">Subtotal:</span>
+              <strong style="color:var(--fp-fff, #ffffff)">${money(totalVal)}</strong>
             </div>
-            <div class="fp-cart-report-val-line" style="color:#ed1c24;font-weight:700">
+            <!-- Desconto no Pix em VERDE como na tela anterior -->
+            <div class="fp-cart-report-val-line" style="color:#16a34a !important;font-weight:700;padding-top:4px;">
               <span>Desconto Especial no Pix (-4%):</span>
-              <span>- ${money(pixDiff)}</span>
+              <span style="color:#16a34a !important;font-weight:800;">- ${money(pixDiff)}</span>
             </div>
+            <!-- Total no Pix destacado -->
             <div class="fp-cart-report-val-line fp-cart-report-val-total">
-              <span>Total à Vista no Pix:</span>
-              <span style="color:#ed1c24;font-size:18px">${money(pixVal)}</span>
+              <span style="font-weight:800;">Total à Vista no Pix:</span>
+              <span style="color:#ed1c24;font-size:18px;font-weight:900;">${money(pixVal)}</span>
             </div>
             <div style="font-size:12px;color:#94a3b8;margin-top:6px;text-align:right">
               ou em até 12x de ${money(cardInstVal)} sem juros no cartão
@@ -3552,30 +3557,21 @@ async function openCartItemReport(productId) {
           </div>
         </div>
 
-        <!-- Endereço de Entrega -->
+        <!-- Endereço de Destino da Entrega -->
         <div>
           <div class="fp-cart-report-sec-title"><span>📍</span> Endereço de Destino da Entrega</div>
           <div class="fp-cart-report-box">
-            <div style="font-weight:700;margin-bottom:4px">Destinatário: ${clientName}</div>
+            <div style="font-weight:700;margin-bottom:4px;color:var(--fp-fff, #ffffff)">Destinatário: ${clientName}</div>
             <div style="color:#cbd5e1">${addressText}</div>
             <div style="margin-top:6px;font-size:12px;color:#94a3b8">Contato para Rastreio: ${clientContact}</div>
           </div>
         </div>
-
-        <!-- Garantia e Procedência Fahren Motors -->
-        <div>
-          <div class="fp-cart-report-sec-title"><span>🛡️</span> Procedência e Garantia Fahren Motors</div>
-          <div class="fp-cart-report-box" style="font-size:12.5px;line-height:1.6">
-            <div>✓ <strong>Garantia Legal de 90 dias</strong> contra defeitos de fabricação.</div>
-            <div>✓ Emissão obrigatória de <strong>Nota Fiscal Eletrônica (NF-e)</strong>.</div>
-            <div>✓ Envio seguro e embalagem reforçada com rastreio em tempo real.</div>
-          </div>
-        </div>
       </div>
 
+      <!-- BOTÃO DE RETORNO DIRETO PARA A SACOLINHA -->
       <div class="fp-cart-report-footer">
-        <button type="button" class="btn fp-cart-report-btn-close" style="background:#ed1c24;color:#fff;border:none;padding:11px 24px;border-radius:8px;font-weight:800;font-size:13px;cursor:pointer">
-          VOLTAR AO PAGAMENTO
+        <button type="button" class="btn fp-cart-report-btn-close" style="width:100%;background:#ed1c24;color:#fff;border:none;padding:12px 24px;border-radius:10px;font-weight:800;font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;">
+          <span>←</span> VOLTAR PARA A SACOLINHA
         </button>
       </div>
     </div>
@@ -3583,12 +3579,33 @@ async function openCartItemReport(productId) {
 
   document.body.appendChild(modal);
 
-  const closeModal = () => modal.remove();
+  // Fecha o modal garantindo que o cliente PERMANEÇA na sacolinha (#carrinho)
+  const closeModal = (e) => {
+    if (e) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+    modal.remove();
+    // Garante que a tela continue sendo o carrinho
+    if (typeof show === 'function' && typeof currentScreenId !== 'undefined' && currentScreenId !== 'carrinho') {
+      show('carrinho', { push: false, scrollTop: false });
+    }
+  };
+
   modal.querySelector('.fp-cart-report-close')?.addEventListener('click', closeModal);
   modal.querySelector('.fp-cart-report-btn-close')?.addEventListener('click', closeModal);
   modal.addEventListener('click', (e) => {
-    if (e.target === modal) closeModal();
+    if (e.target === modal) closeModal(e);
   });
+
+  // Fecha no ESC sem sair do carrinho
+  const onEsc = (e) => {
+    if (e.key === 'Escape') {
+      closeModal();
+      window.removeEventListener('keydown', onEsc);
+    }
+  };
+  window.addEventListener('keydown', onEsc);
 }
 window.openCartItemReport = openCartItemReport;
 
