@@ -9473,3 +9473,36 @@ body:not(.tema-claro) .pix-savings-badge {
   background: rgba(34, 197, 94, 0.18) !important;
   color: #4ade80 !important;
 }
+
+/* ==========================================================================
+   IMAGENS 100% LIMPAS NO LIGHTBOX (TELA CHEIA): SEM SETAS COBRINDO A PEÇA
+   ========================================================================== */
+/* No mobile/touch: remove completamente as setas da frente da imagem.
+   A navegação entre fotos é feita com swipe suave deslizando o dedo para os lados */
+@media (max-width: 900px) {
+  .lb-nav-btn,
+  #lbPrevBtn,
+  #lbNextBtn {
+    display: none !important;
+    opacity: 0 !important;
+    pointer-events: none !important;
+  }
+}
+
+/* No desktop: as setas ficam invisíveis por padrão e fora da área central da foto */
+@media (min-width: 901px) {
+  .lb-nav-btn {
+    opacity: 0 !important;
+    pointer-events: none !important;
+    transition: opacity 0.3s ease !important;
+  }
+  .fp-lightbox-modal:hover .lb-nav-btn {
+    opacity: 0.85 !important;
+    pointer-events: auto !important;
+  }
+  .fp-lightbox-modal:hover .lb-nav-btn:hover {
+    opacity: 1 !important;
+    background: #ed1c24 !important;
+    border-color: #ed1c24 !important;
+  }
+}
