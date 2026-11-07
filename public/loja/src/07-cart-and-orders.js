@@ -534,16 +534,24 @@ async function openCartItemReport(productId) {
 
   document.body.appendChild(modal);
 
+  // Registra no histórico do navegador para que o botão "Voltar" nativo do celular feche o modal
+  try {
+    window.history.pushState({ modal: 'cart-report', screen: 'carrinho', depth: navDepth + 1 }, '');
+  } catch (_) {}
+
   // Fecha o modal garantindo que o cliente PERMANEÇA na sacolinha (#carrinho)
-  const closeModal = (e) => {
+  let isClosed = false;
+  const closeModal = (e, triggerHistoryBack = true) => {
+    if (isClosed) return;
+    isClosed = true;
     if (e) {
       e.preventDefault();
       e.stopPropagation();
     }
     modal.remove();
-    // Garante que a tela continue sendo o carrinho
-    if (typeof show === 'function' && typeof currentScreenId !== 'undefined' && currentScreenId !== 'carrinho') {
-      show('carrinho', { push: false, scrollTop: false });
+
+    if (triggerHistoryBack && window.history.state && window.history.state.modal === 'cart-report') {
+      window.history.back();
     }
   };
 

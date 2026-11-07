@@ -31,6 +31,12 @@ if (!(window.history.state && typeof window.history.state.depth === 'number')) {
 navDepth = window.history.state.depth || 0;
 
 window.addEventListener('popstate', e => {
+  // 1. Se o Relatório do Item do Carrinho estiver aberto, fecha no botão voltar do celular e fica na sacolinha
+  const cartReportModal = document.getElementById('fpCartReportModal');
+  if (cartReportModal) {
+    cartReportModal.remove();
+    return;
+  }
   // Se o lightbox em tela cheia estiver aberto, fecha-o no botão voltar do celular sem sair da peça
   const lbModal = document.getElementById('detailLightboxModal');
   if (lbModal && (lbModal.style.display === 'flex' || lbModal.style.display === 'block')) {
