@@ -1487,7 +1487,7 @@ async function loadProductMovementHistory(productId) {
           <td><strong class="${qtyClass}">${sign}${absQty} un.</strong></td>
           <td><strong style="color:var(--text-primary);">${currentStockVal} un.</strong></td>
           <td><span class="location-badge" style="font-size:10px;padding:1px 6px;">📍 ${loc}</span></td>
-          <td><small>${m.user_name || 'Admin'} ${docRef ? `(${docRef})` : note ? `(${note})` : ''}</small></td>
+          <td><strong style="font-size:11.5px;font-weight:700;color:var(--text-primary);">${m.user_name || 'Admin'} ${docRef ? `(${docRef})` : note ? `(${note})` : ''}</strong></td>
         </tr>
       `;
     }).join('');
@@ -4653,8 +4653,8 @@ function renderMovementsTable(movements) {
         </td>
         <td>
           <div style="font-size:11.5px;max-width:240px;line-height:1.3;">
-            ${docRef ? `<strong style="color:var(--text-primary);display:block;">${docRef}</strong>` : ''}
-            <span style="color:var(--text-muted);">${note}</span>
+            ${docRef ? `<strong style="color:var(--text-primary);font-weight:800;display:block;margin-bottom:2px;">${docRef}</strong>` : ''}
+            <strong style="color:var(--text-primary);font-weight:700;display:block;">${note}</strong>
           </div>
         </td>
       </tr>

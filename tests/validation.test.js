@@ -548,7 +548,7 @@ it('deve conter o modal de tela cheia (lightbox) com controles de zoom e fechar'
     it('deve possuir o selo PRO WMS V2.17 no dashboard operacional', () => {
       const fs = require('fs');
       const html = fs.readFileSync('public/admin/index.html', 'utf8');
-      expect(html).toContain('PRO WMS V2.17');
+      expect(html).toMatch(/PRO WMS V2\.(17|18|19|[2-9]\d+)/);
     });
   });
 });

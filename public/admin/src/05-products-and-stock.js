@@ -716,7 +716,7 @@ async function loadProductMovementHistory(productId) {
           <td><strong class="${qtyClass}">${sign}${absQty} un.</strong></td>
           <td><strong style="color:var(--text-primary);">${currentStockVal} un.</strong></td>
           <td><span class="location-badge" style="font-size:10px;padding:1px 6px;">📍 ${loc}</span></td>
-          <td><small>${m.user_name || 'Admin'} ${docRef ? `(${docRef})` : note ? `(${note})` : ''}</small></td>
+          <td><strong style="font-size:11.5px;font-weight:700;color:var(--text-primary);">${m.user_name || 'Admin'} ${docRef ? `(${docRef})` : note ? `(${note})` : ''}</strong></td>
         </tr>
       `;
     }).join('');

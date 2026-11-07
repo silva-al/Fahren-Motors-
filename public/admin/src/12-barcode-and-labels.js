@@ -110,8 +110,8 @@ function renderMovementsTable(movements) {
         </td>
         <td>
           <div style="font-size:11.5px;max-width:240px;line-height:1.3;">
-            ${docRef ? `<strong style="color:var(--text-primary);display:block;">${docRef}</strong>` : ''}
-            <span style="color:var(--text-muted);">${note}</span>
+            ${docRef ? `<strong style="color:var(--text-primary);font-weight:800;display:block;margin-bottom:2px;">${docRef}</strong>` : ''}
+            <strong style="color:var(--text-primary);font-weight:700;display:block;">${note}</strong>
           </div>
         </td>
       </tr>
