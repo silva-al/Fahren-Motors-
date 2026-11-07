@@ -9146,3 +9146,285 @@ body.tema-claro .fp-footer-copy-line {
 .lb-nav-btn {
   transition: opacity 0.3s ease, background 0.2s ease, transform 0.2s ease !important;
 }
+
+/* ==========================================================================
+   PADRONIZAÇÃO RIGOROSA DA MARCA FAHREN MOTORS (SEM VERDE FORA DE PADRÃO)
+   Vermelho de Performance (#ed1c24 / #dc2626), Preto, Grafite e Branco
+   ========================================================================== */
+.cart-thumb-badge,
+.cat-card-pix-badge,
+body.tema-claro .cat-card-pix-badge {
+  background: #ed1c24 !important;
+  color: #ffffff !important;
+  border: 1px solid rgba(255, 255, 255, 0.25) !important;
+}
+
+.cart-stock-badge,
+body:not(.tema-claro) .cart-stock-badge {
+  color: #ed1c24 !important;
+  font-weight: 800 !important;
+}
+
+.cart-pix-price,
+body:not(.tema-claro) .cart-pix-price,
+.pix-highlight-price {
+  color: #ed1c24 !important;
+  font-weight: 900 !important;
+}
+
+.cart-pix-pill,
+body:not(.tema-claro) .cart-pix-pill,
+.payment-badge-discount {
+  background: rgba(237, 28, 36, 0.12) !important;
+  color: #ed1c24 !important;
+  border: 1px solid rgba(237, 28, 36, 0.3) !important;
+  font-weight: 800 !important;
+}
+
+.text-pix-green {
+  color: #ed1c24 !important;
+}
+
+/* Modal Relatório de Compra Fahren Motors (ao clicar na foto do carrinho) */
+.fp-cart-report-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 99999;
+  background: rgba(10, 12, 16, 0.88);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  animation: fpFadeIn 0.2s ease-out;
+}
+
+.fp-cart-report-card {
+  background: #111319;
+  color: #f1f5f9;
+  border: 1px solid rgba(237, 28, 36, 0.35);
+  border-radius: 16px;
+  max-width: 580px;
+  width: 100%;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.7), 0 0 0 1px rgba(255, 255, 255, 0.05);
+  position: relative;
+  display: flex;
+  flex-direction: column;
+}
+
+body.tema-claro .fp-cart-report-card {
+  background: #ffffff;
+  color: #0f172a;
+  border-color: rgba(237, 28, 36, 0.25);
+  box-shadow: 0 20px 40px rgba(15, 23, 42, 0.18);
+}
+
+.fp-cart-report-header {
+  padding: 18px 20px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: rgba(237, 28, 36, 0.05);
+}
+
+body.tema-claro .fp-cart-report-header {
+  border-bottom-color: #e2e8f0;
+  background: #fef2f2;
+}
+
+.fp-cart-report-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 16px;
+  font-weight: 800;
+  color: #ffffff;
+}
+
+body.tema-claro .fp-cart-report-title {
+  color: #0f172a;
+}
+
+.fp-cart-report-badge {
+  background: #ed1c24;
+  color: #ffffff;
+  font-size: 11px;
+  font-weight: 900;
+  padding: 3px 8px;
+  border-radius: 6px;
+  letter-spacing: 0.5px;
+}
+
+.fp-cart-report-close {
+  background: transparent;
+  border: none;
+  color: #94a3b8;
+  font-size: 26px;
+  cursor: pointer;
+  line-height: 1;
+  padding: 4px 8px;
+  border-radius: 8px;
+  transition: all 0.2s;
+}
+
+.fp-cart-report-close:hover {
+  background: rgba(237, 28, 36, 0.15);
+  color: #ed1c24;
+}
+
+.fp-cart-report-body {
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.fp-cart-report-prod-row {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+  padding-bottom: 16px;
+  border-bottom: 1px dashed rgba(255, 255, 255, 0.1);
+}
+
+body.tema-claro .fp-cart-report-prod-row {
+  border-bottom-color: #e2e8f0;
+}
+
+.fp-cart-report-thumb {
+  width: 90px;
+  height: 90px;
+  border-radius: 12px;
+  object-fit: contain;
+  background: #181b22;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 6px;
+  flex-shrink: 0;
+}
+
+body.tema-claro .fp-cart-report-thumb {
+  background: #f8fafc;
+  border-color: #cbd5e1;
+}
+
+.fp-cart-report-sec-title {
+  font-size: 13px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  color: #ed1c24;
+  margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.fp-cart-report-box {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  border-radius: 12px;
+  padding: 14px 16px;
+  font-size: 13.5px;
+  line-height: 1.6;
+}
+
+body.tema-claro .fp-cart-report-box {
+  background: #f8fafc;
+  border-color: #e2e8f0;
+}
+
+.fp-cart-report-val-line {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 4px 0;
+}
+
+.fp-cart-report-val-total {
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  margin-top: 8px;
+  padding-top: 8px;
+  font-size: 15px;
+  font-weight: 900;
+}
+
+body.tema-claro .fp-cart-report-val-total {
+  border-top-color: #cbd5e1;
+}
+
+.fp-cart-report-footer {
+  padding: 16px 20px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+body.tema-claro .fp-cart-report-footer {
+  border-top-color: #e2e8f0;
+}
+
+/* Indicador visual de clique na miniatura do carrinho */
+.cart-item-thumb {
+  cursor: pointer !important;
+  position: relative !important;
+  transition: transform 0.2s, box-shadow 0.2s !important;
+}
+
+.cart-item-thumb:hover {
+  transform: scale(1.04) !important;
+  box-shadow: 0 4px 14px rgba(237, 28, 36, 0.35) !important;
+}
+
+.cart-item-thumb::after {
+  content: '🔍 Detalhes';
+  position: absolute;
+  bottom: 4px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(18, 20, 26, 0.88);
+  color: #ffffff;
+  font-size: 9px;
+  font-weight: 800;
+  padding: 2px 6px;
+  border-radius: 4px;
+  white-space: nowrap;
+  pointer-events: none;
+  opacity: 0.9;
+  border: 1px solid rgba(237, 28, 36, 0.5);
+}
+
+/* ==========================================================================
+   CARDS DE PRODUTO: FOTOS LIMPAS SEM SETAS POLUINDO A IMAGEM
+   As setas (.card-photo-nav-btn) ficam ocultas por padrão.
+   Aparecem suavemente apenas ao passar o mouse ou interagir com o card.
+   ========================================================================== */
+.card-photo-nav-btn {
+  opacity: 0 !important;
+  pointer-events: none !important;
+  transition: opacity 0.25s ease, transform 0.2s ease, background 0.2s ease !important;
+}
+
+/* No desktop: ao passar o mouse no card ou no slider, mostra as setas sutilmente */
+.product:hover .card-photo-nav-btn,
+.card-photo-slider:hover .card-photo-nav-btn {
+  opacity: 0.88 !important;
+  pointer-events: auto !important;
+}
+
+.card-photo-slider:hover .card-photo-nav-btn:hover {
+  opacity: 1 !important;
+  background: #ed1c24 !important;
+  border-color: #ed1c24 !important;
+}
+
+/* No mobile ou tela touch: as setas ficam ocultas para foco total na imagem da peça */
+@media (max-width: 768px) {
+  .card-photo-nav-btn {
+    display: none !important;
+  }
+}

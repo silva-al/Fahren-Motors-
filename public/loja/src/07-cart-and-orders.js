@@ -251,6 +251,12 @@ function renderCart() {
     const id = row.dataset.id;
     row.querySelector('.qty-plus').onclick = () => { changeQty(id, 1); };
     row.querySelector('.qty-minus').onclick = () => { changeQty(id, -1); };
+        // Clique na foto do item no carrinho abre o Relatório de Compra Fahren Motors
+    row.querySelector('.cart-item-thumb')?.addEventListener('click', (e) => {
+      e.stopPropagation();
+      openCartItemReport(id);
+    });
+
     row.querySelector('.remove-item').onclick = () => { cart = cart.filter(i => String(i.productId) !== String(id)); saveCart(false, true); renderCart(); };
   });
   el.querySelectorAll('input[name="paymentMethod"]').forEach(input => {
@@ -400,3 +406,143 @@ async function loadMyOrders() {
     el.innerHTML = `<p style="color:#e06a6a">${err.message}</p>`;
   }
 }
+
+
+// ==========================================================================
+// RELATÓRIO DO ITEM DO PEDIDO (AO CLICAR NA IMAGEM NO CARRINHO)
+// Mostra Valores, Nome da Peça, Endereço de Entrega, Destinatário e Garantia
+// ==========================================================================
+async function openCartItemReport(productId) {
+  const item = cart.find(i => String(i.productId) === String(productId));
+  if (!item) return;
+
+  const itemImg = getCartItemImage(item);
+  const priceVal = Number(item.price) || 0;
+  const qty = Number(item.quantity) || 1;
+  const totalVal = priceVal * qty;
+  const pixVal = totalVal * (1 - PIX_DISCOUNT_RATE);
+  const pixDiff = totalVal - pixVal;
+  const cardInstVal = totalVal / 12;
+
+  let addressText = 'Endereço ainda não informado. O cliente poderá preencher antes do pagamento.';
+  let clientName = (currentUser && (currentUser.name || currentUser.fullName)) || 'Cliente Fahren Motors';
+  let clientContact = (currentUser && (currentUser.phone || currentUser.email)) || 'WhatsApp informado no checkout';
+
+  try {
+    const res = await api('/api/addresses/mine');
+    if (res && res.address) {
+      const a = res.address;
+      addressText = `${a.street || ''}, ${a.number || 'S/N'}${a.complement ? ' (' + a.complement + ')' : ''} - ${a.neighborhood || ''}, ${a.city || ''}/${a.state || ''} • CEP: ${a.cep || ''}`;
+    }
+  } catch (_) {
+    const cep = document.getElementById('deliveryCep')?.value;
+    const rua = document.getElementById('deliveryStreet')?.value;
+    const num = document.getElementById('deliveryNumber')?.value;
+    const bai = document.getElementById('deliveryNeighborhood')?.value;
+    const cid = document.getElementById('deliveryCity')?.value;
+    const uf = document.getElementById('deliveryState')?.value;
+    if (rua && num) {
+      addressText = `${rua}, ${num} - ${bai || ''}, ${cid || ''}/${uf || ''} • CEP: ${cep || ''}`;
+    }
+  }
+
+  document.getElementById('fpCartReportModal')?.remove();
+
+  const modal = document.createElement('div');
+  modal.id = 'fpCartReportModal';
+  modal.className = 'fp-cart-report-modal';
+  modal.innerHTML = `
+    <div class="fp-cart-report-card">
+      <div class="fp-cart-report-header">
+        <div class="fp-cart-report-title">
+          <span>📋</span>
+          <span>Relatório do Item do Pedido</span>
+          <span class="fp-cart-report-badge">FAHREN MOTORS</span>
+        </div>
+        <button type="button" class="fp-cart-report-close" aria-label="Fechar resumo">&times;</button>
+      </div>
+
+      <div class="fp-cart-report-body">
+        <!-- Peça, Foto e Nome -->
+        <div class="fp-cart-report-prod-row">
+          <img src="${itemImg}" alt="${item.name}" class="fp-cart-report-thumb" onerror="this.onerror=null; this.src=window.LOJA_NO_PHOTO_SVG;" />
+          <div>
+            <div style="font-size:11.5px;font-weight:800;color:#ed1c24;text-transform:uppercase;margin-bottom:3px">
+              CÓD: #${item.code || item.productId} • DISPONÍVEL PARA ENVIO
+            </div>
+            <strong style="font-size:15px;line-height:1.4;display:block">${item.name}</strong>
+            <span style="font-size:12.5px;color:#94a3b8;display:block;margin-top:5px">
+              Quantidade selecionada: <strong style="color:#ffffff">${qty} unidade(s)</strong>
+            </span>
+          </div>
+        </div>
+
+        <!-- Discriminação de Valores -->
+        <div>
+          <div class="fp-cart-report-sec-title"><span>💰</span> Valores e Condições de Pagamento</div>
+          <div class="fp-cart-report-box">
+            <div class="fp-cart-report-val-line">
+              <span>Valor Unitário da Peça:</span>
+              <strong>${money(priceVal)}</strong>
+            </div>
+            <div class="fp-cart-report-val-line">
+              <span>Quantidade Solicitada:</span>
+              <span>${qty}x</span>
+            </div>
+            <div class="fp-cart-report-val-line">
+              <span>Subtotal:</span>
+              <strong>${money(totalVal)}</strong>
+            </div>
+            <div class="fp-cart-report-val-line" style="color:#ed1c24;font-weight:700">
+              <span>Desconto Especial no Pix (-4%):</span>
+              <span>- ${money(pixDiff)}</span>
+            </div>
+            <div class="fp-cart-report-val-line fp-cart-report-val-total">
+              <span>Total à Vista no Pix:</span>
+              <span style="color:#ed1c24;font-size:18px">${money(pixVal)}</span>
+            </div>
+            <div style="font-size:12px;color:#94a3b8;margin-top:6px;text-align:right">
+              ou em até 12x de ${money(cardInstVal)} sem juros no cartão
+            </div>
+          </div>
+        </div>
+
+        <!-- Endereço de Entrega -->
+        <div>
+          <div class="fp-cart-report-sec-title"><span>📍</span> Endereço de Destino da Entrega</div>
+          <div class="fp-cart-report-box">
+            <div style="font-weight:700;margin-bottom:4px">Destinatário: ${clientName}</div>
+            <div style="color:#cbd5e1">${addressText}</div>
+            <div style="margin-top:6px;font-size:12px;color:#94a3b8">Contato para Rastreio: ${clientContact}</div>
+          </div>
+        </div>
+
+        <!-- Garantia e Procedência Fahren Motors -->
+        <div>
+          <div class="fp-cart-report-sec-title"><span>🛡️</span> Procedência e Garantia Fahren Motors</div>
+          <div class="fp-cart-report-box" style="font-size:12.5px;line-height:1.6">
+            <div>✓ <strong>Garantia Legal de 90 dias</strong> contra defeitos de fabricação.</div>
+            <div>✓ Emissão obrigatória de <strong>Nota Fiscal Eletrônica (NF-e)</strong>.</div>
+            <div>✓ Envio seguro e embalagem reforçada com rastreio em tempo real.</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="fp-cart-report-footer">
+        <button type="button" class="btn fp-cart-report-btn-close" style="background:#ed1c24;color:#fff;border:none;padding:11px 24px;border-radius:8px;font-weight:800;font-size:13px;cursor:pointer">
+          VOLTAR AO PAGAMENTO
+        </button>
+      </div>
+    </div>
+  `;
+
+  document.body.appendChild(modal);
+
+  const closeModal = () => modal.remove();
+  modal.querySelector('.fp-cart-report-close')?.addEventListener('click', closeModal);
+  modal.querySelector('.fp-cart-report-btn-close')?.addEventListener('click', closeModal);
+  modal.addEventListener('click', (e) => {
+    if (e.target === modal) closeModal();
+  });
+}
+window.openCartItemReport = openCartItemReport;
