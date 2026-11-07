@@ -9428,3 +9428,48 @@ body.tema-claro .fp-cart-report-footer {
     display: none !important;
   }
 }
+
+/* ==========================================================================
+   REGRA CIRÚRGICA: APENAS O DESCONTO NO PIX FICA EM VERDE
+   Destaca a economia real para o cliente, enquanto o resto da loja segue Fahren Motors
+   ========================================================================== */
+
+/* Linha de Desconto no Pix (carrinho e checkout) */
+.cart-summary-line.pix-discount,
+.cart-summary-line.pix-discount b,
+.text-pix-green,
+.pix-discount-value,
+.pix-savings-badge {
+  color: #16a34a !important;
+  font-weight: 800 !important;
+}
+
+body:not(.tema-claro) .cart-summary-line.pix-discount b,
+body:not(.tema-claro) .text-pix-green {
+  color: #22c55e !important;
+}
+
+/* Selinho / Badge de Desconto -4% PIX */
+.payment-badge-discount,
+.cart-thumb-badge,
+.cat-card-pix-badge,
+.product-pix-badge {
+  background: #16a34a !important;
+  color: #ffffff !important;
+  font-weight: 800 !important;
+  border: none !important;
+}
+
+/* Pílula sutil de Desconto */
+.pix-savings-badge {
+  background: #dcfce7 !important;
+  color: #15803d !important;
+  padding: 2px 7px !important;
+  border-radius: 5px !important;
+  font-size: 11px !important;
+}
+
+body:not(.tema-claro) .pix-savings-badge {
+  background: rgba(34, 197, 94, 0.18) !important;
+  color: #4ade80 !important;
+}
