@@ -44,7 +44,7 @@ function renderFinances() {
         <td>${getPaymentBadgeHtml(o.paymentMethodLabel)}</td>
         <td class="fin-date-text">${formatDate(o.createdAt)}</td>
         <td class="fin-disc-text">${isPix ? money(disc) : '-'}</td>
-        <td class="fin-bruto-text">${money(bruto)}</td>
+        <td class="fin-bruto-text"><strong style="font-size:13.5px;font-weight:800;color:var(--text-primary);">${money(bruto)}</strong></td>
         <td style="font-weight:800;color:${isCancelled ? '#ff5e65' : '#16a34a'}">${money(o.total)}</td>
         <td>
           ${isCancelled ? '<span class="status-badge cancelado">Estornado</span>' : '<span class="status-badge pronto">Liquidado</span>'}

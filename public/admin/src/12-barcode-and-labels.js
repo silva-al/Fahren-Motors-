@@ -106,7 +106,7 @@ function renderMovementsTable(movements) {
           </span>
         </td>
         <td>
-          <span style="font-size:12px;font-weight:600;">${m.user_name || 'Administrador'}</span>
+          <strong style="font-size:12.5px;font-weight:800;color:var(--text-primary);">${m.user_name || 'Administrador'}</strong>
         </td>
         <td>
           <div style="font-size:11.5px;max-width:240px;line-height:1.3;">
@@ -180,8 +180,8 @@ async function loadRecentOperations() {
             <td><strong style="color:${qtyColor};">${sign}${absQty} un.</strong></td>
             <td><strong style="font-size:13px;color:var(--text-primary);">${currentStockVal} un.</strong></td>
             <td><span class="location-badge" style="font-size:10.5px;">📍 ${loc}</span></td>
-            <td><small>${m.user_name || 'Admin'}</small></td>
-            <td><small title="${displayRef}">${displayRef}</small></td>
+            <td><strong style="font-size:12.5px;font-weight:800;color:var(--text-primary);">${m.user_name || 'Admin'}</strong></td>
+            <td><strong style="font-size:12px;font-weight:800;color:var(--text-primary);line-height:1.35;display:block;" title="${displayRef}">${displayRef}</strong></td>
           </tr>
         `;
       }).join('');

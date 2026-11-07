@@ -12863,3 +12863,12 @@ body.tema-claro .status-badge-wrap.novo .order-status-badge-select,
 body.tema-claro .order-status-badge-select.novo {
   color: #d97706 !important;
 }
+
+/* Reforço de Negrito em Valor Bruto e Movimentações */
+.fin-bruto-text,
+.fin-bruto-text strong,
+body.tema-claro .fin-bruto-text,
+body.tema-claro .fin-bruto-text strong {
+  font-weight: 800 !important;
+  color: var(--text-primary) !important;
+}
