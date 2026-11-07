@@ -3918,12 +3918,13 @@ body.tema-claro .cat-card-count-box{background:#f8fafc !important;border:1px sol
   border-radius:13px;
 }
 #detailMainImg,
-.gallery-slide .slide-img-wrap img {
+.gallery-slide .slide-img-wrap img,
+.gallery-slide .slide-img-wrap .detail-gallery-img {
   width:100% !important;
   height:100% !important;
   max-width:100% !important;
   max-height:100% !important;
-  object-fit:cover !important;
+  object-fit:contain !important;
   object-position:center center;
   margin:0 !important;
   display:block;
@@ -7333,12 +7334,14 @@ body.tema-claro .product .part-photo {
   justify-content: center !important;
   cursor: zoom-in !important;
 }
-#detailMainImg {
+#detailMainImg,
+.gallery-slide .slide-img-wrap img,
+.gallery-slide .slide-img-wrap .detail-gallery-img {
   width: 100% !important;
   height: 100% !important;
   max-width: 100% !important;
   max-height: 100% !important;
-  object-fit: cover !important;
+  object-fit: contain !important;
   object-position: center !important;
   display: block !important;
   margin: 0 !important;
