@@ -15,11 +15,18 @@ async function openProductDetails(productId, cachedProduct = null, push = true, 
     }
   }
   if (!product) {
-    product = cachedProduct;
+    product = cachedProduct || currentProduct;
+  }
+
+  // Se a API oscilar ao voltar de outro app ou offline, busca no catálogo de fallback em memória
+  if (!product && typeof CATALOG_FALLBACK_PRODUCTS !== 'undefined') {
+    product = CATALOG_FALLBACK_PRODUCTS.find(p => String(p.id) === String(productId));
   }
 
   if (!product) {
-    alert('Não foi possível carregar os dados desta peça no momento.');
+    // Se for sincronização em segundo plano (ao acordar de outro app), JAMAIS dispare alert
+    if (opts.silent) return;
+    console.warn('Peça temporariamente indisponível para o ID:', productId);
     return;
   }
 
@@ -874,7 +881,7 @@ function initProductViewer() {
     });
 
     window.addEventListener('mousemove', (e) => {
-      if (!lbDragging) return;
+      if (!lbDragging || lbScale <= 1.05) return;
       lbPanX = e.clientX - lbStartX;
       lbPanY = e.clientY - lbStartY;
       if (!lbRafPending) {
@@ -935,9 +942,15 @@ function initProductViewer() {
         lbScale = Math.min(5.0, Math.max(1.0, Math.round(initialPinchScale * delta * 10) / 10));
         updateLbTransform();
       } else if (e.touches.length === 1 && lbDragging) {
-        lbPanX = e.touches[0].clientX - lbStartX;
-        lbPanY = e.touches[0].clientY - lbStartY;
-        updateLbTransform();
+        if (lbScale > 1.05) {
+          lbPanX = e.touches[0].clientX - lbStartX;
+          lbPanY = e.touches[0].clientY - lbStartY;
+          updateLbTransform();
+        } else {
+          // Em 1.0x (tamanho normal), a foto fica SEMPRE CENTRALIZADA e fixa, sem se mover pela tela
+          lbPanX = 0;
+          lbPanY = 0;
+        }
       }
     }, { passive: true });
 
@@ -946,6 +959,12 @@ function initProductViewer() {
       if (e.touches.length === 0) {
         lbDragging = false;
         lbViewport.classList.remove('is-dragging');
+        if (lbScale <= 1.05) {
+          lbPanX = 0;
+          lbPanY = 0;
+          syncZoomTargets();
+          updateLbTransform();
+        }
       }
     });
   }
