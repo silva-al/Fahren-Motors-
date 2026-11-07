@@ -9120,3 +9120,29 @@ body.tema-claro .fp-footer-copy-line {
 .quick-actions {
   grid-template-columns: 1fr !important;
 }
+
+/* CNPJ e Razão Social sempre na mesma linha (sem quebrar o -20) */
+.fp-footer-cnpj-line,
+.fp-footer-cnpj-line strong {
+  white-space: nowrap !important;
+  display: inline !important;
+  word-break: keep-all !important;
+}
+@media (max-width: 480px) {
+  .fp-footer-brand-line {
+    font-size: 11px !important;
+    gap: 6px !important;
+  }
+}
+
+/* Ocultação suave das setas de imagem após inatividade (Modo Imersivo) */
+.gallery-nav-btn.autohide,
+.lb-nav-btn.autohide {
+  opacity: 0 !important;
+  pointer-events: none !important;
+  transition: opacity 0.4s ease !important;
+}
+.gallery-nav-btn,
+.lb-nav-btn {
+  transition: opacity 0.3s ease, background 0.2s ease, transform 0.2s ease !important;
+}

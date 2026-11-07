@@ -1954,11 +1954,15 @@ async function openProductDetails(productId, cachedProduct = null, push = true, 
     `;
   }
 
-  // Reseta a galeria para o primeiro slide
-  if (typeof window.resetProductGallery === 'function') {
-    window.resetProductGallery();
-  } else if (typeof window.resetViewer === 'function') {
-    window.resetViewer();
+  // Reseta a galeria para a primeira foto SOMENTE se for uma peça diferente da anterior
+  const isDifferentProduct = !window.__lastRenderedProdId || String(window.__lastRenderedProdId) !== String(product.id);
+  window.__lastRenderedProdId = product.id;
+  if (isDifferentProduct) {
+    if (typeof window.resetProductGallery === 'function') {
+      window.resetProductGallery();
+    } else if (typeof window.resetViewer === 'function') {
+      window.resetViewer();
+    }
   }
 
   // Atualiza texto de compatibilidade no slide 2 da galeria
@@ -2058,6 +2062,23 @@ function initProductViewer() {
     updateGallery(0);
   };
   window.resetViewer = window.resetProductGallery;
+
+  // Gerenciador de Inatividade para ocultar setas de navegação (Modo Imersivo)
+  let navBtnsTimer = null;
+  function showNavButtonsTemporarily() {
+    [prevBtn, nextBtn, lbPrevBtn, lbNextBtn].forEach(b => b?.classList.remove('autohide'));
+    if (navBtnsTimer) clearTimeout(navBtnsTimer);
+    navBtnsTimer = setTimeout(() => {
+      [prevBtn, nextBtn, lbPrevBtn, lbNextBtn].forEach(b => b?.classList.add('autohide'));
+    }, 2800);
+  }
+
+  // Qualquer interação com o slider ou lightbox exibe as setas temporariamente
+  ['mousemove', 'touchstart', 'touchmove', 'click'].forEach(evt => {
+    slider?.addEventListener(evt, showNavButtonsTemporarily, { passive: true });
+    document.getElementById('detailLightboxModal')?.addEventListener(evt, showNavButtonsTemporarily, { passive: true });
+  });
+  showNavButtonsTemporarily();
 
   prevBtn?.addEventListener('click', (e) => {
     e.stopPropagation();
