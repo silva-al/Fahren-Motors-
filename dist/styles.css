@@ -3628,7 +3628,8 @@ body.tema-claro .cat-card-count-box{background:#f8fafc !important;border:1px sol
 .offer-card-img img{
   width:100%;
   height:100%;
-  object-fit:cover;
+  object-fit:contain !important;
+  object-position:center center !important;
   transition:transform .3s ease;
 }
 .offer-card:hover .offer-card-img img{
@@ -7289,7 +7290,7 @@ body.tema-claro .product .part-photo {
   height: 100% !important;
   max-width: 100% !important;
   max-height: 100% !important;
-  object-fit: cover !important;
+  object-fit: contain !important;
   object-position: center !important;
   border-radius: inherit !important;
   padding: 0 !important;
@@ -8731,7 +8732,8 @@ body.tema-claro .gallery-thumb.active {
 .part-photo .card-photo-img {
   width: 100% !important;
   height: 100% !important;
-  object-fit: cover !important;
+  object-fit: contain !important;
+  object-position: center center !important;
   display: block !important;
   border-radius: inherit !important;
   transition: transform 0.25s ease;
