@@ -66,6 +66,14 @@ async function init() {
     const parts = rawHash.split('/');
     if (parts.length > 1 && parts[1]) targetProdId = parts[1];
     initialScreen = 'produto';
+  } else if (rawHash.startsWith('pecas')) {
+    const parts = rawHash.split('/');
+    if (parts.length > 1 && parts[1]) {
+      try {
+        activeCatalogCategory = normalizeCatalogCategory(decodeURIComponent(parts[1]));
+      } catch {}
+    }
+    initialScreen = 'pecas';
   } else if (rawHash && validScreens.includes(rawHash)) {
     initialScreen = rawHash;
   } else {
@@ -85,6 +93,10 @@ async function init() {
 
   // Se a tela inicial for produto mas não temos o ID, volta com segurança para o catálogo (#pecas)
   if (initialScreen === 'produto') {
+    try {
+      const savedCat = sessionStorage.getItem('fahren-last-category') || localStorage.getItem('fahren-last-category');
+      if (savedCat && !activeCatalogCategory) activeCatalogCategory = savedCat;
+    } catch {}
     if (targetProdId) {
       show('produto', { push: false });
       setTimeout(() => {
@@ -92,12 +104,12 @@ async function init() {
       }, 50);
     } else {
       initialScreen = 'pecas';
-      show('pecas', { push: false });
+      show('pecas', { push: false, keepFilter: Boolean(activeCatalogCategory) });
     }
   } else if (initialScreen === 'pecas') {
     try {
-      const savedCat = sessionStorage.getItem('fahren-last-category');
-      if (savedCat) activeCatalogCategory = savedCat;
+      const savedCat = sessionStorage.getItem('fahren-last-category') || localStorage.getItem('fahren-last-category');
+      if (savedCat && !activeCatalogCategory) activeCatalogCategory = savedCat;
     } catch {}
     show('pecas', { push: false, keepFilter: Boolean(activeCatalogCategory) });
   } else {
@@ -921,7 +933,7 @@ async function refreshLojaStockData() {
   try {
     const tasks = [loadCategories(), loadCategoryCarousel()];
     // O catálogo só precisa ser atualizado se o cliente estiver olhando para ele
-    if (typeof loadCatalog === 'function') {
+    if (typeof loadCatalog === 'function' && typeof currentScreenId !== 'undefined' && currentScreenId === 'pecas') {
       tasks.push(loadCatalog());
     }
     // Na tela da peça: atualiza só preço/estoque, em modo silencioso (sem trocar de tela nem rolar)

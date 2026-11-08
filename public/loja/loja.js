@@ -346,11 +346,28 @@ window.addEventListener('popstate', e => {
   }
 
   if (st.screen === 'produto' && st.productId) {
+    if (st.category) {
+      activeCatalogCategory = st.category;
+      try {
+        sessionStorage.setItem('fahren-last-category', activeCatalogCategory);
+        localStorage.setItem('fahren-last-category', activeCatalogCategory);
+      } catch {}
+    }
     openProductDetails(st.productId, null, false);
   } else if (st.screen === 'pecas') {
-    activeCatalogCategory = typeof st.category === 'string' ? st.category : '';
+    // Se o cliente JÁ está na tela de peças/categoria (ex: Imagem 2 - Freios) e aperta o botão Voltar do celular,
+    // nunca deve cair no catálogo geral sem filtro (Imagem 3): deve voltar direto para a tela Inicial!
+    if (currentScreenId === 'pecas') {
+      show('inicio', { push: false });
+      return;
+    }
+    const restoredCat = (typeof st.category === 'string' && st.category)
+      ? st.category
+      : (activeCatalogCategory || (typeof currentProduct !== 'undefined' && currentProduct && currentProduct.category ? normalizeCatalogCategory(currentProduct.category) : ''));
+    activeCatalogCategory = restoredCat;
     try {
       sessionStorage.setItem('fahren-last-category', activeCatalogCategory);
+      localStorage.setItem('fahren-last-category', activeCatalogCategory);
     } catch {}
     show('pecas', { push: false, keepFilter: true });
   } else {
@@ -368,11 +385,16 @@ backBtn?.addEventListener('click', () => {
     // Ao clicar em Voltar estando em uma categoria ou no catálogo, volta direto para o Início
     show('inicio');
   } else if (currentScreenId === 'produto') {
-    // Ao clicar em Voltar estando nos detalhes da peça, volta para a categoria/lista de onde veio
-    if (navDepth > 0) {
+    // Ao clicar em Voltar estando nos detalhes da peça, volta para a categoria de onde veio (nunca perde o filtro)
+    if (!activeCatalogCategory && typeof currentProduct !== 'undefined' && currentProduct && currentProduct.category) {
+      activeCatalogCategory = normalizeCatalogCategory(currentProduct.category);
+    }
+    if (activeCatalogCategory) {
+      show('pecas', { keepFilter: true });
+    } else if (navDepth > 0) {
       window.history.back();
     } else {
-      show('pecas', { keepFilter: Boolean(activeCatalogCategory) });
+      show('pecas');
     }
   } else if (navDepth > 0) {
     window.history.back();
@@ -423,7 +445,10 @@ function show(id, opts = {}) {
       if (el) el.value = '';
     });
     activeCatalogCategory = '';
-    try { sessionStorage.removeItem('fahren-last-category'); } catch {}
+    try {
+      sessionStorage.removeItem('fahren-last-category');
+      localStorage.removeItem('fahren-last-category');
+    } catch {}
     const catSelect = document.getElementById('filterCategory');
     if (catSelect) catSelect.value = '';
   } else {
@@ -453,13 +478,19 @@ function show(id, opts = {}) {
   if (id === 'pecas') {
     if (!opts.keepFilter) {
       activeCatalogCategory = '';
-      try { sessionStorage.removeItem('fahren-last-category'); } catch {}
+      try {
+        sessionStorage.removeItem('fahren-last-category');
+        localStorage.removeItem('fahren-last-category');
+      } catch {}
       const catInput = document.getElementById('catalogSearch');
       if (catInput) catInput.value = '';
       const catSelect = document.getElementById('filterCategory');
       if (catSelect) catSelect.value = '';
     } else {
-      try { sessionStorage.setItem('fahren-last-category', activeCatalogCategory || ''); } catch {}
+      try {
+        sessionStorage.setItem('fahren-last-category', activeCatalogCategory || '');
+        localStorage.setItem('fahren-last-category', activeCatalogCategory || '');
+      } catch {}
     }
     loadCatalog();
   }
@@ -476,10 +507,15 @@ function show(id, opts = {}) {
     category: id === 'pecas' ? (activeCatalogCategory || '') : undefined
   };
 
+  const targetHash = id === 'inicio'
+    ? ''
+    : (id === 'pecas' && activeCatalogCategory
+      ? '#pecas/' + encodeURIComponent(activeCatalogCategory)
+      : '#' + id);
+
   if (push) {
     const curState = window.history.state || {};
     const isSameScreenAndCat = (curState.screen === id) && ((curState.category || '') === (statePayload.category || ''));
-    const targetHash = (id === 'inicio' ? '' : '#' + id);
     if (isSameScreenAndCat && id !== 'produto') {
       try {
         window.history.replaceState({ ...statePayload, depth: navDepth }, '', targetHash || window.location.pathname);
@@ -491,7 +527,6 @@ function show(id, opts = {}) {
     }
   } else {
     try {
-      const targetHash = (id === 'inicio' ? '' : '#' + id);
       window.history.replaceState({ ...statePayload, depth: navDepth }, '', targetHash || window.location.pathname);
     } catch {}
   }
@@ -2700,6 +2735,9 @@ function initProductViewer() {
   // Botão de Voltar ao Catálogo — preserva a categoria ativa de onde o cliente veio (ex: Freios)
   document.getElementById('backToCatalogBtn')?.addEventListener('click', (e) => {
     e.preventDefault();
+    if (!activeCatalogCategory && typeof currentProduct !== 'undefined' && currentProduct && currentProduct.category) {
+      activeCatalogCategory = normalizeCatalogCategory(currentProduct.category);
+    }
     if (activeCatalogCategory) {
       show('pecas', { keepFilter: true });
     } else if (navDepth > 0) {
@@ -2710,11 +2748,15 @@ function initProductViewer() {
   });
   document.getElementById('crumbCatalogLink')?.addEventListener('click', (e) => {
     e.preventDefault();
-    const catInput = document.getElementById('catalogSearch');
-    if (catInput) catInput.value = '';
-    const catSelect = document.getElementById('filterCategory');
-    if (catSelect) catSelect.value = '';
-    show('pecas');
+    if (activeCatalogCategory) {
+      show('pecas', { keepFilter: true });
+    } else {
+      const catInput = document.getElementById('catalogSearch');
+      if (catInput) catInput.value = '';
+      const catSelect = document.getElementById('filterCategory');
+      if (catSelect) catSelect.value = '';
+      show('pecas');
+    }
   });
 }
 
@@ -3811,6 +3853,14 @@ async function init() {
     const parts = rawHash.split('/');
     if (parts.length > 1 && parts[1]) targetProdId = parts[1];
     initialScreen = 'produto';
+  } else if (rawHash.startsWith('pecas')) {
+    const parts = rawHash.split('/');
+    if (parts.length > 1 && parts[1]) {
+      try {
+        activeCatalogCategory = normalizeCatalogCategory(decodeURIComponent(parts[1]));
+      } catch {}
+    }
+    initialScreen = 'pecas';
   } else if (rawHash && validScreens.includes(rawHash)) {
     initialScreen = rawHash;
   } else {
@@ -3830,6 +3880,10 @@ async function init() {
 
   // Se a tela inicial for produto mas não temos o ID, volta com segurança para o catálogo (#pecas)
   if (initialScreen === 'produto') {
+    try {
+      const savedCat = sessionStorage.getItem('fahren-last-category') || localStorage.getItem('fahren-last-category');
+      if (savedCat && !activeCatalogCategory) activeCatalogCategory = savedCat;
+    } catch {}
     if (targetProdId) {
       show('produto', { push: false });
       setTimeout(() => {
@@ -3837,12 +3891,12 @@ async function init() {
       }, 50);
     } else {
       initialScreen = 'pecas';
-      show('pecas', { push: false });
+      show('pecas', { push: false, keepFilter: Boolean(activeCatalogCategory) });
     }
   } else if (initialScreen === 'pecas') {
     try {
-      const savedCat = sessionStorage.getItem('fahren-last-category');
-      if (savedCat) activeCatalogCategory = savedCat;
+      const savedCat = sessionStorage.getItem('fahren-last-category') || localStorage.getItem('fahren-last-category');
+      if (savedCat && !activeCatalogCategory) activeCatalogCategory = savedCat;
     } catch {}
     show('pecas', { push: false, keepFilter: Boolean(activeCatalogCategory) });
   } else {
@@ -4666,7 +4720,7 @@ async function refreshLojaStockData() {
   try {
     const tasks = [loadCategories(), loadCategoryCarousel()];
     // O catálogo só precisa ser atualizado se o cliente estiver olhando para ele
-    if (typeof loadCatalog === 'function') {
+    if (typeof loadCatalog === 'function' && typeof currentScreenId !== 'undefined' && currentScreenId === 'pecas') {
       tasks.push(loadCatalog());
     }
     // Na tela da peça: atualiza só preço/estoque, em modo silencioso (sem trocar de tela nem rolar)

@@ -990,6 +990,9 @@ function initProductViewer() {
   // Botão de Voltar ao Catálogo — preserva a categoria ativa de onde o cliente veio (ex: Freios)
   document.getElementById('backToCatalogBtn')?.addEventListener('click', (e) => {
     e.preventDefault();
+    if (!activeCatalogCategory && typeof currentProduct !== 'undefined' && currentProduct && currentProduct.category) {
+      activeCatalogCategory = normalizeCatalogCategory(currentProduct.category);
+    }
     if (activeCatalogCategory) {
       show('pecas', { keepFilter: true });
     } else if (navDepth > 0) {
@@ -1000,11 +1003,15 @@ function initProductViewer() {
   });
   document.getElementById('crumbCatalogLink')?.addEventListener('click', (e) => {
     e.preventDefault();
-    const catInput = document.getElementById('catalogSearch');
-    if (catInput) catInput.value = '';
-    const catSelect = document.getElementById('filterCategory');
-    if (catSelect) catSelect.value = '';
-    show('pecas');
+    if (activeCatalogCategory) {
+      show('pecas', { keepFilter: true });
+    } else {
+      const catInput = document.getElementById('catalogSearch');
+      if (catInput) catInput.value = '';
+      const catSelect = document.getElementById('filterCategory');
+      if (catSelect) catSelect.value = '';
+      show('pecas');
+    }
   });
 }
 
