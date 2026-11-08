@@ -5,11 +5,11 @@
 // Foto real da categoria usada quando a peça ainda não tem foto própria cadastrada.
 const CATEGORY_IMAGES = {
   'Filtros': 'images/categorias/filtros.jpg',
-  'Freios': 'images/categorias/freios.jpg',
+  'Freios': '/api/uploads/img/24.jpg',
   'Elétrica e ignição': 'images/categorias/eletrica.jpg',
-  'Suspensão': 'images/categorias/suspensao.jpg',
+  'Suspensão': '/api/uploads/img/19.jpg',
   'Correias': 'images/categorias/correias.jpg',
-  'Sensores e injeção': 'images/categorias/sensores.jpg',
+  'Sensores e injeção': '/api/uploads/img/28.jpg',
   'Iluminação': 'images/categorias/iluminacao.jpg',
   'Óleos e fluidos': 'images/categorias/oleos.jpg',
 };
@@ -468,14 +468,58 @@ async function loadRecommendedProducts(product) {
   }
 }
 
+function syncHomeCategoryCardPhotos(productsOrCategories) {
+  if (!Array.isArray(productsOrCategories)) return;
+  const bestPhotoByCat = {};
+  productsOrCategories.forEach(item => {
+    if (!item) return;
+    // Se vier do endpoint /api/products/categories ({ name, photo, hasRealPhoto })
+    if (item.name && item.photo && (item.hasRealPhoto || item.photo.includes('/api/uploads/') || item.photo.includes('/uploads/'))) {
+      const normName = normalizeCatalogCategory(item.name);
+      if (normName && !bestPhotoByCat[normName]) {
+        bestPhotoByCat[normName] = normalizeLojaPhoto(item.photo, '');
+      }
+      return;
+    }
+    // Se vier de uma lista de produtos
+    const cat = normalizeCatalogCategory(item.category || '');
+    if (!cat || bestPhotoByCat[cat]) return;
+    const photos = extractLojaPhotos(item);
+    const firstReal = photos.find(p => p.includes('/api/uploads/') || p.includes('/uploads/'));
+    if (firstReal) {
+      bestPhotoByCat[cat] = firstReal;
+    }
+  });
+
+  Object.keys(bestPhotoByCat).forEach(cat => {
+    CATEGORY_IMAGES[cat] = bestPhotoByCat[cat];
+  });
+
+  document.querySelectorAll('.cat-grid-item[data-cat]').forEach(card => {
+    const rawCat = card.dataset.cat || card.getAttribute('data-cat') || '';
+    const normCat = normalizeCatalogCategory(rawCat);
+    const img = card.querySelector('.cat-card-thumb img');
+    if (img && bestPhotoByCat[normCat]) {
+      if (img.getAttribute('src') !== bestPhotoByCat[normCat]) {
+        img.src = bestPhotoByCat[normCat];
+      }
+    }
+  });
+}
+if (typeof window !== 'undefined') {
+  window.syncHomeCategoryCardPhotos = syncHomeCategoryCardPhotos;
+}
+
 async function goToCategory(category) {
   activeCatalogCategory = normalizeCatalogCategory(category);
+  try {
+    sessionStorage.setItem('fahren-last-category', activeCatalogCategory);
+  } catch {}
   const searchInput = document.getElementById('catalogSearch');
   if (searchInput) {
     searchInput.value = '';
   }
   show('pecas', { keepFilter: true });
-  await loadCatalog();
 }
 
 

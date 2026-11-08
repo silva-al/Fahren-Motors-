@@ -7303,16 +7303,16 @@ body.tema-claro .product .part-photo {
 
 /* 2. Cards de Categorias na Home (.cat-card-thumb) */
 .cat-card-thumb {
-  padding: 0 !important;
+  padding: 6px !important;
   overflow: hidden !important;
-  background: #090a0d !important;
+  background: #ffffff !important;
 }
 .cat-card-thumb img {
   width: 100% !important;
   height: 100% !important;
   max-width: 100% !important;
   max-height: 100% !important;
-  object-fit: cover !important;
+  object-fit: contain !important;
   object-position: center !important;
   padding: 0 !important;
   margin: 0 !important;

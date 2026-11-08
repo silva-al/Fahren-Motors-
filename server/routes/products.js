@@ -160,10 +160,13 @@ router.get('/', async (req, res) => {
       clauses.push('stock_qty = 0');
     }
 
-    const sql = `SELECT * FROM products WHERE ${clauses.join(' AND ')} ORDER BY (CASE WHEN photo_url LIKE '%/api/uploads/%' THEN 0 ELSE 1 END) ASC, name ASC`;
+    const sql = `SELECT * FROM products WHERE ${clauses.join(' AND ')} ORDER BY (CASE WHEN photo_url LIKE '%/api/uploads/%' OR photo_url LIKE '%/uploads/%' THEN 0 ELSE 1 END) ASC, name ASC`;
     const result = await db.query(sql, params);
+    const allSerialized = result.rows.map(serialize);
+    const realItems = allSerialized.filter(p => p.photoUrl && (p.photoUrl.includes('/api/uploads/') || p.photoUrl.includes('/uploads/')));
+    const finalProducts = realItems.length > 0 ? realItems : allSerialized;
     setNoCacheHeaders(res);
-    res.json({ products: result.rows.map(serialize) });
+    res.json({ products: finalProducts });
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: 'Erro ao buscar peças.' });
@@ -183,17 +186,37 @@ router.post('/sync-catalog', requireRole('admin'), async (_req, res) => {
 router.get('/categories', async (_req, res) => {
   try {
     const result = await db.query(`
-      SELECT category, COUNT(*)::int AS count
-      FROM products
-      WHERE category IS NOT NULL AND active = true
-      GROUP BY category
-      ORDER BY category
+      SELECT p.category,
+             COUNT(*) FILTER (WHERE p.photo_url LIKE '%/api/uploads/%' OR p.photo_url LIKE '%/uploads/%')::int AS real_count,
+             COUNT(*)::int AS total_count,
+             (
+               SELECT p2.photo_url
+               FROM products p2
+               WHERE p2.category = p.category AND p2.active = true
+               ORDER BY (CASE WHEN p2.photo_url LIKE '%/api/uploads/%' OR p2.photo_url LIKE '%/uploads/%' THEN 0 ELSE 1 END) ASC,
+                        p2.name ASC,
+                        p2.id ASC
+               LIMIT 1
+             ) AS best_photo
+      FROM products p
+      WHERE p.category IS NOT NULL AND p.active = true
+      GROUP BY p.category
+      ORDER BY p.category
     `);
+    const hasAnyReal = result.rows.some(r => r.real_count > 0);
+    setNoCacheHeaders(res);
     res.json({
-      categories: result.rows.map((r) => ({
-        name: r.category,
-        count: r.count,
-      })),
+      categories: result.rows.map((r) => {
+        const photos = parsePhotoList(r.best_photo);
+        const primaryPhoto = photos.length ? photos[0] : null;
+        const isRealUpload = Boolean(primaryPhoto && (primaryPhoto.includes('/api/uploads/') || primaryPhoto.includes('/uploads/')));
+        return {
+          name: r.category,
+          count: hasAnyReal ? r.real_count : r.total_count,
+          photo: isRealUpload ? primaryPhoto : null,
+          hasRealPhoto: isRealUpload,
+        };
+      }),
       names: result.rows.map((r) => r.category),
     });
   } catch (err) {
@@ -202,10 +225,6 @@ router.get('/categories', async (_req, res) => {
   }
 });
 
-// Uma peça real (nome + foto) para representar cada categoria — usado nos cards
-// de "Categorias" da tela inicial, que mostram sempre peças que já estão
-// cadastradas para venda (nunca um nome ou foto genérico da categoria).
-// Prioriza a peça com foto cadastrada; sem foto, o site usa uma foto padrão da categoria.
 router.get('/categories/featured', async (_req, res) => {
   try {
     await syncCatalog();
@@ -216,7 +235,9 @@ router.get('/categories/featured', async (_req, res) => {
       ORDER BY (CASE WHEN photo_url LIKE '%/api/uploads/%' THEN 0 ELSE 1 END) ASC, updated_at DESC, id ASC
       LIMIT 40
     `);
-    const list = result.rows.map(serialize);
+    const allList = result.rows.map(serialize);
+    const realList = allList.filter(p => p.photoUrl && (p.photoUrl.includes('/api/uploads/') || p.photoUrl.includes('/uploads/')));
+    const list = realList.length > 0 ? realList : allList;
     setNoCacheHeaders(res);
     res.json({
       categories: list,

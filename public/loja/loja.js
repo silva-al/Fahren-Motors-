@@ -347,6 +347,12 @@ window.addEventListener('popstate', e => {
 
   if (st.screen === 'produto' && st.productId) {
     openProductDetails(st.productId, null, false);
+  } else if (st.screen === 'pecas') {
+    activeCatalogCategory = typeof st.category === 'string' ? st.category : '';
+    try {
+      sessionStorage.setItem('fahren-last-category', activeCatalogCategory);
+    } catch {}
+    show('pecas', { push: false, keepFilter: true });
   } else {
     show(st.screen || 'inicio', { push: false });
   }
@@ -358,10 +364,18 @@ backBtn?.addEventListener('click', () => {
     if (typeof window.closeLightbox === 'function') window.closeLightbox(false);
     return;
   }
-  if (navDepth > 0) {
-    window.history.back();
+  if (currentScreenId === 'pecas') {
+    // Ao clicar em Voltar estando em uma categoria ou no catálogo, volta direto para o Início
+    show('inicio');
   } else if (currentScreenId === 'produto') {
-    show('pecas');
+    // Ao clicar em Voltar estando nos detalhes da peça, volta para a categoria/lista de onde veio
+    if (navDepth > 0) {
+      window.history.back();
+    } else {
+      show('pecas', { keepFilter: Boolean(activeCatalogCategory) });
+    }
+  } else if (navDepth > 0) {
+    window.history.back();
   } else {
     show('inicio');
   }
@@ -409,6 +423,7 @@ function show(id, opts = {}) {
       if (el) el.value = '';
     });
     activeCatalogCategory = '';
+    try { sessionStorage.removeItem('fahren-last-category'); } catch {}
     const catSelect = document.getElementById('filterCategory');
     if (catSelect) catSelect.value = '';
   } else {
@@ -438,29 +453,46 @@ function show(id, opts = {}) {
   if (id === 'pecas') {
     if (!opts.keepFilter) {
       activeCatalogCategory = '';
+      try { sessionStorage.removeItem('fahren-last-category'); } catch {}
       const catInput = document.getElementById('catalogSearch');
       if (catInput) catInput.value = '';
       const catSelect = document.getElementById('filterCategory');
       if (catSelect) catSelect.value = '';
+    } else {
+      try { sessionStorage.setItem('fahren-last-category', activeCatalogCategory || ''); } catch {}
     }
     loadCatalog();
   }
   if (id === 'carrinho') renderCart();
   if (id === 'perfil') loadMyOrders();
 
-    try {
+  try {
     sessionStorage.setItem('fahren-last-screen', id);
   } catch {}
 
+  const statePayload = {
+    screen: id,
+    depth: navDepth,
+    category: id === 'pecas' ? (activeCatalogCategory || '') : undefined
+  };
+
   if (push) {
-    const depth = (window.history.state && typeof window.history.state.depth === 'number') ? window.history.state.depth + 1 : 1;
+    const curState = window.history.state || {};
+    const isSameScreenAndCat = (curState.screen === id) && ((curState.category || '') === (statePayload.category || ''));
     const targetHash = (id === 'inicio' ? '' : '#' + id);
-    window.history.pushState({ screen: id, depth }, '', targetHash || window.location.pathname);
-    navDepth = depth;
+    if (isSameScreenAndCat && id !== 'produto') {
+      try {
+        window.history.replaceState({ ...statePayload, depth: navDepth }, '', targetHash || window.location.pathname);
+      } catch {}
+    } else {
+      const depth = (typeof curState.depth === 'number') ? curState.depth + 1 : 1;
+      window.history.pushState({ ...statePayload, depth }, '', targetHash || window.location.pathname);
+      navDepth = depth;
+    }
   } else {
     try {
       const targetHash = (id === 'inicio' ? '' : '#' + id);
-      window.history.replaceState({ screen: id, depth: navDepth }, '', targetHash || window.location.pathname);
+      window.history.replaceState({ ...statePayload, depth: navDepth }, '', targetHash || window.location.pathname);
     } catch {}
   }
   updateBackBtn(id);
@@ -478,16 +510,13 @@ document.addEventListener('click', (e) => {
     e.stopPropagation();
     const dest = btn.dataset.go || 'pecas';
     if (dest === 'pecas') {
-      // Limpa qualquer filtro residual para garantir exibição completa do catálogo
+      activeCatalogCategory = '';
       const catInput = document.getElementById('catalogSearch');
       if (catInput) catInput.value = '';
       const catSelect = document.getElementById('filterCategory');
       if (catSelect) catSelect.value = '';
     }
     show(dest);
-    if (dest === 'pecas') {
-      if (typeof loadCatalog === 'function') loadCatalog();
-    }
   }
 });
 
@@ -820,11 +849,11 @@ document.getElementById('editAddressBtn')?.addEventListener('click', () => show(
 // Foto real da categoria usada quando a peça ainda não tem foto própria cadastrada.
 const CATEGORY_IMAGES = {
   'Filtros': 'images/categorias/filtros.jpg',
-  'Freios': 'images/categorias/freios.jpg',
+  'Freios': '/api/uploads/img/24.jpg',
   'Elétrica e ignição': 'images/categorias/eletrica.jpg',
-  'Suspensão': 'images/categorias/suspensao.jpg',
+  'Suspensão': '/api/uploads/img/19.jpg',
   'Correias': 'images/categorias/correias.jpg',
-  'Sensores e injeção': 'images/categorias/sensores.jpg',
+  'Sensores e injeção': '/api/uploads/img/28.jpg',
   'Iluminação': 'images/categorias/iluminacao.jpg',
   'Óleos e fluidos': 'images/categorias/oleos.jpg',
 };
@@ -1283,14 +1312,58 @@ async function loadRecommendedProducts(product) {
   }
 }
 
+function syncHomeCategoryCardPhotos(productsOrCategories) {
+  if (!Array.isArray(productsOrCategories)) return;
+  const bestPhotoByCat = {};
+  productsOrCategories.forEach(item => {
+    if (!item) return;
+    // Se vier do endpoint /api/products/categories ({ name, photo, hasRealPhoto })
+    if (item.name && item.photo && (item.hasRealPhoto || item.photo.includes('/api/uploads/') || item.photo.includes('/uploads/'))) {
+      const normName = normalizeCatalogCategory(item.name);
+      if (normName && !bestPhotoByCat[normName]) {
+        bestPhotoByCat[normName] = normalizeLojaPhoto(item.photo, '');
+      }
+      return;
+    }
+    // Se vier de uma lista de produtos
+    const cat = normalizeCatalogCategory(item.category || '');
+    if (!cat || bestPhotoByCat[cat]) return;
+    const photos = extractLojaPhotos(item);
+    const firstReal = photos.find(p => p.includes('/api/uploads/') || p.includes('/uploads/'));
+    if (firstReal) {
+      bestPhotoByCat[cat] = firstReal;
+    }
+  });
+
+  Object.keys(bestPhotoByCat).forEach(cat => {
+    CATEGORY_IMAGES[cat] = bestPhotoByCat[cat];
+  });
+
+  document.querySelectorAll('.cat-grid-item[data-cat]').forEach(card => {
+    const rawCat = card.dataset.cat || card.getAttribute('data-cat') || '';
+    const normCat = normalizeCatalogCategory(rawCat);
+    const img = card.querySelector('.cat-card-thumb img');
+    if (img && bestPhotoByCat[normCat]) {
+      if (img.getAttribute('src') !== bestPhotoByCat[normCat]) {
+        img.src = bestPhotoByCat[normCat];
+      }
+    }
+  });
+}
+if (typeof window !== 'undefined') {
+  window.syncHomeCategoryCardPhotos = syncHomeCategoryCardPhotos;
+}
+
 async function goToCategory(category) {
   activeCatalogCategory = normalizeCatalogCategory(category);
+  try {
+    sessionStorage.setItem('fahren-last-category', activeCatalogCategory);
+  } catch {}
   const searchInput = document.getElementById('catalogSearch');
   if (searchInput) {
     searchInput.value = '';
   }
   show('pecas', { keepFilter: true });
-  await loadCatalog();
 }
 
 
@@ -1724,7 +1797,14 @@ async function openProductDetails(productId, cachedProduct = null, push = true, 
   // Breadcrumbs e Títulos
   const crumbCat = document.getElementById('detailBreadcrumbCat');
   const crumbName = document.getElementById('detailBreadcrumbName');
-  if (crumbCat) crumbCat.textContent = product.category || 'Peças';
+  if (crumbCat) {
+    crumbCat.textContent = product.category || 'Peças';
+    crumbCat.style.cursor = 'pointer';
+    crumbCat.onclick = () => {
+      if (product.category) goToCategory(product.category);
+      else show('pecas');
+    };
+  }
   if (crumbName) crumbName.textContent = product.name;
 
   const catBadge = document.getElementById('detailCategoryBadge');
@@ -1997,7 +2077,7 @@ async function openProductDetails(productId, cachedProduct = null, push = true, 
   if (!opts.silent && (push || (typeof currentScreenId !== 'undefined' && currentScreenId === 'produto'))) {
     show('produto', { push, scrollTop: push === true });
     if (push) {
-      window.history.replaceState({ screen: 'produto', depth: navDepth, productId: product.id }, '', '#produto/' + product.id);
+      window.history.replaceState({ screen: 'produto', depth: navDepth, productId: product.id, category: activeCatalogCategory || '' }, '', '#produto/' + product.id);
     }
     loadRecommendedProducts(product);
   }
@@ -2617,14 +2697,16 @@ function initProductViewer() {
     });
   });
 
-  // Botões de Voltar ao Catálogo — limpa qualquer filtro para mostrar catálogo completo
+  // Botão de Voltar ao Catálogo — preserva a categoria ativa de onde o cliente veio (ex: Freios)
   document.getElementById('backToCatalogBtn')?.addEventListener('click', (e) => {
     e.preventDefault();
-    const catInput = document.getElementById('catalogSearch');
-    if (catInput) catInput.value = '';
-    const catSelect = document.getElementById('filterCategory');
-    if (catSelect) catSelect.value = '';
-    show('pecas');
+    if (activeCatalogCategory) {
+      show('pecas', { keepFilter: true });
+    } else if (navDepth > 0) {
+      window.history.back();
+    } else {
+      show('pecas');
+    }
   });
   document.getElementById('crumbCatalogLink')?.addEventListener('click', (e) => {
     e.preventDefault();
@@ -2637,8 +2719,13 @@ function initProductViewer() {
 }
 
 let catalogTimer = null;
+let __catalogLoadSeq = 0;
 async function loadCatalog() {
+  const reqSeq = ++__catalogLoadSeq;
+  const targetCategory = activeCatalogCategory || document.getElementById('filterCategory')?.value || '';
+  const targetQ = document.getElementById('catalogSearch')?.value.trim() || '';
   await loadCategories();
+  if (reqSeq !== __catalogLoadSeq) return;
   const container = document.getElementById('catalogResults');
   if (!container) return;
 
@@ -2652,8 +2739,8 @@ async function loadCatalog() {
   }
 
   const params = new URLSearchParams();
-  const q = document.getElementById('catalogSearch')?.value.trim();
-  const category = activeCatalogCategory || document.getElementById('filterCategory')?.value || '';
+  const q = targetQ;
+  const category = targetCategory;
   if (q) params.set('q', q);
   if (category) params.set('category', category);
 
@@ -2661,6 +2748,7 @@ async function loadCatalog() {
     let prods = [];
     try {
       const res = await api('/api/products?' + params.toString());
+      if (reqSeq !== __catalogLoadSeq) return;
       if (res && Array.isArray(res.products)) prods = res.products;
     } catch (_) {}
 
@@ -2681,7 +2769,17 @@ async function loadCatalog() {
       });
     }
 
-    renderProducts(container, prioritizeRealProducts(prods));
+    if (reqSeq !== __catalogLoadSeq) return;
+    // Se houver peças reais cadastradas (com foto em /api/uploads/), oculta peças fictícias antigas
+    const realProds = prods.filter(p => {
+      const pUrl = p.photoUrl || (Array.isArray(p.photos) ? p.photos[0] : '') || '';
+      return pUrl.includes('/api/uploads/') || pUrl.includes('/uploads/');
+    });
+    const finalProds = realProds.length > 0 ? realProds : prods;
+    if (typeof window.syncHomeCategoryCardPhotos === 'function') {
+      window.syncHomeCategoryCardPhotos(finalProds);
+    }
+    renderProducts(container, prioritizeRealProducts(finalProds));
   } catch (err) {
     container.__renderSig = null;
     container.innerHTML = `<p style="color:#e06a6a">Não foi possível carregar as peças agora. ${err.message}</p>`;
@@ -3741,17 +3839,28 @@ async function init() {
       initialScreen = 'pecas';
       show('pecas', { push: false });
     }
+  } else if (initialScreen === 'pecas') {
+    try {
+      const savedCat = sessionStorage.getItem('fahren-last-category');
+      if (savedCat) activeCatalogCategory = savedCat;
+    } catch {}
+    show('pecas', { push: false, keepFilter: Boolean(activeCatalogCategory) });
   } else {
     show(initialScreen, { push: false });
   }
   loadAddress();
+
+  if (typeof window.syncHomeCategoryCardPhotos === 'function' && typeof CATALOG_FALLBACK_PRODUCTS !== 'undefined') {
+    window.syncHomeCategoryCardPhotos(CATALOG_FALLBACK_PRODUCTS);
+  }
   
   // Pré-carrega carrossel da home e catálogo de peças em paralelo para velocidade máxima
   try {
-    await Promise.allSettled([
-      loadCategoryCarousel(),
-      loadCatalog()
-    ]);
+    const preloadTasks = [loadCategoryCarousel()];
+    if (initialScreen !== 'pecas') {
+      preloadTasks.push(loadCatalog());
+    }
+    await Promise.allSettled(preloadTasks);
   } catch (err) {
     console.error('Erro no pré-carregamento:', err);
   }
@@ -3826,17 +3935,15 @@ init();
   document.getElementById('activeCategoryClearBtnCatalogBottom')?.addEventListener('click', handleExitAllParts);
   document.getElementById('activeCategoryBarCatalogBottom')?.addEventListener('click', handleExitAllParts);
 
-  // Grade de categorias na home (clique no card, imagem ou setinha busca imediatamente)
+  // Grade de categorias na home (clique único no card abre a categoria sem empilhar histórico triplo)
   document.querySelectorAll('.cat-grid-item[data-cat]').forEach((item) => {
     const handleCategorySelect = (e) => {
       e?.preventDefault?.();
+      e?.stopPropagation?.();
       const cat = item.dataset.cat || item.getAttribute('data-cat') || '';
       goToCategory(cat);
     };
     item.addEventListener('click', handleCategorySelect);
-    item.querySelectorAll('img, .cat-card-thumb, .cat-card-body, .cat-card-arrow-btn').forEach((child) => {
-      child.addEventListener('click', handleCategorySelect);
-    });
     item.addEventListener('keydown', (e) => {
       if (e.key === 'Enter' || e.key === ' ') {
         handleCategorySelect(e);
@@ -3844,15 +3951,19 @@ init();
     });
   });
 
-  // Quantidade real de peças por categoria (busca no banco de dados, sem número inventado)
+  // Quantidade real de peças e foto real cadastrada por categoria (busca no banco de dados)
   (async function loadCategoryCounts() {
     const els = [...document.querySelectorAll('.cat-grid-count[data-count-for]')];
     if (!els.length) return;
     try {
       const res = await fetch('/api/products/categories');
       const data = await res.json();
+      const cats = data.categories || [];
+      if (typeof window.syncHomeCategoryCardPhotos === 'function') {
+        window.syncHomeCategoryCardPhotos(cats);
+      }
       const counts = {};
-      (data.categories || []).forEach((c) => { counts[c.name] = c.count; });
+      cats.forEach((c) => { counts[c.name] = c.count; });
       els.forEach((el) => {
         const cat = el.dataset.countFor;
         const n = counts[cat] || 0;
@@ -4118,10 +4229,15 @@ init();
         rawEligible = (typeof CATALOG_FALLBACK_PRODUCTS !== 'undefined') ? CATALOG_FALLBACK_PRODUCTS.slice() : [];
       }
 
-      const allEligible = prioritizeRealProducts(rawEligible.filter(p => {
+      const filteredEligible = rawEligible.filter(p => {
         const v = typeof p.price === 'number' ? p.price : parseFloat(p.price) || 0;
         return v > 0 && p.inStock !== false;
-      }));
+      });
+      const realEligible = filteredEligible.filter(p => {
+        const pUrl = p.photoUrl || (Array.isArray(p.photos) ? p.photos[0] : '') || '';
+        return pUrl.includes('/api/uploads/') || pUrl.includes('/uploads/');
+      });
+      const allEligible = prioritizeRealProducts(realEligible.length > 0 ? realEligible : filteredEligible);
       if (!allEligible.length) return;
 
       // Seleciona ofertas destacadas garantindo variedade entre as categorias automotivas
@@ -4412,10 +4528,15 @@ init();
         rawList = (typeof CATALOG_FALLBACK_PRODUCTS !== 'undefined') ? CATALOG_FALLBACK_PRODUCTS.slice() : [];
       }
 
-      const eligible = prioritizeRealProducts(rawList.filter((p) => {
+      const filteredList = rawList.filter((p) => {
         const v = typeof p.price === 'number' ? p.price : parseFloat(p.price) || 0;
         return v > 0 && p.inStock !== false;
-      }));
+      });
+      const realList = filteredList.filter((p) => {
+        const pUrl = p.photoUrl || (Array.isArray(p.photos) ? p.photos[0] : '') || '';
+        return pUrl.includes('/api/uploads/') || pUrl.includes('/uploads/');
+      });
+      const eligible = prioritizeRealProducts(realList.length > 0 ? realList : filteredList);
 
       // Intercala as categorias para que os três cards visíveis nunca
       // fiquem todos da mesma categoria.

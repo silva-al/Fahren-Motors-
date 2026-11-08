@@ -94,17 +94,28 @@ async function init() {
       initialScreen = 'pecas';
       show('pecas', { push: false });
     }
+  } else if (initialScreen === 'pecas') {
+    try {
+      const savedCat = sessionStorage.getItem('fahren-last-category');
+      if (savedCat) activeCatalogCategory = savedCat;
+    } catch {}
+    show('pecas', { push: false, keepFilter: Boolean(activeCatalogCategory) });
   } else {
     show(initialScreen, { push: false });
   }
   loadAddress();
+
+  if (typeof window.syncHomeCategoryCardPhotos === 'function' && typeof CATALOG_FALLBACK_PRODUCTS !== 'undefined') {
+    window.syncHomeCategoryCardPhotos(CATALOG_FALLBACK_PRODUCTS);
+  }
   
   // Pré-carrega carrossel da home e catálogo de peças em paralelo para velocidade máxima
   try {
-    await Promise.allSettled([
-      loadCategoryCarousel(),
-      loadCatalog()
-    ]);
+    const preloadTasks = [loadCategoryCarousel()];
+    if (initialScreen !== 'pecas') {
+      preloadTasks.push(loadCatalog());
+    }
+    await Promise.allSettled(preloadTasks);
   } catch (err) {
     console.error('Erro no pré-carregamento:', err);
   }
@@ -179,17 +190,15 @@ init();
   document.getElementById('activeCategoryClearBtnCatalogBottom')?.addEventListener('click', handleExitAllParts);
   document.getElementById('activeCategoryBarCatalogBottom')?.addEventListener('click', handleExitAllParts);
 
-  // Grade de categorias na home (clique no card, imagem ou setinha busca imediatamente)
+  // Grade de categorias na home (clique único no card abre a categoria sem empilhar histórico triplo)
   document.querySelectorAll('.cat-grid-item[data-cat]').forEach((item) => {
     const handleCategorySelect = (e) => {
       e?.preventDefault?.();
+      e?.stopPropagation?.();
       const cat = item.dataset.cat || item.getAttribute('data-cat') || '';
       goToCategory(cat);
     };
     item.addEventListener('click', handleCategorySelect);
-    item.querySelectorAll('img, .cat-card-thumb, .cat-card-body, .cat-card-arrow-btn').forEach((child) => {
-      child.addEventListener('click', handleCategorySelect);
-    });
     item.addEventListener('keydown', (e) => {
       if (e.key === 'Enter' || e.key === ' ') {
         handleCategorySelect(e);
@@ -197,15 +206,19 @@ init();
     });
   });
 
-  // Quantidade real de peças por categoria (busca no banco de dados, sem número inventado)
+  // Quantidade real de peças e foto real cadastrada por categoria (busca no banco de dados)
   (async function loadCategoryCounts() {
     const els = [...document.querySelectorAll('.cat-grid-count[data-count-for]')];
     if (!els.length) return;
     try {
       const res = await fetch('/api/products/categories');
       const data = await res.json();
+      const cats = data.categories || [];
+      if (typeof window.syncHomeCategoryCardPhotos === 'function') {
+        window.syncHomeCategoryCardPhotos(cats);
+      }
       const counts = {};
-      (data.categories || []).forEach((c) => { counts[c.name] = c.count; });
+      cats.forEach((c) => { counts[c.name] = c.count; });
       els.forEach((el) => {
         const cat = el.dataset.countFor;
         const n = counts[cat] || 0;
@@ -471,10 +484,15 @@ init();
         rawEligible = (typeof CATALOG_FALLBACK_PRODUCTS !== 'undefined') ? CATALOG_FALLBACK_PRODUCTS.slice() : [];
       }
 
-      const allEligible = prioritizeRealProducts(rawEligible.filter(p => {
+      const filteredEligible = rawEligible.filter(p => {
         const v = typeof p.price === 'number' ? p.price : parseFloat(p.price) || 0;
         return v > 0 && p.inStock !== false;
-      }));
+      });
+      const realEligible = filteredEligible.filter(p => {
+        const pUrl = p.photoUrl || (Array.isArray(p.photos) ? p.photos[0] : '') || '';
+        return pUrl.includes('/api/uploads/') || pUrl.includes('/uploads/');
+      });
+      const allEligible = prioritizeRealProducts(realEligible.length > 0 ? realEligible : filteredEligible);
       if (!allEligible.length) return;
 
       // Seleciona ofertas destacadas garantindo variedade entre as categorias automotivas
@@ -765,10 +783,15 @@ init();
         rawList = (typeof CATALOG_FALLBACK_PRODUCTS !== 'undefined') ? CATALOG_FALLBACK_PRODUCTS.slice() : [];
       }
 
-      const eligible = prioritizeRealProducts(rawList.filter((p) => {
+      const filteredList = rawList.filter((p) => {
         const v = typeof p.price === 'number' ? p.price : parseFloat(p.price) || 0;
         return v > 0 && p.inStock !== false;
-      }));
+      });
+      const realList = filteredList.filter((p) => {
+        const pUrl = p.photoUrl || (Array.isArray(p.photos) ? p.photos[0] : '') || '';
+        return pUrl.includes('/api/uploads/') || pUrl.includes('/uploads/');
+      });
+      const eligible = prioritizeRealProducts(realList.length > 0 ? realList : filteredList);
 
       // Intercala as categorias para que os três cards visíveis nunca
       // fiquem todos da mesma categoria.

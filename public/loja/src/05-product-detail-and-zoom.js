@@ -87,7 +87,14 @@ async function openProductDetails(productId, cachedProduct = null, push = true, 
   // Breadcrumbs e Títulos
   const crumbCat = document.getElementById('detailBreadcrumbCat');
   const crumbName = document.getElementById('detailBreadcrumbName');
-  if (crumbCat) crumbCat.textContent = product.category || 'Peças';
+  if (crumbCat) {
+    crumbCat.textContent = product.category || 'Peças';
+    crumbCat.style.cursor = 'pointer';
+    crumbCat.onclick = () => {
+      if (product.category) goToCategory(product.category);
+      else show('pecas');
+    };
+  }
   if (crumbName) crumbName.textContent = product.name;
 
   const catBadge = document.getElementById('detailCategoryBadge');
@@ -360,7 +367,7 @@ async function openProductDetails(productId, cachedProduct = null, push = true, 
   if (!opts.silent && (push || (typeof currentScreenId !== 'undefined' && currentScreenId === 'produto'))) {
     show('produto', { push, scrollTop: push === true });
     if (push) {
-      window.history.replaceState({ screen: 'produto', depth: navDepth, productId: product.id }, '', '#produto/' + product.id);
+      window.history.replaceState({ screen: 'produto', depth: navDepth, productId: product.id, category: activeCatalogCategory || '' }, '', '#produto/' + product.id);
     }
     loadRecommendedProducts(product);
   }
@@ -980,14 +987,16 @@ function initProductViewer() {
     });
   });
 
-  // Botões de Voltar ao Catálogo — limpa qualquer filtro para mostrar catálogo completo
+  // Botão de Voltar ao Catálogo — preserva a categoria ativa de onde o cliente veio (ex: Freios)
   document.getElementById('backToCatalogBtn')?.addEventListener('click', (e) => {
     e.preventDefault();
-    const catInput = document.getElementById('catalogSearch');
-    if (catInput) catInput.value = '';
-    const catSelect = document.getElementById('filterCategory');
-    if (catSelect) catSelect.value = '';
-    show('pecas');
+    if (activeCatalogCategory) {
+      show('pecas', { keepFilter: true });
+    } else if (navDepth > 0) {
+      window.history.back();
+    } else {
+      show('pecas');
+    }
   });
   document.getElementById('crumbCatalogLink')?.addEventListener('click', (e) => {
     e.preventDefault();
@@ -1000,8 +1009,13 @@ function initProductViewer() {
 }
 
 let catalogTimer = null;
+let __catalogLoadSeq = 0;
 async function loadCatalog() {
+  const reqSeq = ++__catalogLoadSeq;
+  const targetCategory = activeCatalogCategory || document.getElementById('filterCategory')?.value || '';
+  const targetQ = document.getElementById('catalogSearch')?.value.trim() || '';
   await loadCategories();
+  if (reqSeq !== __catalogLoadSeq) return;
   const container = document.getElementById('catalogResults');
   if (!container) return;
 
@@ -1015,8 +1029,8 @@ async function loadCatalog() {
   }
 
   const params = new URLSearchParams();
-  const q = document.getElementById('catalogSearch')?.value.trim();
-  const category = activeCatalogCategory || document.getElementById('filterCategory')?.value || '';
+  const q = targetQ;
+  const category = targetCategory;
   if (q) params.set('q', q);
   if (category) params.set('category', category);
 
@@ -1024,6 +1038,7 @@ async function loadCatalog() {
     let prods = [];
     try {
       const res = await api('/api/products?' + params.toString());
+      if (reqSeq !== __catalogLoadSeq) return;
       if (res && Array.isArray(res.products)) prods = res.products;
     } catch (_) {}
 
@@ -1044,7 +1059,17 @@ async function loadCatalog() {
       });
     }
 
-    renderProducts(container, prioritizeRealProducts(prods));
+    if (reqSeq !== __catalogLoadSeq) return;
+    // Se houver peças reais cadastradas (com foto em /api/uploads/), oculta peças fictícias antigas
+    const realProds = prods.filter(p => {
+      const pUrl = p.photoUrl || (Array.isArray(p.photos) ? p.photos[0] : '') || '';
+      return pUrl.includes('/api/uploads/') || pUrl.includes('/uploads/');
+    });
+    const finalProds = realProds.length > 0 ? realProds : prods;
+    if (typeof window.syncHomeCategoryCardPhotos === 'function') {
+      window.syncHomeCategoryCardPhotos(finalProds);
+    }
+    renderProducts(container, prioritizeRealProducts(finalProds));
   } catch (err) {
     container.__renderSig = null;
     container.innerHTML = `<p style="color:#e06a6a">Não foi possível carregar as peças agora. ${err.message}</p>`;

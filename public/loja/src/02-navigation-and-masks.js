@@ -61,6 +61,12 @@ window.addEventListener('popstate', e => {
 
   if (st.screen === 'produto' && st.productId) {
     openProductDetails(st.productId, null, false);
+  } else if (st.screen === 'pecas') {
+    activeCatalogCategory = typeof st.category === 'string' ? st.category : '';
+    try {
+      sessionStorage.setItem('fahren-last-category', activeCatalogCategory);
+    } catch {}
+    show('pecas', { push: false, keepFilter: true });
   } else {
     show(st.screen || 'inicio', { push: false });
   }
@@ -72,10 +78,18 @@ backBtn?.addEventListener('click', () => {
     if (typeof window.closeLightbox === 'function') window.closeLightbox(false);
     return;
   }
-  if (navDepth > 0) {
-    window.history.back();
+  if (currentScreenId === 'pecas') {
+    // Ao clicar em Voltar estando em uma categoria ou no catálogo, volta direto para o Início
+    show('inicio');
   } else if (currentScreenId === 'produto') {
-    show('pecas');
+    // Ao clicar em Voltar estando nos detalhes da peça, volta para a categoria/lista de onde veio
+    if (navDepth > 0) {
+      window.history.back();
+    } else {
+      show('pecas', { keepFilter: Boolean(activeCatalogCategory) });
+    }
+  } else if (navDepth > 0) {
+    window.history.back();
   } else {
     show('inicio');
   }
@@ -123,6 +137,7 @@ function show(id, opts = {}) {
       if (el) el.value = '';
     });
     activeCatalogCategory = '';
+    try { sessionStorage.removeItem('fahren-last-category'); } catch {}
     const catSelect = document.getElementById('filterCategory');
     if (catSelect) catSelect.value = '';
   } else {
@@ -152,29 +167,46 @@ function show(id, opts = {}) {
   if (id === 'pecas') {
     if (!opts.keepFilter) {
       activeCatalogCategory = '';
+      try { sessionStorage.removeItem('fahren-last-category'); } catch {}
       const catInput = document.getElementById('catalogSearch');
       if (catInput) catInput.value = '';
       const catSelect = document.getElementById('filterCategory');
       if (catSelect) catSelect.value = '';
+    } else {
+      try { sessionStorage.setItem('fahren-last-category', activeCatalogCategory || ''); } catch {}
     }
     loadCatalog();
   }
   if (id === 'carrinho') renderCart();
   if (id === 'perfil') loadMyOrders();
 
-    try {
+  try {
     sessionStorage.setItem('fahren-last-screen', id);
   } catch {}
 
+  const statePayload = {
+    screen: id,
+    depth: navDepth,
+    category: id === 'pecas' ? (activeCatalogCategory || '') : undefined
+  };
+
   if (push) {
-    const depth = (window.history.state && typeof window.history.state.depth === 'number') ? window.history.state.depth + 1 : 1;
+    const curState = window.history.state || {};
+    const isSameScreenAndCat = (curState.screen === id) && ((curState.category || '') === (statePayload.category || ''));
     const targetHash = (id === 'inicio' ? '' : '#' + id);
-    window.history.pushState({ screen: id, depth }, '', targetHash || window.location.pathname);
-    navDepth = depth;
+    if (isSameScreenAndCat && id !== 'produto') {
+      try {
+        window.history.replaceState({ ...statePayload, depth: navDepth }, '', targetHash || window.location.pathname);
+      } catch {}
+    } else {
+      const depth = (typeof curState.depth === 'number') ? curState.depth + 1 : 1;
+      window.history.pushState({ ...statePayload, depth }, '', targetHash || window.location.pathname);
+      navDepth = depth;
+    }
   } else {
     try {
       const targetHash = (id === 'inicio' ? '' : '#' + id);
-      window.history.replaceState({ screen: id, depth: navDepth }, '', targetHash || window.location.pathname);
+      window.history.replaceState({ ...statePayload, depth: navDepth }, '', targetHash || window.location.pathname);
     } catch {}
   }
   updateBackBtn(id);
@@ -192,16 +224,13 @@ document.addEventListener('click', (e) => {
     e.stopPropagation();
     const dest = btn.dataset.go || 'pecas';
     if (dest === 'pecas') {
-      // Limpa qualquer filtro residual para garantir exibição completa do catálogo
+      activeCatalogCategory = '';
       const catInput = document.getElementById('catalogSearch');
       if (catInput) catInput.value = '';
       const catSelect = document.getElementById('filterCategory');
       if (catSelect) catSelect.value = '';
     }
     show(dest);
-    if (dest === 'pecas') {
-      if (typeof loadCatalog === 'function') loadCatalog();
-    }
   }
 });
 
