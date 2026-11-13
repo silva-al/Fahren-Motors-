@@ -1,9 +1,13 @@
 # STATE_CHECKPOINT.md
 
-- **Data/Hora:** 2026-11-13 01:26 (BRT)
-- **Último Commit Base:** `e124863` (`fix(wms,loja): corrigir contagem de estoque, filtro estrito de categorias, cadastro de novas categorias e ocultacao automatica de itens ficticios`)
+- **Data/Hora:** 2026-11-13 01:33 (BRT)
+- **Último Commit Base:** `a2d24eb` (`feat(wms,loja): visibilidade de categorias, colunas responsivas em todas as telas e modo tela cheia com ESC/Voltar`)
 
 ## Resumo das Entregas Recentes
+- **Eliminação de espaço desperdiçado nas colunas e badges de Pedidos/WMS (`public/admin/admin.css`):**
+  - Removido o `padding-right: 24px` extra de `.orders-table-wrapper` e reduzido o padding lateral dos painéis com tabela.
+  - Colunas compactas da tabela de Pedidos (`#ID`, `LOCALIZAÇÃO`, `TOTAL`, `PAGAMENTO`, `DATA/HORA`, `STATUS`) ajustadas para `width: 1%; white-space: nowrap;`, liberando o espaço restante para `CLIENTE` e `ITENS` (sem quebrar nomes em várias linhas).
+  - Compactado o pill de status (`.status-badge-wrap`, `.order-status-badge-select`) e badges (`#9`, localização) para eliminar espaços vazios internos e externos.
 - **Ativar/Desativar Categorias (ex.: Iluminação) entre WMS e Loja:**
   - `server/routes/products.js`: Persistência de `disabled_categories` em `app_meta`, endpoint `PUT /api/products/categories/visibility` (`requireRole('admin')`), e filtro automático em `GET /api/products`, `GET /api/products/categories` e `GET /api/products/categories/featured` (suportando `?includeDisabled=true` para o WMS).
   - `public/admin/index.html`, `public/admin/src/03-data-sync.js`, `public/admin/src/05-products-and-stock.js`: Painel de visibilidade de categorias (`#wmsCategoryVisibilityPanel` / `#wmsCategoryVisibilityBar`) na aba Estoque para desativar/reativar categorias com 1 clique.
