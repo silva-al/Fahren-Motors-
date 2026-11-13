@@ -1040,38 +1040,46 @@ async function loadCatalog() {
   const category = targetCategory;
   if (q) params.set('q', q);
   if (category) params.set('category', category);
+  params.set('_t', String(Date.now()));
 
   try {
     let prods = [];
+    let apiFailed = false;
     try {
       const res = await api('/api/products?' + params.toString());
       if (reqSeq !== __catalogLoadSeq) return;
       if (res && Array.isArray(res.products)) prods = res.products;
-    } catch (_) {}
+    } catch (_) {
+      apiFailed = true;
+    }
 
-    // Se a API estiver offline ou sem retorno, exibe os produtos do catálogo com busca e filtro ativos
-    if (!prods.length && typeof CATALOG_FALLBACK_PRODUCTS !== 'undefined') {
+    // Só recorre ao fallback local se a API estiver realmente offline/indisponível
+    if (apiFailed && !prods.length && typeof CATALOG_FALLBACK_PRODUCTS !== 'undefined') {
       const qLower = (q || '').toLowerCase();
-      const catLower = (category || '').toLowerCase();
+      const catNorm = normalizeCatalogCategory(category || '').toLowerCase();
       prods = CATALOG_FALLBACK_PRODUCTS.filter(p => {
-        const pCat = (p.category || '').toLowerCase();
+        const pCat = normalizeCatalogCategory(p.category || '').toLowerCase();
         const pName = (p.name || '').toLowerCase();
         const pDesc = (p.description || '').toLowerCase();
         const pComp = (p.compatibility || '').toLowerCase();
         const pCode = (p.code || '').toLowerCase();
 
-        const matchCat = !catLower || pCat === catLower || pCat.includes(catLower) || catLower.includes(pCat);
+        const matchCat = !catNorm || pCat === catNorm;
         const matchQ = !qLower || pName.includes(qLower) || pDesc.includes(qLower) || pComp.includes(qLower) || pCode.includes(qLower) || pCat.includes(qLower);
         return matchCat && matchQ;
       });
     }
 
     if (reqSeq !== __catalogLoadSeq) return;
-    // Se houver peças reais cadastradas (com foto em /api/uploads/), oculta peças fictícias antigas
-    const realProds = prods.filter(p => {
-      const pUrl = p.photoUrl || (Array.isArray(p.photos) ? p.photos[0] : '') || '';
-      return pUrl.includes('/api/uploads/') || pUrl.includes('/uploads/');
-    });
+
+    // Garante que nenhuma peça fora da categoria selecionada apareça na tela
+    if (category) {
+      const targetNorm = normalizeCatalogCategory(category).toLowerCase();
+      prods = prods.filter(p => normalizeCatalogCategory(p.category || '').toLowerCase() === targetNorm);
+    }
+
+    // Se houver peças reais cadastradas no WMS, oculta peças fictícias antigas (imagens estáticas de teste)
+    const realProds = prods.filter(p => typeof isLojaRealWmsProduct === 'function' ? isLojaRealWmsProduct(p) : true);
     const finalProds = realProds.length > 0 ? realProds : prods;
     if (typeof window.syncHomeCategoryCardPhotos === 'function') {
       window.syncHomeCategoryCardPhotos(finalProds);

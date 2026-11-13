@@ -1040,14 +1040,42 @@ const CATALOG_FALLBACK_PRODUCTS = [
   }
 ];
 
+function isLojaFictitiousPhoto(url) {
+  if (!url) return false;
+  const s = String(url).trim().toLowerCase();
+  if (!s) return false;
+  return (
+    s.startsWith('images/produtos/') ||
+    s.startsWith('/images/produtos/') ||
+    s.startsWith('images/categorias/') ||
+    s.startsWith('/images/categorias/') ||
+    s.startsWith('loja/images/') ||
+    s.startsWith('/loja/images/')
+  );
+}
+
+function isLojaRealPhoto(url) {
+  if (!url) return false;
+  const s = String(url).trim();
+  if (!s || s.startsWith('data:image/svg+xml')) return false;
+  return !isLojaFictitiousPhoto(s);
+}
+
+function isLojaRealWmsProduct(product) {
+  if (!product) return false;
+  const photos = extractLojaPhotos(product);
+  if (!photos.length) return true;
+  return photos.some(isLojaRealPhoto);
+}
+
 // Função para priorizar no topo da loja peças reais com fotos cadastradas
 function prioritizeRealProducts(list) {
   if (!Array.isArray(list)) return [];
   return list.slice().sort((a, b) => {
-    const aPhoto = a.photoUrl || (Array.isArray(a.photos) ? a.photos[0] : '') || '';
-    const bPhoto = b.photoUrl || (Array.isArray(b.photos) ? b.photos[0] : '') || '';
-    const aIsReal = aPhoto.includes('/api/uploads/') || aPhoto.includes('/uploads/');
-    const bIsReal = bPhoto.includes('/api/uploads/') || bPhoto.includes('/uploads/');
+    const aPhotos = extractLojaPhotos(a);
+    const bPhotos = extractLojaPhotos(b);
+    const aIsReal = aPhotos.some(isLojaRealPhoto);
+    const bIsReal = bPhotos.some(isLojaRealPhoto);
     if (aIsReal && !bIsReal) return -1;
     if (!aIsReal && bIsReal) return 1;
     return 0;
@@ -1157,21 +1185,24 @@ async function loadCategoryCarousel() {
   if (!track) return;
   try {
     let items = [];
+    let apiSucceeded = false;
     try {
-      const res = await api('/api/products/categories/featured');
+      const res = await api('/api/products/categories/featured?_t=' + Date.now());
       items = res.products || res.categories || (Array.isArray(res.featured) ? res.featured.map(f => f.product || f) : []);
+      apiSucceeded = true;
     } catch (e) {
       console.warn('Tentando fallback para carrossel:', e);
     }
 
-    if (!items || !items.length) {
+    if (!apiSucceeded || !items.length) {
       try {
-        const pRes = await api('/api/products');
+        const pRes = await api('/api/products?_t=' + Date.now());
         items = pRes.products || [];
+        apiSucceeded = true;
       } catch (_) {}
     }
 
-    if (!items || !items.length) {
+    if (!apiSucceeded && !items.length) {
       items = (typeof CATALOG_FALLBACK_PRODUCTS !== 'undefined') ? CATALOG_FALLBACK_PRODUCTS.slice() : [];
     }
 
@@ -1278,21 +1309,8 @@ async function loadRecommendedProducts(product) {
   try {
     let items = [];
     if (categoryName) {
-      const res = await api('/api/products?category=' + encodeURIComponent(categoryName));
+      const res = await api('/api/products?category=' + encodeURIComponent(categoryName) + '&_t=' + Date.now());
       items = (res.products || []).filter(p => String(p.id) !== String(product.id));
-    }
-
-    // Se a mesma categoria tiver poucas opções, busca itens gerais para complementar
-    if (items.length < 4) {
-      try {
-        const altRes = await api('/api/products/categories/featured');
-        const rawAlts = altRes.products || altRes.categories || (Array.isArray(altRes.featured) ? altRes.featured.map(f => f.product || f) : []);
-        const fallbackAlts = rawAlts.length ? rawAlts : ((typeof CATALOG_FALLBACK_PRODUCTS !== 'undefined') ? CATALOG_FALLBACK_PRODUCTS : []);
-        const alts = fallbackAlts.filter(
-          p => String(p.id) !== String(product.id) && !items.some(i => String(i.id) === String(p.id))
-        );
-        items = items.concat(alts);
-      } catch (_) {}
     }
 
     const recommended = items.slice(0, 4);
@@ -1353,7 +1371,7 @@ function syncHomeCategoryCardPhotos(productsOrCategories) {
   productsOrCategories.forEach(item => {
     if (!item) return;
     // Se vier do endpoint /api/products/categories ({ name, photo, hasRealPhoto })
-    if (item.name && item.photo && (item.hasRealPhoto || item.photo.includes('/api/uploads/') || item.photo.includes('/uploads/'))) {
+    if (item.name && item.photo && (item.hasRealPhoto || isLojaRealPhoto(item.photo))) {
       const normName = normalizeCatalogCategory(item.name);
       if (normName && !bestPhotoByCat[normName]) {
         bestPhotoByCat[normName] = normalizeLojaPhoto(item.photo, '');
@@ -1364,7 +1382,7 @@ function syncHomeCategoryCardPhotos(productsOrCategories) {
     const cat = normalizeCatalogCategory(item.category || '');
     if (!cat || bestPhotoByCat[cat]) return;
     const photos = extractLojaPhotos(item);
-    const firstReal = photos.find(p => p.includes('/api/uploads/') || p.includes('/uploads/'));
+    const firstReal = photos.find(isLojaRealPhoto);
     if (firstReal) {
       bestPhotoByCat[cat] = firstReal;
     }
@@ -2785,38 +2803,46 @@ async function loadCatalog() {
   const category = targetCategory;
   if (q) params.set('q', q);
   if (category) params.set('category', category);
+  params.set('_t', String(Date.now()));
 
   try {
     let prods = [];
+    let apiFailed = false;
     try {
       const res = await api('/api/products?' + params.toString());
       if (reqSeq !== __catalogLoadSeq) return;
       if (res && Array.isArray(res.products)) prods = res.products;
-    } catch (_) {}
+    } catch (_) {
+      apiFailed = true;
+    }
 
-    // Se a API estiver offline ou sem retorno, exibe os produtos do catálogo com busca e filtro ativos
-    if (!prods.length && typeof CATALOG_FALLBACK_PRODUCTS !== 'undefined') {
+    // Só recorre ao fallback local se a API estiver realmente offline/indisponível
+    if (apiFailed && !prods.length && typeof CATALOG_FALLBACK_PRODUCTS !== 'undefined') {
       const qLower = (q || '').toLowerCase();
-      const catLower = (category || '').toLowerCase();
+      const catNorm = normalizeCatalogCategory(category || '').toLowerCase();
       prods = CATALOG_FALLBACK_PRODUCTS.filter(p => {
-        const pCat = (p.category || '').toLowerCase();
+        const pCat = normalizeCatalogCategory(p.category || '').toLowerCase();
         const pName = (p.name || '').toLowerCase();
         const pDesc = (p.description || '').toLowerCase();
         const pComp = (p.compatibility || '').toLowerCase();
         const pCode = (p.code || '').toLowerCase();
 
-        const matchCat = !catLower || pCat === catLower || pCat.includes(catLower) || catLower.includes(pCat);
+        const matchCat = !catNorm || pCat === catNorm;
         const matchQ = !qLower || pName.includes(qLower) || pDesc.includes(qLower) || pComp.includes(qLower) || pCode.includes(qLower) || pCat.includes(qLower);
         return matchCat && matchQ;
       });
     }
 
     if (reqSeq !== __catalogLoadSeq) return;
-    // Se houver peças reais cadastradas (com foto em /api/uploads/), oculta peças fictícias antigas
-    const realProds = prods.filter(p => {
-      const pUrl = p.photoUrl || (Array.isArray(p.photos) ? p.photos[0] : '') || '';
-      return pUrl.includes('/api/uploads/') || pUrl.includes('/uploads/');
-    });
+
+    // Garante que nenhuma peça fora da categoria selecionada apareça na tela
+    if (category) {
+      const targetNorm = normalizeCatalogCategory(category).toLowerCase();
+      prods = prods.filter(p => normalizeCatalogCategory(p.category || '').toLowerCase() === targetNorm);
+    }
+
+    // Se houver peças reais cadastradas no WMS, oculta peças fictícias antigas (imagens estáticas de teste)
+    const realProds = prods.filter(p => typeof isLojaRealWmsProduct === 'function' ? isLojaRealWmsProduct(p) : true);
     const finalProds = realProds.length > 0 ? realProds : prods;
     if (typeof window.syncHomeCategoryCardPhotos === 'function') {
       window.syncHomeCategoryCardPhotos(finalProds);
@@ -4005,28 +4031,115 @@ init();
     });
   });
 
-  // Quantidade real de peças e foto real cadastrada por categoria (busca no banco de dados)
-  (async function loadCategoryCounts() {
+  // Quantidade real de peças, foto real e categorias dinâmicas (inclui novas categorias criadas no WMS)
+  async function loadCategoryCounts() {
+    const grid = document.querySelector('.cat-grid');
     const els = [...document.querySelectorAll('.cat-grid-count[data-count-for]')];
-    if (!els.length) return;
+    if (!els.length && !grid) return;
     try {
-      const res = await fetch('/api/products/categories');
+      const res = await fetch('/api/products/categories?_t=' + Date.now(), { cache: 'no-store' });
       const data = await res.json();
       const cats = data.categories || [];
+
+      if (grid && cats.length) {
+        const existingNorms = new Set(
+          [...grid.querySelectorAll('.cat-grid-item[data-cat]')].map((el) =>
+            normalizeCatalogCategory(el.dataset.cat || el.getAttribute('data-cat') || '').toLowerCase()
+          )
+        );
+        cats.forEach((c) => {
+          const catName = (c && c.name ? String(c.name).trim() : '');
+          const norm = normalizeCatalogCategory(catName).toLowerCase();
+          if (!catName || !norm || existingNorms.has(norm)) return;
+          existingNorms.add(norm);
+          const photoSrc = (c.photo && isLojaRealPhoto(c.photo)) ? normalizeLojaPhoto(c.photo) : LOJA_NO_PHOTO_SVG;
+          const card = document.createElement('div');
+          card.className = 'cat-grid-item cat-grid-item-dynamic';
+          card.setAttribute('role', 'button');
+          card.setAttribute('tabindex', '0');
+          card.setAttribute('data-cat', catName);
+          card.innerHTML = `
+            <div class="cat-card-thumb">
+              <img src="${photoSrc}" alt="${catName}" loading="lazy" onerror="this.onerror=null; this.src=window.LOJA_NO_PHOTO_SVG;"/>
+            </div>
+            <div class="cat-card-body">
+              <div class="cat-card-head">
+                <span class="cat-card-icon-badge">
+                  <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.3"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg>
+                </span>
+                <h3 class="cat-card-title">${catName.toUpperCase()}</h3>
+              </div>
+              <p class="cat-card-sub">Peças cadastradas no WMS</p>
+              <div class="cat-card-line"></div>
+              <div class="cat-card-footer">
+                <span class="cat-card-count-box">
+                  <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>
+                  <span class="cat-grid-count" data-count-for="${catName}">Carregando...</span>
+                </span>
+                <span class="cat-card-arrow-btn">
+                  <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+                </span>
+              </div>
+            </div>`;
+          const handleDynamicCat = (e) => {
+            e?.preventDefault?.();
+            e?.stopPropagation?.();
+            goToCategory(catName);
+          };
+          card.addEventListener('click', handleDynamicCat);
+          card.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' || e.key === ' ') handleDynamicCat(e);
+          });
+          grid.appendChild(card);
+        });
+      }
+
+      if (catMenu && cats.length) {
+        const menuNorms = new Set(
+          [...catMenu.querySelectorAll('.clean-chip')].map((el) =>
+            normalizeCatalogCategory(el.dataset.cat || '').toLowerCase()
+          )
+        );
+        cats.forEach((c) => {
+          const catName = (c && c.name ? String(c.name).trim() : '');
+          const norm = normalizeCatalogCategory(catName).toLowerCase();
+          if (!catName || !norm || menuNorms.has(norm)) return;
+          menuNorms.add(norm);
+          const chip = document.createElement('button');
+          chip.type = 'button';
+          chip.className = 'clean-chip';
+          chip.dataset.cat = catName;
+          chip.textContent = catName;
+          chip.addEventListener('click', () => {
+            catMenu.classList.remove('open');
+            catBtn?.setAttribute('aria-expanded', 'false');
+            document.querySelectorAll('.clean-chip').forEach((x) => x.classList.remove('active'));
+            chip.classList.add('active');
+            goToCategory(catName);
+          });
+          catMenu.appendChild(chip);
+        });
+      }
+
       if (typeof window.syncHomeCategoryCardPhotos === 'function') {
         window.syncHomeCategoryCardPhotos(cats);
       }
       const counts = {};
-      cats.forEach((c) => { counts[c.name] = c.count; });
-      els.forEach((el) => {
-        const cat = el.dataset.countFor;
+      cats.forEach((c) => {
+        const key = normalizeCatalogCategory(c.name || '').toLowerCase();
+        if (key) counts[key] = (counts[key] || 0) + (Number(c.count) || 0);
+      });
+      document.querySelectorAll('.cat-grid-count[data-count-for]').forEach((el) => {
+        const cat = normalizeCatalogCategory(el.dataset.countFor || '').toLowerCase();
         const n = counts[cat] || 0;
         el.textContent = n === 1 ? '1 produto disponível' : `${n} produtos disponíveis`;
       });
     } catch (e) {
-      els.forEach((el) => { el.textContent = ''; });
+      document.querySelectorAll('.cat-grid-count[data-count-for]').forEach((el) => { el.textContent = ''; });
     }
-  })();
+  }
+  window.loadCategoryCounts = loadCategoryCounts;
+  loadCategoryCounts();
 
     // ========================================================
   // WIDGET INTERATIVO DE VEÍCULOS & GARAGEM FAHREN MOTORS
@@ -4265,21 +4378,24 @@ init();
     if (!section || !list) return;
     try {
       let rawEligible = [];
+      let offersApiOk = false;
       try {
-        const res = await fetch('/api/products/categories/featured');
+        const res = await fetch('/api/products/categories/featured?_t=' + Date.now(), { cache: 'no-store' });
         const data = await res.json();
         rawEligible = data.products || data.categories || (Array.isArray(data.featured) ? data.featured.map(f => f.product || f) : []);
+        offersApiOk = true;
       } catch (_) {}
 
-      if (!rawEligible || !rawEligible.length) {
+      if (!offersApiOk || !rawEligible.length) {
         try {
-          const r2 = await fetch('/api/products');
+          const r2 = await fetch('/api/products?_t=' + Date.now(), { cache: 'no-store' });
           const d2 = await r2.json();
           rawEligible = d2.products || [];
+          offersApiOk = true;
         } catch (_) {}
       }
 
-      if (!rawEligible || !rawEligible.length) {
+      if (!offersApiOk && !rawEligible.length) {
         rawEligible = (typeof CATALOG_FALLBACK_PRODUCTS !== 'undefined') ? CATALOG_FALLBACK_PRODUCTS.slice() : [];
       }
 
@@ -4287,10 +4403,7 @@ init();
         const v = typeof p.price === 'number' ? p.price : parseFloat(p.price) || 0;
         return v > 0 && p.inStock !== false;
       });
-      const realEligible = filteredEligible.filter(p => {
-        const pUrl = p.photoUrl || (Array.isArray(p.photos) ? p.photos[0] : '') || '';
-        return pUrl.includes('/api/uploads/') || pUrl.includes('/uploads/');
-      });
+      const realEligible = filteredEligible.filter(p => typeof isLojaRealWmsProduct === 'function' ? isLojaRealWmsProduct(p) : true);
       const allEligible = prioritizeRealProducts(realEligible.length > 0 ? realEligible : filteredEligible);
       if (!allEligible.length) return;
 
@@ -4562,23 +4675,26 @@ init();
 
     async function fetchProducts() {
       let rawList = [];
+      let heroApiOk = false;
       try {
-        const r = await fetch('/api/products/categories/featured');
+        const r = await fetch('/api/products/categories/featured?_t=' + Date.now(), { cache: 'no-store' });
         const data = await r.json();
         rawList = data.products || data.categories || (Array.isArray(data.featured) ? data.featured.map(f => f.product || f) : []);
+        heroApiOk = true;
       } catch (e) {
         console.warn('Falha ao buscar hero side cards na API:', e);
       }
 
-      if (!rawList || !rawList.length) {
+      if (!heroApiOk || !rawList.length) {
         try {
-          const r2 = await fetch('/api/products');
+          const r2 = await fetch('/api/products?_t=' + Date.now(), { cache: 'no-store' });
           const d2 = await r2.json();
           rawList = d2.products || [];
+          heroApiOk = true;
         } catch (_) {}
       }
 
-      if (!rawList || !rawList.length) {
+      if (!heroApiOk && !rawList.length) {
         rawList = (typeof CATALOG_FALLBACK_PRODUCTS !== 'undefined') ? CATALOG_FALLBACK_PRODUCTS.slice() : [];
       }
 
@@ -4586,10 +4702,7 @@ init();
         const v = typeof p.price === 'number' ? p.price : parseFloat(p.price) || 0;
         return v > 0 && p.inStock !== false;
       });
-      const realList = filteredList.filter((p) => {
-        const pUrl = p.photoUrl || (Array.isArray(p.photos) ? p.photos[0] : '') || '';
-        return pUrl.includes('/api/uploads/') || pUrl.includes('/uploads/');
-      });
+      const realList = filteredList.filter((p) => typeof isLojaRealWmsProduct === 'function' ? isLojaRealWmsProduct(p) : true);
       const eligible = prioritizeRealProducts(realList.length > 0 ? realList : filteredList);
 
       // Intercala as categorias para que os três cards visíveis nunca
@@ -4719,8 +4832,13 @@ async function refreshLojaStockData() {
   const savedY = window.scrollY;
   try {
     const tasks = [loadCategories(), loadCategoryCarousel()];
-    // O catálogo só precisa ser atualizado se o cliente estiver olhando para ele
-    if (typeof loadCatalog === 'function' && typeof currentScreenId !== 'undefined' && currentScreenId === 'pecas') {
+    if (typeof window.loadCategoryCounts === 'function') {
+      tasks.push(window.loadCategoryCounts());
+    }
+    const catalogEl = document.getElementById('catalogResults');
+    const catalogHasContent = Boolean(catalogEl && catalogEl.children.length > 0);
+    // Atualiza o catálogo se estiver visível ou já tiver sido renderizado (mantendo cards sincronizados)
+    if (typeof loadCatalog === 'function' && ((typeof currentScreenId !== 'undefined' && currentScreenId === 'pecas') || catalogHasContent)) {
       tasks.push(loadCatalog());
     }
     // Na tela da peça: atualiza só preço/estoque, em modo silencioso (sem trocar de tela nem rolar)

@@ -161,14 +161,42 @@ const CATALOG_FALLBACK_PRODUCTS = [
   }
 ];
 
+function isLojaFictitiousPhoto(url) {
+  if (!url) return false;
+  const s = String(url).trim().toLowerCase();
+  if (!s) return false;
+  return (
+    s.startsWith('images/produtos/') ||
+    s.startsWith('/images/produtos/') ||
+    s.startsWith('images/categorias/') ||
+    s.startsWith('/images/categorias/') ||
+    s.startsWith('loja/images/') ||
+    s.startsWith('/loja/images/')
+  );
+}
+
+function isLojaRealPhoto(url) {
+  if (!url) return false;
+  const s = String(url).trim();
+  if (!s || s.startsWith('data:image/svg+xml')) return false;
+  return !isLojaFictitiousPhoto(s);
+}
+
+function isLojaRealWmsProduct(product) {
+  if (!product) return false;
+  const photos = extractLojaPhotos(product);
+  if (!photos.length) return true;
+  return photos.some(isLojaRealPhoto);
+}
+
 // Função para priorizar no topo da loja peças reais com fotos cadastradas
 function prioritizeRealProducts(list) {
   if (!Array.isArray(list)) return [];
   return list.slice().sort((a, b) => {
-    const aPhoto = a.photoUrl || (Array.isArray(a.photos) ? a.photos[0] : '') || '';
-    const bPhoto = b.photoUrl || (Array.isArray(b.photos) ? b.photos[0] : '') || '';
-    const aIsReal = aPhoto.includes('/api/uploads/') || aPhoto.includes('/uploads/');
-    const bIsReal = bPhoto.includes('/api/uploads/') || bPhoto.includes('/uploads/');
+    const aPhotos = extractLojaPhotos(a);
+    const bPhotos = extractLojaPhotos(b);
+    const aIsReal = aPhotos.some(isLojaRealPhoto);
+    const bIsReal = bPhotos.some(isLojaRealPhoto);
     if (aIsReal && !bIsReal) return -1;
     if (!aIsReal && bIsReal) return 1;
     return 0;
@@ -278,21 +306,24 @@ async function loadCategoryCarousel() {
   if (!track) return;
   try {
     let items = [];
+    let apiSucceeded = false;
     try {
-      const res = await api('/api/products/categories/featured');
+      const res = await api('/api/products/categories/featured?_t=' + Date.now());
       items = res.products || res.categories || (Array.isArray(res.featured) ? res.featured.map(f => f.product || f) : []);
+      apiSucceeded = true;
     } catch (e) {
       console.warn('Tentando fallback para carrossel:', e);
     }
 
-    if (!items || !items.length) {
+    if (!apiSucceeded || !items.length) {
       try {
-        const pRes = await api('/api/products');
+        const pRes = await api('/api/products?_t=' + Date.now());
         items = pRes.products || [];
+        apiSucceeded = true;
       } catch (_) {}
     }
 
-    if (!items || !items.length) {
+    if (!apiSucceeded && !items.length) {
       items = (typeof CATALOG_FALLBACK_PRODUCTS !== 'undefined') ? CATALOG_FALLBACK_PRODUCTS.slice() : [];
     }
 
@@ -399,21 +430,8 @@ async function loadRecommendedProducts(product) {
   try {
     let items = [];
     if (categoryName) {
-      const res = await api('/api/products?category=' + encodeURIComponent(categoryName));
+      const res = await api('/api/products?category=' + encodeURIComponent(categoryName) + '&_t=' + Date.now());
       items = (res.products || []).filter(p => String(p.id) !== String(product.id));
-    }
-
-    // Se a mesma categoria tiver poucas opções, busca itens gerais para complementar
-    if (items.length < 4) {
-      try {
-        const altRes = await api('/api/products/categories/featured');
-        const rawAlts = altRes.products || altRes.categories || (Array.isArray(altRes.featured) ? altRes.featured.map(f => f.product || f) : []);
-        const fallbackAlts = rawAlts.length ? rawAlts : ((typeof CATALOG_FALLBACK_PRODUCTS !== 'undefined') ? CATALOG_FALLBACK_PRODUCTS : []);
-        const alts = fallbackAlts.filter(
-          p => String(p.id) !== String(product.id) && !items.some(i => String(i.id) === String(p.id))
-        );
-        items = items.concat(alts);
-      } catch (_) {}
     }
 
     const recommended = items.slice(0, 4);
@@ -474,7 +492,7 @@ function syncHomeCategoryCardPhotos(productsOrCategories) {
   productsOrCategories.forEach(item => {
     if (!item) return;
     // Se vier do endpoint /api/products/categories ({ name, photo, hasRealPhoto })
-    if (item.name && item.photo && (item.hasRealPhoto || item.photo.includes('/api/uploads/') || item.photo.includes('/uploads/'))) {
+    if (item.name && item.photo && (item.hasRealPhoto || isLojaRealPhoto(item.photo))) {
       const normName = normalizeCatalogCategory(item.name);
       if (normName && !bestPhotoByCat[normName]) {
         bestPhotoByCat[normName] = normalizeLojaPhoto(item.photo, '');
@@ -485,7 +503,7 @@ function syncHomeCategoryCardPhotos(productsOrCategories) {
     const cat = normalizeCatalogCategory(item.category || '');
     if (!cat || bestPhotoByCat[cat]) return;
     const photos = extractLojaPhotos(item);
-    const firstReal = photos.find(p => p.includes('/api/uploads/') || p.includes('/uploads/'));
+    const firstReal = photos.find(isLojaRealPhoto);
     if (firstReal) {
       bestPhotoByCat[cat] = firstReal;
     }

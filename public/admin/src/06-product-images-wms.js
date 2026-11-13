@@ -169,6 +169,8 @@ function resetProductForm() {
     const el = document.getElementById(id);
     if (el) el.value = '';
   });
+  if (typeof fillCategoryList === 'function') fillCategoryList(allProducts);
+  if (typeof syncCategorySelectValue === 'function') syncCategorySelectValue('');
   
   clearAllProductPhotos();
 
@@ -296,7 +298,12 @@ document.getElementById('saveProductBtn')?.addEventListener('click', async () =>
 
   const name = document.getElementById('pName').value.trim();
   const code = document.getElementById('pCode').value.trim();
-  const category = document.getElementById('pCategory').value.trim();
+  const catInputVal = document.getElementById('pCategory')?.value.trim() || '';
+  const catSelectVal = document.getElementById('pCategorySelect')?.value || '';
+  const category = catInputVal || (catSelectVal && catSelectVal !== '__new__' ? catSelectVal.trim() : '');
+  if (category && typeof saveCustomCategory === 'function') {
+    saveCustomCategory(category);
+  }
   const price = parseFloat(document.getElementById('pPrice').value.replace(',', '.'));
   const stockQty = parseInt(document.getElementById('pStock').value, 10);
   const location = (document.getElementById('pLocation')?.value || '').trim();

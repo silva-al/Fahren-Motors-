@@ -56,9 +56,38 @@ function setNoCacheHeaders(res) {
   res.setHeader('Expires', '0');
 }
 
+function isFictitiousPhoto(url) {
+  if (!url) return false;
+  const s = String(url).trim().toLowerCase();
+  if (!s) return false;
+  return (
+    s.startsWith('images/produtos/') ||
+    s.startsWith('/images/produtos/') ||
+    s.startsWith('images/categorias/') ||
+    s.startsWith('/images/categorias/') ||
+    s.startsWith('loja/images/') ||
+    s.startsWith('/loja/images/')
+  );
+}
+
+function isRealPhotoUrl(url) {
+  if (!url) return false;
+  const s = String(url).trim();
+  if (!s || s.startsWith('data:image/svg+xml')) return false;
+  return !isFictitiousPhoto(s);
+}
+
+function isRealWmsProduct(product) {
+  if (!product) return false;
+  const photos = Array.isArray(product.photos) ? product.photos : parsePhotoList(product.photoUrl || product.photo_url);
+  if (!photos.length) return true; // Peça cadastrada/editada no WMS sem foto ainda é real (não é semente fictícia)
+  return photos.some(isRealPhotoUrl);
+}
+
 function serialize(row) {
   const photos = parsePhotoList(row.photo_url);
   const normalizedPhotoUrl = photos.length ? photos.join(', ') : null;
+  const qty = Number(row.stock_qty) || 0;
   return {
     id: row.id,
     name: row.name,
@@ -67,8 +96,8 @@ function serialize(row) {
     description: row.description,
     compatibility: row.compatibility,
     price: toReais(row.price_cents),
-    stockQty: row.stock_qty,
-    inStock: row.stock_qty > 0,
+    stockQty: qty,
+    inStock: qty > 0,
     photoUrl: normalizedPhotoUrl,
     photos,
     location: row.location || null,
@@ -123,6 +152,19 @@ function normalizeServerCategory(raw) {
   return CATEGORY_CANONICAL_MAP[key] || raw.trim();
 }
 
+function getCategoryMatchValues(raw) {
+  const norm = normalizeServerCategory(raw);
+  if (!norm) return [];
+  const normLower = norm.toLowerCase();
+  const matches = new Set([normLower, String(raw).toLowerCase().trim()]);
+  for (const [alias, canonical] of Object.entries(CATEGORY_CANONICAL_MAP)) {
+    if (canonical.toLowerCase() === normLower) {
+      matches.add(alias);
+    }
+  }
+  return Array.from(matches);
+}
+
 
 router.get('/', async (req, res) => {
   try {
@@ -138,9 +180,11 @@ router.get('/', async (req, res) => {
       clauses.push(`(name ILIKE $` + params.length + ` OR code ILIKE $` + params.length + ` OR description ILIKE $` + params.length + ` OR location ILIKE $` + params.length + ` OR compatibility ILIKE $` + params.length + ` OR category ILIKE $` + params.length + `)`);
     }
     if (category) {
-      const normCat = normalizeServerCategory(category);
-      params.push(`%${normCat}%`);
-      clauses.push(`category ILIKE $` + params.length);
+      const catMatches = getCategoryMatchValues(category);
+      if (catMatches.length > 0) {
+        params.push(catMatches);
+        clauses.push(`LOWER(TRIM(COALESCE(category, ''))) = ANY($${params.length}::text[])`);
+      }
     }
     if (type) {
       params.push(type);
@@ -160,11 +204,17 @@ router.get('/', async (req, res) => {
       clauses.push('stock_qty = 0');
     }
 
-    const sql = `SELECT * FROM products WHERE ${clauses.join(' AND ')} ORDER BY (CASE WHEN photo_url LIKE '%/api/uploads/%' OR photo_url LIKE '%/uploads/%' THEN 0 ELSE 1 END) ASC, name ASC`;
+    const sql = `SELECT * FROM products WHERE ${clauses.join(' AND ')} ORDER BY name ASC, id ASC`;
     const result = await db.query(sql, params);
     const allSerialized = result.rows.map(serialize);
-    const realItems = allSerialized.filter(p => p.photoUrl && (p.photoUrl.includes('/api/uploads/') || p.photoUrl.includes('/uploads/')));
-    const finalProducts = realItems.length > 0 ? realItems : allSerialized;
+    const realItems = allSerialized.filter(isRealWmsProduct);
+    const baseList = realItems.length > 0 ? realItems : allSerialized;
+    const finalProducts = baseList.slice().sort((a, b) => {
+      const aHasReal = a.photos && a.photos.some(isRealPhotoUrl) ? 0 : 1;
+      const bHasReal = b.photos && b.photos.some(isRealPhotoUrl) ? 0 : 1;
+      if (aHasReal !== bHasReal) return aHasReal - bHasReal;
+      return String(a.name || '').localeCompare(String(b.name || ''), 'pt-BR');
+    });
     setNoCacheHeaders(res);
     res.json({ products: finalProducts });
   } catch (err) {
@@ -185,39 +235,63 @@ router.post('/sync-catalog', requireRole('admin'), async (_req, res) => {
 
 router.get('/categories', async (_req, res) => {
   try {
+    await syncCatalog();
     const result = await db.query(`
-      SELECT p.category,
-             COUNT(*) FILTER (WHERE p.photo_url LIKE '%/api/uploads/%' OR p.photo_url LIKE '%/uploads/%')::int AS real_count,
-             COUNT(*)::int AS total_count,
-             (
-               SELECT p2.photo_url
-               FROM products p2
-               WHERE p2.category = p.category AND p2.active = true
-               ORDER BY (CASE WHEN p2.photo_url LIKE '%/api/uploads/%' OR p2.photo_url LIKE '%/uploads/%' THEN 0 ELSE 1 END) ASC,
-                        p2.name ASC,
-                        p2.id ASC
-               LIMIT 1
-             ) AS best_photo
-      FROM products p
-      WHERE p.category IS NOT NULL AND p.active = true
-      GROUP BY p.category
-      ORDER BY p.category
+      SELECT id, name, category, photo_url, stock_qty
+      FROM products
+      WHERE category IS NOT NULL AND TRIM(category) <> '' AND active = true
+      ORDER BY name ASC, id ASC
     `);
-    const hasAnyReal = result.rows.some(r => r.real_count > 0);
+
+    const byCat = new Map();
+    let hasAnyRealGlobal = false;
+
+    for (const row of result.rows) {
+      const normCat = normalizeServerCategory(row.category);
+      if (!normCat) continue;
+      const photos = parsePhotoList(row.photo_url);
+      const isRealProd = isRealWmsProduct({ photos });
+      const realPhoto = photos.find(isRealPhotoUrl) || null;
+      const inStock = (Number(row.stock_qty) || 0) > 0;
+      if (isRealProd) hasAnyRealGlobal = true;
+
+      if (!byCat.has(normCat)) {
+        byCat.set(normCat, {
+          name: normCat,
+          realAvailableCount: 0,
+          realTotalCount: 0,
+          seedAvailableCount: 0,
+          seedTotalCount: 0,
+          bestRealPhoto: null,
+        });
+      }
+      const entry = byCat.get(normCat);
+      if (isRealProd) {
+        entry.realTotalCount += 1;
+        if (inStock) entry.realAvailableCount += 1;
+        if (realPhoto && !entry.bestRealPhoto) {
+          entry.bestRealPhoto = realPhoto;
+        }
+      } else {
+        entry.seedTotalCount += 1;
+        if (inStock) entry.seedAvailableCount += 1;
+      }
+    }
+
+    const categories = Array.from(byCat.values())
+      .sort((a, b) => a.name.localeCompare(b.name, 'pt-BR'))
+      .map((entry) => ({
+        name: entry.name,
+        count: hasAnyRealGlobal ? entry.realAvailableCount : entry.seedAvailableCount,
+        totalCount: hasAnyRealGlobal ? entry.realTotalCount : entry.seedTotalCount,
+        photo: entry.bestRealPhoto,
+        hasRealPhoto: Boolean(entry.bestRealPhoto),
+      }));
+
     setNoCacheHeaders(res);
     res.json({
-      categories: result.rows.map((r) => {
-        const photos = parsePhotoList(r.best_photo);
-        const primaryPhoto = photos.length ? photos[0] : null;
-        const isRealUpload = Boolean(primaryPhoto && (primaryPhoto.includes('/api/uploads/') || primaryPhoto.includes('/uploads/')));
-        return {
-          name: r.category,
-          count: hasAnyReal ? r.real_count : r.total_count,
-          photo: isRealUpload ? primaryPhoto : null,
-          hasRealPhoto: isRealUpload,
-        };
-      }),
-      names: result.rows.map((r) => r.category),
+      categories,
+      names: categories.map((c) => c.name),
     });
   } catch (err) {
     console.error(err);
@@ -232,12 +306,20 @@ router.get('/categories/featured', async (_req, res) => {
       SELECT id, name, code, category, description, compatibility, price_cents, stock_qty, photo_url, location, active
       FROM products
       WHERE active = true
-      ORDER BY (CASE WHEN photo_url LIKE '%/api/uploads/%' THEN 0 ELSE 1 END) ASC, updated_at DESC, id ASC
-      LIMIT 40
+      ORDER BY updated_at DESC, id ASC
+      LIMIT 80
     `);
     const allList = result.rows.map(serialize);
-    const realList = allList.filter(p => p.photoUrl && (p.photoUrl.includes('/api/uploads/') || p.photoUrl.includes('/uploads/')));
-    const list = realList.length > 0 ? realList : allList;
+    const realList = allList.filter(isRealWmsProduct);
+    const baseList = realList.length > 0 ? realList : allList;
+    const list = baseList
+      .slice()
+      .sort((a, b) => {
+        const aHasReal = a.photos && a.photos.some(isRealPhotoUrl) ? 0 : 1;
+        const bHasReal = b.photos && b.photos.some(isRealPhotoUrl) ? 0 : 1;
+        return aHasReal - bHasReal;
+      })
+      .slice(0, 40);
     setNoCacheHeaders(res);
     res.json({
       categories: list,
@@ -272,11 +354,12 @@ router.post('/', requireRole('admin'), async (req, res) => {
     }
     const finalPrice = price !== undefined && price !== null && price !== '' ? toCents(price) : 0;
     const initialStock = Math.max(0, parseInt(stockQty, 10) || 0);
+    const normalizedCat = category ? normalizeServerCategory(category) : null;
 
     const result = await db.query(
       `INSERT INTO products (name, code, category, description, compatibility, price_cents, stock_qty, photo_url, location, item_type)
        VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10) RETURNING *`,
-      [name.trim(), code || null, category || null, description || null, compatibility || null, finalPrice, initialStock, photoUrl || null, location || null, itemType]
+      [name.trim(), code || null, normalizedCat, description || null, compatibility || null, finalPrice, initialStock, photoUrl || null, location || null, itemType]
     );
     const newProd = result.rows[0];
     if (newProd.stock_qty > 0) {
@@ -322,7 +405,7 @@ router.put('/:id', requireRole('admin'), async (req, res) => {
       [
         name?.trim() ?? null,
         code ?? null,
-        category ?? null,
+        category !== undefined && category !== null && String(category).trim() !== '' ? normalizeServerCategory(category) : null,
         description ?? null,
         compatibility ?? null,
         (price !== undefined && price !== null && price !== '') ? toCents(price) : null,

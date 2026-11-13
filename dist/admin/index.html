@@ -37,7 +37,7 @@
   <link
     href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@500;700&display=swap"
     rel="stylesheet" />
-  <link href="/admin/admin.css?v=mw79f4ac" rel="stylesheet" />
+  <link href="/admin/admin.css?v=mwegfeso" rel="stylesheet" />
   <!-- Vercel Web Analytics & Speed Insights -->
   <script>
     window.va = window.va || function () { (window.vaq = window.vaq || []).push(arguments); };
@@ -336,7 +336,7 @@
                   </span>
                   Dashboard Operacional
                 </h1>
-                <span class="pro-wms-badge">PRO WMS V2.27</span>
+                <span class="pro-wms-badge">PRO WMS V2.28</span>
               </div>
               <p class="page-subtitle">
                 <span class="live-pulse-dot"></span>
@@ -752,7 +752,10 @@
               </div>
               <div class="field">
                 <label>CATEGORIA *</label>
-                <input id="pCategory" placeholder="Ex: Freios" list="categoryList" />
+                <select id="pCategorySelect" aria-label="Selecionar categoria da peça">
+                  <option value="">Selecione a categoria...</option>
+                </select>
+                <input id="pCategory" class="hidden" style="margin-top:6px" placeholder="Digite o nome da nova categoria (ex: Motor)" list="categoryList" />
                 <datalist id="categoryList"></datalist>
               </div>
               <div class="field">
@@ -3656,7 +3659,7 @@
     <span id="wmsToastMsg">Sistema atualizado com sucesso!</span>
   </div>
 
-  <script src="/admin/admin.js?v=mw79f4ac"></script>
+  <script src="/admin/admin.js?v=mwegfeso"></script>
 </body>
 
 </html>

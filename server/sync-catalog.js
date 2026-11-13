@@ -20,13 +20,18 @@ async function syncCatalog(force = false) {
     await db.query(`ALTER TABLE products ADD COLUMN IF NOT EXISTS active BOOLEAN NOT NULL DEFAULT true;`);
     await db.query(`ALTER TABLE customers ADD COLUMN IF NOT EXISTS cpf_cnpj TEXT;`);
 
-    // 2. Verifica se o banco de dados já possui qualquer peça cadastrada
+    // Garante tabela de metadados para registrar se a carga inicial já ocorreu
+    await db.query(`CREATE TABLE IF NOT EXISTS app_meta (key TEXT PRIMARY KEY, value TEXT);`);
+
+    // 2. Verifica se o banco de dados já possui qualquer peça cadastrada ou se já foi inicializado
     const countRes = await db.query(`SELECT count(*)::int AS count FROM products;`);
     const totalCount = (countRes.rows[0] && countRes.rows[0].count) || 0;
+    const metaRes = await db.query(`SELECT value FROM app_meta WHERE key = 'catalog_seeded';`);
+    const alreadySeeded = metaRes.rows[0]?.value === 'true';
 
-    // Só realiza a inserção inicial se o banco estiver 100% vazio e sem nenhuma peça,
-    // garantindo que peças excluídas ou fotos alteradas pelo usuário NUNCA voltem sozinhas.
-    if (totalCount === 0) {
+    // Só realiza a inserção inicial uma única vez quando o banco estiver 100% vazio e nunca inicializado,
+    // garantindo que peças de teste excluídas pelo usuário NUNCA voltem sozinhas.
+    if ((totalCount === 0 && !alreadySeeded) || force) {
       console.log(`[SyncCatalog] Sincronizando catálogo oficial (${INITIAL_PRODUCTS.length} peças)...`);
       for (const p of INITIAL_PRODUCTS) {
         await db.query(
@@ -36,7 +41,16 @@ async function syncCatalog(force = false) {
           [p.name, p.code, p.category, p.description, p.compatibility || '', p.price_cents, p.stock_qty, p.photo_url, p.location || null]
         );
       }
+      await db.query(
+        `INSERT INTO app_meta (key, value) VALUES ('catalog_seeded', 'true')
+         ON CONFLICT (key) DO UPDATE SET value = 'true';`
+      );
       console.log(`[SyncCatalog] Catálogo sincronizado com sucesso.`);
+    } else if (totalCount > 0 && !alreadySeeded) {
+      await db.query(
+        `INSERT INTO app_meta (key, value) VALUES ('catalog_seeded', 'true')
+         ON CONFLICT (key) DO NOTHING;`
+      );
     }
     syncCompleted = true;
   } catch (err) {

@@ -1581,11 +1581,111 @@ document.getElementById('btnSaveStockModal')?.addEventListener('click', async ()
   }
 });
 
+const DEFAULT_WMS_CATEGORIES = [
+  'Freios',
+  'Elétrica e ignição',
+  'Suspensão',
+  'Sensores e injeção',
+  'Filtros',
+  'Correias',
+  'Óleos e fluidos',
+  'Iluminação'
+];
+
+function getSavedCustomCategories() {
+  try {
+    const raw = localStorage.getItem('fm_custom_categories');
+    const arr = raw ? JSON.parse(raw) : [];
+    return Array.isArray(arr) ? arr.map(c => String(c || '').trim()).filter(Boolean) : [];
+  } catch {
+    return [];
+  }
+}
+
+function saveCustomCategory(catName) {
+  const clean = String(catName || '').trim();
+  if (!clean) return;
+  const existing = getSavedCustomCategories();
+  if (!existing.some(c => c.toLowerCase() === clean.toLowerCase())) {
+    existing.push(clean);
+    try {
+      localStorage.setItem('fm_custom_categories', JSON.stringify(existing));
+    } catch {}
+  }
+}
+
+function getAllWmsCategories(products) {
+  const map = new Map();
+  const addCat = (c) => {
+    const clean = String(c || '').trim();
+    if (!clean) return;
+    const key = clean.toLowerCase();
+    if (!map.has(key)) map.set(key, clean);
+  };
+  DEFAULT_WMS_CATEGORIES.forEach(addCat);
+  getSavedCustomCategories().forEach(addCat);
+  (Array.isArray(products) ? products : []).forEach(p => addCat(p && p.category));
+  return Array.from(map.values()).sort((a, b) => a.localeCompare(b, 'pt-BR'));
+}
+
+function syncCategorySelectValue(catVal) {
+  const select = document.getElementById('pCategorySelect');
+  const input = document.getElementById('pCategory');
+  const clean = String(catVal || '').trim();
+  if (input) input.value = clean;
+  if (!select) return;
+  if (!clean) {
+    select.value = '';
+    if (input) input.classList.add('hidden');
+    return;
+  }
+  let match = Array.from(select.options).find(opt => opt.value.toLowerCase() === clean.toLowerCase() && opt.value !== '__new__');
+  if (!match) {
+    match = document.createElement('option');
+    match.value = clean;
+    match.textContent = clean;
+    const newOpt = select.querySelector('option[value="__new__"]');
+    if (newOpt) select.insertBefore(match, newOpt);
+    else select.appendChild(match);
+  }
+  select.value = match.value;
+  if (input) input.classList.add('hidden');
+}
+window.syncCategorySelectValue = syncCategorySelectValue;
+
+document.getElementById('pCategorySelect')?.addEventListener('change', (e) => {
+  const val = e.target.value;
+  const input = document.getElementById('pCategory');
+  if (val === '__new__') {
+    if (input) {
+      input.value = '';
+      input.classList.remove('hidden');
+      input.focus();
+    }
+  } else {
+    if (input) {
+      input.value = val;
+      input.classList.add('hidden');
+    }
+  }
+});
+
 function fillCategoryList(products) {
   const list = document.getElementById('categoryList');
-  const cats = [...new Set(products.map(p => p.category).filter(Boolean))].sort();
+  const cats = getAllWmsCategories(products);
   if (list) {
     list.innerHTML = cats.map(c => `<option value="${c}"></option>`).join('');
+  }
+  const catSelect = document.getElementById('pCategorySelect');
+  if (catSelect) {
+    const prevVal = catSelect.value;
+    catSelect.innerHTML =
+      '<option value="">Selecione a categoria...</option>' +
+      cats.map(c => `<option value="${c}">${c}</option>`).join('') +
+      '<option value="__new__">+ Adicionar nova categoria...</option>';
+    if (prevVal && Array.from(catSelect.options).some(o => o.value === prevVal)) {
+      catSelect.value = prevVal;
+    }
   }
   const filterSelect = document.getElementById('stockCategoryFilter');
   if (filterSelect) {
@@ -1705,7 +1805,8 @@ function startEdit(id) {
   document.getElementById('formTitle').textContent = `Editar Peça: ${p.name}`;
   document.getElementById('pName').value = p.name || '';
   document.getElementById('pCode').value = p.code || '';
-  document.getElementById('pCategory').value = p.category || '';
+  fillCategoryList(allProducts);
+  syncCategorySelectValue(p.category || '');
   document.getElementById('pPrice').value = String(p.price || '').replace('.', ',');
   document.getElementById('pStock').value = p.stockQty || 0;
   
@@ -1906,6 +2007,8 @@ function resetProductForm() {
     const el = document.getElementById(id);
     if (el) el.value = '';
   });
+  if (typeof fillCategoryList === 'function') fillCategoryList(allProducts);
+  if (typeof syncCategorySelectValue === 'function') syncCategorySelectValue('');
   
   clearAllProductPhotos();
 
@@ -2033,7 +2136,12 @@ document.getElementById('saveProductBtn')?.addEventListener('click', async () =>
 
   const name = document.getElementById('pName').value.trim();
   const code = document.getElementById('pCode').value.trim();
-  const category = document.getElementById('pCategory').value.trim();
+  const catInputVal = document.getElementById('pCategory')?.value.trim() || '';
+  const catSelectVal = document.getElementById('pCategorySelect')?.value || '';
+  const category = catInputVal || (catSelectVal && catSelectVal !== '__new__' ? catSelectVal.trim() : '');
+  if (category && typeof saveCustomCategory === 'function') {
+    saveCustomCategory(category);
+  }
   const price = parseFloat(document.getElementById('pPrice').value.replace(',', '.'));
   const stockQty = parseInt(document.getElementById('pStock').value, 10);
   const location = (document.getElementById('pLocation')?.value || '').trim();
