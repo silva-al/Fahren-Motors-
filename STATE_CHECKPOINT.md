@@ -1,9 +1,11 @@
 # STATE_CHECKPOINT.md
 
-- **Data/Hora:** 2026-11-13 01:39 (BRT)
-- **Último Commit Base:** `25595af` (`fix(wms): eliminar espaco desperdicado em colunas compactas e badges de status`)
+- **Data/Hora:** 2026-11-13 01:44 (BRT)
+- **Último Commit Base:** `f6324d8` (`fix(wms): corrigir esmagamento de colunas substituindo width 1% por max-content`)
 
 ## Resumo das Entregas Recentes
+- **Redução da largura da coluna PEDIDO (`public/admin/admin.css`):**
+  - Coluna `PEDIDO` (`.orders-table .col-th-id, .orders-table .order-col-id`) reduzida para `width: 52px; min-width: 48px; max-width: 56px; padding: 7px 2px 7px 6px`, eliminando a sobra lateral ao redor de `#9` e aproximando a coluna `CLIENTE`.
 - **Hotfix de largura das colunas da tabela de Pedidos e WMS (`public/admin/admin.css`):**
   - Substituído `width: 1%` (que esmagava as colunas laterais quando `ITENS` crescia) por `width: auto; min-width: max-content; overflow: visible;` nas colunas compactas e `overflow: visible; text-overflow: clip;` nas células.
 - **Eliminação de espaço desperdiçado nas colunas e badges de Pedidos/WMS (`public/admin/admin.css`):**

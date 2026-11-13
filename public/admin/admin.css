@@ -12943,35 +12943,78 @@ body.tema-claro .fin-bruto-text strong {
     white-space: nowrap !important;
   }
 
-  /* Colunas compactas da tabela de Pedidos: ajustam-se ao conteúdo sem esmagar */
+  /* Coluna PEDIDO super compacta (sem sobra lateral ao redor de #9) */
   .orders-table .col-th-id,
-  .orders-table .order-col-id,
-  .orders-table .col-th-location,
-  .orders-table .order-col-location,
-  .orders-table .col-th-total,
-  .orders-table .order-col-total,
-  .orders-table .col-th-pay,
-  .orders-table .order-col-pay,
-  .orders-table .col-th-date,
-  .orders-table .order-col-date,
-  .orders-table .col-th-status,
-  .orders-table .order-col-status {
-    width: auto !important;
-    min-width: max-content !important;
-    max-width: none !important;
+  .orders-table .order-col-id {
+    width: 52px !important;
+    min-width: 48px !important;
+    max-width: 56px !important;
     white-space: nowrap !important;
     overflow: visible !important;
-    padding: 7px 6px !important;
+    text-align: center !important;
+    padding: 7px 2px 7px 6px !important;
+  }
+
+  /* Colunas compactas da tabela de Pedidos: larguras enxutas para dar espaço a ITENS */
+  .orders-table .col-th-location,
+  .orders-table .order-col-location {
+    width: 92px !important;
+    min-width: 86px !important;
+    max-width: 100px !important;
+    white-space: nowrap !important;
+    overflow: visible !important;
+    padding: 7px 4px !important;
+  }
+
+  .orders-table .col-th-total,
+  .orders-table .order-col-total {
+    width: 86px !important;
+    min-width: 80px !important;
+    max-width: 94px !important;
+    white-space: nowrap !important;
+    overflow: visible !important;
+    padding: 7px 4px !important;
+  }
+
+  .orders-table .col-th-pay,
+  .orders-table .order-col-pay {
+    width: 96px !important;
+    min-width: 90px !important;
+    max-width: 104px !important;
+    white-space: nowrap !important;
+    overflow: visible !important;
+    padding: 7px 4px !important;
+  }
+
+  .orders-table .col-th-date,
+  .orders-table .order-col-date {
+    width: 86px !important;
+    min-width: 80px !important;
+    max-width: 94px !important;
+    white-space: nowrap !important;
+    overflow: visible !important;
+    padding: 7px 4px !important;
+  }
+
+  .orders-table .col-th-status,
+  .orders-table .order-col-status {
+    width: 96px !important;
+    min-width: 90px !important;
+    max-width: 104px !important;
+    white-space: nowrap !important;
+    overflow: visible !important;
+    padding: 7px 4px !important;
   }
 
   .orders-table .col-th-customer,
   .orders-table .order-col-customer {
-    width: auto !important;
-    min-width: 120px !important;
-    max-width: 180px !important;
-    white-space: normal !important;
+    width: 118px !important;
+    min-width: 110px !important;
+    max-width: 132px !important;
+    white-space: nowrap !important;
     overflow: visible !important;
-    padding: 7px 8px !important;
+    text-align: left !important;
+    padding: 7px 6px 7px 2px !important;
   }
 
   .orders-table .col-th-items,
