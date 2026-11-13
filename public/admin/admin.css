@@ -12931,6 +12931,8 @@ body.tema-claro .fin-bruto-text strong {
     white-space: normal !important;
     word-break: break-word !important;
     overflow-wrap: break-word !important;
+    overflow: visible !important;
+    text-overflow: clip !important;
   }
 
   .wms-table thead th,
@@ -12941,8 +12943,7 @@ body.tema-claro .fin-bruto-text strong {
     white-space: nowrap !important;
   }
 
-  /* Colunas compactas da tabela de Pedidos encolhem exatamente ao conteúdo,
-     liberando todo o espaço horizontal restante para CLIENTE e ITENS */
+  /* Colunas compactas da tabela de Pedidos: ajustam-se ao conteúdo sem esmagar */
   .orders-table .col-th-id,
   .orders-table .order-col-id,
   .orders-table .col-th-location,
@@ -12955,19 +12956,21 @@ body.tema-claro .fin-bruto-text strong {
   .orders-table .order-col-date,
   .orders-table .col-th-status,
   .orders-table .order-col-status {
-    width: 1% !important;
-    min-width: 0 !important;
+    width: auto !important;
+    min-width: max-content !important;
     max-width: none !important;
     white-space: nowrap !important;
+    overflow: visible !important;
     padding: 7px 6px !important;
   }
 
   .orders-table .col-th-customer,
   .orders-table .order-col-customer {
-    width: 1% !important;
-    min-width: 115px !important;
-    max-width: 165px !important;
-    white-space: nowrap !important;
+    width: auto !important;
+    min-width: 120px !important;
+    max-width: 180px !important;
+    white-space: normal !important;
+    overflow: visible !important;
     padding: 7px 8px !important;
   }
 
@@ -12976,6 +12979,8 @@ body.tema-claro .fin-bruto-text strong {
     width: auto !important;
     min-width: 220px !important;
     max-width: none !important;
+    white-space: normal !important;
+    overflow: visible !important;
     padding: 7px 8px !important;
   }
 
@@ -13002,13 +13007,15 @@ body.tema-claro .fin-bruto-text strong {
     text-align: left !important;
   }
 
-  /* Nas demais tabelas do WMS, primeira e última coluna (ID/Ações/Status) ficam compactas */
+  /* Nas demais tabelas do WMS, última coluna (Ações/Status) sem corte e sem esmagar */
   .wms-table th:last-child,
   .wms-table td:last-child,
   .estoque-table th:last-child,
   .estoque-table td:last-child {
-    width: 1% !important;
+    width: auto !important;
+    min-width: max-content !important;
     white-space: nowrap !important;
+    overflow: visible !important;
     padding-right: 6px !important;
   }
 

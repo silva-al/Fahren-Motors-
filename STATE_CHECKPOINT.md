@@ -1,9 +1,11 @@
 # STATE_CHECKPOINT.md
 
-- **Data/Hora:** 2026-11-13 01:33 (BRT)
-- **Último Commit Base:** `a2d24eb` (`feat(wms,loja): visibilidade de categorias, colunas responsivas em todas as telas e modo tela cheia com ESC/Voltar`)
+- **Data/Hora:** 2026-11-13 01:39 (BRT)
+- **Último Commit Base:** `25595af` (`fix(wms): eliminar espaco desperdicado em colunas compactas e badges de status`)
 
 ## Resumo das Entregas Recentes
+- **Hotfix de largura das colunas da tabela de Pedidos e WMS (`public/admin/admin.css`):**
+  - Substituído `width: 1%` (que esmagava as colunas laterais quando `ITENS` crescia) por `width: auto; min-width: max-content; overflow: visible;` nas colunas compactas e `overflow: visible; text-overflow: clip;` nas células.
 - **Eliminação de espaço desperdiçado nas colunas e badges de Pedidos/WMS (`public/admin/admin.css`):**
   - Removido o `padding-right: 24px` extra de `.orders-table-wrapper` e reduzido o padding lateral dos painéis com tabela.
   - Colunas compactas da tabela de Pedidos (`#ID`, `LOCALIZAÇÃO`, `TOTAL`, `PAGAMENTO`, `DATA/HORA`, `STATUS`) ajustadas para `width: 1%; white-space: nowrap;`, liberando o espaço restante para `CLIENTE` e `ITENS` (sem quebrar nomes em várias linhas).
