@@ -309,7 +309,7 @@ init();
       }
 
       if (typeof window.syncHomeCategoryCardPhotos === 'function') {
-        window.syncHomeCategoryCardPhotos(cats);
+        window.syncHomeCategoryCardPhotos(cats, { clearFictitious: true });
       }
       const counts = {};
       cats.forEach((c) => {

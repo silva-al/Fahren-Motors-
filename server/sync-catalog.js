@@ -52,6 +52,20 @@ async function syncCatalog(force = false) {
          ON CONFLICT (key) DO NOTHING;`
       );
     }
+
+    // Migração única: move itens de Fluido de Freio para a categoria 'Óleos e fluidos'
+    const migFluido = await db.query(`SELECT value FROM app_meta WHERE key = 'migrated_fluido_category_v1';`);
+    if (migFluido.rows[0]?.value !== 'true') {
+      await db.query(
+        `UPDATE products SET category = 'Óleos e fluidos'
+         WHERE LOWER(TRIM(COALESCE(category, ''))) = 'freios'
+           AND name ILIKE '%fluido%';`
+      );
+      await db.query(
+        `INSERT INTO app_meta (key, value) VALUES ('migrated_fluido_category_v1', 'true')
+         ON CONFLICT (key) DO UPDATE SET value = 'true';`
+      );
+    }
     syncCompleted = true;
   } catch (err) {
     console.error('[SyncCatalog] Erro ao sincronizar catálogo:', err.message);

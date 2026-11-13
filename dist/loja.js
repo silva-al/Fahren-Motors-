@@ -964,7 +964,7 @@ const CATALOG_FALLBACK_PRODUCTS = [
     id: 3278,
     name: 'Fluido de Freio DOT 4  500ml',
     code: 'DOT4-500',
-    category: 'Freios',
+    category: 'Óleos e fluidos',
     description: 'Fluido de freio sintético DOT 4 de alta performance para máxima segurança de frenagem.',
     compatibility: 'Sistemas de freio a disco e tambor padrão DOT 4',
     price: 32.87,
@@ -1365,8 +1365,9 @@ async function loadRecommendedProducts(product) {
   }
 }
 
-function syncHomeCategoryCardPhotos(productsOrCategories) {
+function syncHomeCategoryCardPhotos(productsOrCategories, opts = {}) {
   if (!Array.isArray(productsOrCategories)) return;
+  const clearFictitious = Boolean(opts && opts.clearFictitious);
   const bestPhotoByCat = {};
   productsOrCategories.forEach(item => {
     if (!item) return;
@@ -1396,10 +1397,13 @@ function syncHomeCategoryCardPhotos(productsOrCategories) {
     const rawCat = card.dataset.cat || card.getAttribute('data-cat') || '';
     const normCat = normalizeCatalogCategory(rawCat);
     const img = card.querySelector('.cat-card-thumb img');
-    if (img && bestPhotoByCat[normCat]) {
+    if (!img) return;
+    if (bestPhotoByCat[normCat]) {
       if (img.getAttribute('src') !== bestPhotoByCat[normCat]) {
         img.src = bestPhotoByCat[normCat];
       }
+    } else if (clearFictitious && isLojaFictitiousPhoto(img.getAttribute('src') || '')) {
+      img.src = LOJA_NO_PHOTO_SVG;
     }
   });
 }
@@ -4122,7 +4126,7 @@ init();
       }
 
       if (typeof window.syncHomeCategoryCardPhotos === 'function') {
-        window.syncHomeCategoryCardPhotos(cats);
+        window.syncHomeCategoryCardPhotos(cats, { clearFictitious: true });
       }
       const counts = {};
       cats.forEach((c) => {

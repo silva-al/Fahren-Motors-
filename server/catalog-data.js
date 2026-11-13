@@ -25,7 +25,7 @@ const INITIAL_PRODUCTS = [
   {
     name: 'Fluido de Freio DOT 4 LV Bosch Alta Performance 500ml',
     code: 'DOT4-BOSCH-500',
-    category: 'Freios',
+    category: 'Óleos e fluidos',
     description: 'Fluido de freio sintético de baixa viscosidade para ABS e ESP.',
     compatibility: 'Universal para sistemas hidráulicos DOT 4 / DOT 4 LV',
     price_cents: 4200,

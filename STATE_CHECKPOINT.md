@@ -1,9 +1,12 @@
 # STATE_CHECKPOINT.md
 
-- **Data/Hora:** 2026-11-13 01:08 (BRT)
-- **Último Commit Base:** `f01b5a4` (`fix(loja): blindar retorno de categoria no botao voltar nativo do celular e preservar filtro ativo`)
+- **Data/Hora:** 2026-11-13 01:13 (BRT)
+- **Último Commit Base:** `8602d8a` (`fix(wms,loja): corrigir contagem de estoque, filtro estrito de categorias, cadastro de novas categorias e ocultacao automatica de itens ficticios`)
 
 ## Resumo das Entregas Recentes
+1. **Correção da Categoria de Fluidos e Limpeza de Imagens Fictícias nos Cards da Home (`server/sync-catalog.js`, `server/catalog-data.js`, `public/loja/src/04-catalog-and-categories.js`, `public/loja/src/08-init-and-redesign.js`)**:
+   - Migração única (`migrated_fluido_category_v1`) move produtos de `Fluido de Freio` que estavam em `Freios` para `Óleos e fluidos`, fazendo o card **FLUÍDOS** exibir o produto real e sua foto imediatamente.
+   - `syncHomeCategoryCardPhotos(..., { clearFictitious: true })` remove automaticamente imagens fictícias (`images/categorias/...`) de qualquer card de categoria sem foto real, substituindo pelo placeholder neutro até que uma peça real com foto seja cadastrada.
 1. **Correção do Bug de Quantidade Zero e Imagens Reais na Loja (`server/routes/products.js`, `public/loja/src/`)**:
    - Corrigida a detecção de fotos reais para aceitar URLs do Supabase Storage (`https://...`), URLs externas e uploads locais (`/api/uploads/...`, `/uploads/...`), além de peças reais cadastradas no WMS sem foto ainda.
    - Corrigida a contagem de produtos disponíveis por categoria (`/api/products/categories`) com normalização de nomes (ex: `Ignição` -> `Elétrica e ignição`), evitando que aparecesse `0 produtos disponíveis` após editar quantidade e imagem no WMS.
@@ -32,3 +35,4 @@
 
 ## Próximos Passos / Pendências
 - Validar em produção (Netlify/Vercel + Supabase) após deploy.
+
