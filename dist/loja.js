@@ -4044,6 +4044,22 @@ init();
       const res = await fetch('/api/products/categories?_t=' + Date.now(), { cache: 'no-store' });
       const data = await res.json();
       const cats = data.categories || [];
+      const disabledSet = new Set((data.disabledCategories || []).map((c) => normalizeCatalogCategory(c).toLowerCase()));
+
+      if (grid) {
+        grid.querySelectorAll('.cat-grid-item[data-cat]').forEach((card) => {
+          const norm = normalizeCatalogCategory(card.dataset.cat || card.getAttribute('data-cat') || '').toLowerCase();
+          card.style.display = (norm && disabledSet.has(norm)) ? 'none' : '';
+        });
+      }
+      if (catMenu) {
+        catMenu.querySelectorAll('.clean-chip[data-cat]').forEach((chip) => {
+          const raw = chip.dataset.cat || '';
+          if (!raw) return;
+          const norm = normalizeCatalogCategory(raw).toLowerCase();
+          chip.style.display = (norm && disabledSet.has(norm)) ? 'none' : '';
+        });
+      }
 
       if (grid && cats.length) {
         const existingNorms = new Set(

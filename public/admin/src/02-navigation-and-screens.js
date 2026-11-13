@@ -186,3 +186,56 @@ window.addEventListener('beforeunload', () => {
 document.querySelectorAll('.sidebar-nav .nav-item').forEach(btn => {
   btn.addEventListener('click', () => switchTab(btn.dataset.tab));
 });
+
+// ---------- Modo Tela Cheia (100% da tela) + Saída por ESC ou "✕ Voltar" ----------
+function updateWmsFullscreenUi() {
+  const isFs = document.body.classList.contains('wms-fullscreen-mode');
+  const btnFs = document.getElementById('btnWmsFullscreen');
+  const btnExit = document.getElementById('btnWmsExitFullscreen');
+  if (btnFs) btnFs.classList.toggle('hidden', isFs);
+  if (btnExit) {
+    const showExit = isFs || (currentTabId && currentTabId !== 'dashboard');
+    btnExit.classList.toggle('hidden', !showExit);
+  }
+}
+
+function toggleWmsFullscreen(force) {
+  const next = typeof force === 'boolean' ? force : !document.body.classList.contains('wms-fullscreen-mode');
+  document.body.classList.toggle('wms-fullscreen-mode', next);
+  updateWmsFullscreenUi();
+}
+window.toggleWmsFullscreen = toggleWmsFullscreen;
+
+function exitWmsFullscreenOrBack() {
+  if (document.body.classList.contains('wms-fullscreen-mode')) {
+    toggleWmsFullscreen(false);
+    return;
+  }
+  if (currentTabId && currentTabId !== 'dashboard') {
+    switchTab('dashboard');
+  }
+}
+window.exitWmsFullscreenOrBack = exitWmsFullscreenOrBack;
+
+document.getElementById('btnWmsFullscreen')?.addEventListener('click', () => toggleWmsFullscreen(true));
+document.getElementById('btnWmsExitFullscreen')?.addEventListener('click', exitWmsFullscreenOrBack);
+
+// Atualiza visibilidade do botão "✕ Voltar" ao trocar de aba
+const _origSwitchTab = switchTab;
+switchTab = function(tabId, pushHistory = true, resetScroll = true) {
+  _origSwitchTab(tabId, pushHistory, resetScroll);
+  updateWmsFullscreenUi();
+};
+window.switchTab = switchTab;
+
+document.addEventListener('keydown', (e) => {
+  if (e.key !== 'Escape') return;
+  const openModals = document.querySelectorAll('.modal-overlay:not(.hidden), .modal:not(.hidden)');
+  if (openModals.length > 0) {
+    openModals.forEach(m => m.classList.add('hidden'));
+    return;
+  }
+  if (document.body.classList.contains('wms-fullscreen-mode') || (currentTabId && currentTabId !== 'dashboard')) {
+    exitWmsFullscreenOrBack();
+  }
+});

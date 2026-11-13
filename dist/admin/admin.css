@@ -252,13 +252,26 @@ body {
 
 .nav-badge {
   margin-left: auto;
+  flex-shrink: 0;
   background: #1c2027;
   color: #fff;
   font-size: 11px;
   font-weight: 800;
-  padding: 2px 8px;
+  padding: 2px 7px;
   border-radius: 20px;
   border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.sidebar-nav .nav-item {
+  padding-right: 10px !important;
+  gap: 9px !important;
+}
+
+.sidebar-nav .nav-item > span:not(.nav-badge) {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .nav-badge.nf-badge {
@@ -12871,4 +12884,104 @@ body.tema-claro .fin-bruto-text,
 body.tema-claro .fin-bruto-text strong {
   font-weight: 800 !important;
   color: var(--text-primary) !important;
+}
+
+/* ===================================================================
+   DISTRIBUIÇÃO INTELIGENTE DE COLUNAS EM TODAS AS TELAS DO WMS
+   Remove min-widths inflados (440px/320px/1050px) que desperdiçavam
+   espaço entre colunas e cortavam o lado direito dos cards (STATUS/AÇÕES).
+   =================================================================== */
+@media (min-width: 769px) {
+  .wms-content {
+    padding: 14px 16px 48px 16px !important;
+  }
+
+  .wms-panel:has(table),
+  .wms-panel.ped-table-card,
+  .wms-panel.est-table-panel {
+    padding: 10px 12px !important;
+  }
+
+  .wms-table,
+  .orders-table,
+  .estoque-table,
+  .wms-mini-table {
+    width: 100% !important;
+    min-width: 0 !important;
+    max-width: 100% !important;
+    table-layout: auto !important;
+  }
+
+  .wms-table th,
+  .wms-table td,
+  .orders-table th,
+  .orders-table td,
+  .estoque-table th,
+  .estoque-table td {
+    min-width: 0 !important;
+    padding: 8px 6px !important;
+    white-space: normal !important;
+    word-break: break-word !important;
+    overflow-wrap: break-word !important;
+  }
+
+  .wms-table thead th,
+  .orders-table thead th,
+  .estoque-table thead th {
+    font-size: 10.5px !important;
+    letter-spacing: 0.35px !important;
+    white-space: nowrap !important;
+  }
+
+  .orders-table th:nth-child(1),
+  .orders-table td:nth-child(1) {
+    width: 62px !important;
+    white-space: nowrap !important;
+  }
+
+  .orders-table th:nth-child(2),
+  .orders-table td:nth-child(2) {
+    width: auto !important;
+    max-width: 180px !important;
+  }
+
+  .orders-table th:nth-child(3),
+  .orders-table td:nth-child(3) {
+    width: auto !important;
+  }
+
+  .orders-table .col-th-location,
+  .orders-table .order-col-location {
+    width: auto !important;
+    max-width: 115px !important;
+  }
+
+  .orders-table .col-th-status,
+  .orders-table .order-col-status {
+    width: auto !important;
+    max-width: 120px !important;
+    padding-right: 6px !important;
+  }
+
+  .status-badge,
+  .location-badge,
+  .cat-pill-badge {
+    max-width: 100% !important;
+    white-space: nowrap !important;
+  }
+}
+
+/* Modo Tela Cheia do WMS (100% da tela, sai com ESC ou "✕ Voltar") */
+body.wms-fullscreen-mode .wms-sidebar {
+  display: none !important;
+}
+
+body.wms-fullscreen-mode .wms-main {
+  margin-left: 0 !important;
+  width: 100vw !important;
+  max-width: 100vw !important;
+}
+
+body.wms-fullscreen-mode .wms-content {
+  padding: 14px 20px 48px 20px !important;
 }

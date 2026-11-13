@@ -418,6 +418,59 @@ document.querySelectorAll('.sidebar-nav .nav-item').forEach(btn => {
   btn.addEventListener('click', () => switchTab(btn.dataset.tab));
 });
 
+// ---------- Modo Tela Cheia (100% da tela) + Saída por ESC ou "✕ Voltar" ----------
+function updateWmsFullscreenUi() {
+  const isFs = document.body.classList.contains('wms-fullscreen-mode');
+  const btnFs = document.getElementById('btnWmsFullscreen');
+  const btnExit = document.getElementById('btnWmsExitFullscreen');
+  if (btnFs) btnFs.classList.toggle('hidden', isFs);
+  if (btnExit) {
+    const showExit = isFs || (currentTabId && currentTabId !== 'dashboard');
+    btnExit.classList.toggle('hidden', !showExit);
+  }
+}
+
+function toggleWmsFullscreen(force) {
+  const next = typeof force === 'boolean' ? force : !document.body.classList.contains('wms-fullscreen-mode');
+  document.body.classList.toggle('wms-fullscreen-mode', next);
+  updateWmsFullscreenUi();
+}
+window.toggleWmsFullscreen = toggleWmsFullscreen;
+
+function exitWmsFullscreenOrBack() {
+  if (document.body.classList.contains('wms-fullscreen-mode')) {
+    toggleWmsFullscreen(false);
+    return;
+  }
+  if (currentTabId && currentTabId !== 'dashboard') {
+    switchTab('dashboard');
+  }
+}
+window.exitWmsFullscreenOrBack = exitWmsFullscreenOrBack;
+
+document.getElementById('btnWmsFullscreen')?.addEventListener('click', () => toggleWmsFullscreen(true));
+document.getElementById('btnWmsExitFullscreen')?.addEventListener('click', exitWmsFullscreenOrBack);
+
+// Atualiza visibilidade do botão "✕ Voltar" ao trocar de aba
+const _origSwitchTab = switchTab;
+switchTab = function(tabId, pushHistory = true, resetScroll = true) {
+  _origSwitchTab(tabId, pushHistory, resetScroll);
+  updateWmsFullscreenUi();
+};
+window.switchTab = switchTab;
+
+document.addEventListener('keydown', (e) => {
+  if (e.key !== 'Escape') return;
+  const openModals = document.querySelectorAll('.modal-overlay:not(.hidden), .modal:not(.hidden)');
+  if (openModals.length > 0) {
+    openModals.forEach(m => m.classList.add('hidden'));
+    return;
+  }
+  if (document.body.classList.contains('wms-fullscreen-mode') || (currentTabId && currentTabId !== 'dashboard')) {
+    exitWmsFullscreenOrBack();
+  }
+});
+
 /* =========================================================================
  * [MÓDULO: 03-data-sync.js]
  * ========================================================================= */
@@ -465,10 +518,15 @@ async function refreshAllData() {
 
   // 2. Fetch em background para garantir os dados mais recentes do servidor
   try {
-    const [productsRes, ordersRes] = await Promise.allSettled([
-      api('/products?in_stock=&_t=' + Date.now()),
-      api('/orders?_t=' + Date.now())
+    const [productsRes, ordersRes, catsRes] = await Promise.allSettled([
+      api('/products?in_stock=&includeDisabled=true&_t=' + Date.now()),
+      api('/orders?_t=' + Date.now()),
+      api('/products/categories?includeDisabled=true&_t=' + Date.now())
     ]);
+
+    if (catsRes.status === 'fulfilled' && catsRes.value && Array.isArray(catsRes.value.disabledCategories)) {
+      window.wmsDisabledCategories = catsRes.value.disabledCategories;
+    }
 
     if (productsRes.status === 'fulfilled' && productsRes.value && _pendingPhotoSaveCount === 0) {
       allProducts = productsRes.value.products || [];
@@ -1692,7 +1750,46 @@ function fillCategoryList(products) {
     const currentVal = filterSelect.value;
     filterSelect.innerHTML = '<option value="">Todas as categorias</option>' + cats.map(c => `<option value="${c}" ${c === currentVal ? 'selected' : ''}>${c}</option>`).join('');
   }
+  renderCategoryVisibilityBar(cats);
 }
+
+function renderCategoryVisibilityBar(catsList) {
+  const bar = document.getElementById('wmsCategoryVisibilityBar');
+  if (!bar) return;
+  const cats = Array.isArray(catsList) && catsList.length ? catsList : getAllWmsCategories(allProducts);
+  const disabledSet = new Set((window.wmsDisabledCategories || []).map(c => String(c).toLowerCase().trim()));
+  bar.innerHTML = cats.map(c => {
+    const isDisabled = disabledSet.has(String(c).toLowerCase().trim());
+    const bg = isDisabled ? 'rgba(239,68,68,0.12)' : 'rgba(16,185,129,0.12)';
+    const border = isDisabled ? 'rgba(239,68,68,0.45)' : 'rgba(16,185,129,0.45)';
+    const color = isDisabled ? '#f87171' : '#34d399';
+    const icon = isDisabled ? '✕ Desativada' : '✓ Ativa';
+    return `<button type="button" class="btn btn-sm wms-cat-vis-btn" data-cat-vis="${c}" style="background:${bg};border:1px solid ${border};color:${color};font-size:12px;font-weight:700;padding:5px 10px;border-radius:999px;cursor:pointer;" title="${isDisabled ? 'Clique para ativar esta categoria na loja' : 'Clique para desativar esta categoria na loja'}">${c} • ${icon}</button>`;
+  }).join('');
+
+  bar.querySelectorAll('.wms-cat-vis-btn').forEach(btn => {
+    btn.onclick = async () => {
+      const cat = btn.dataset.catVis;
+      const currentlyDisabled = disabledSet.has(String(cat).toLowerCase().trim());
+      const nextActive = currentlyDisabled;
+      btn.disabled = true;
+      try {
+        const res = await api('/products/categories/visibility', {
+          method: 'PUT',
+          body: JSON.stringify({ category: cat, active: nextActive })
+        });
+        window.wmsDisabledCategories = res.disabledCategories || [];
+        renderCategoryVisibilityBar(cats);
+        broadcastSync('PRODUCT_SAVED');
+        showToast(nextActive ? `Categoria "${cat}" ativada na loja!` : `Categoria "${cat}" desativada na loja.`);
+      } catch (err) {
+        showToast(err.message || 'Erro ao alterar visibilidade da categoria');
+        btn.disabled = false;
+      }
+    };
+  });
+}
+window.renderCategoryVisibilityBar = renderCategoryVisibilityBar;
 
 function applyStockFilters() {
   const term = (document.getElementById('stockSearch')?.value || '').toLowerCase().trim();

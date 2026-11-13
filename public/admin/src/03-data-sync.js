@@ -42,10 +42,15 @@ async function refreshAllData() {
 
   // 2. Fetch em background para garantir os dados mais recentes do servidor
   try {
-    const [productsRes, ordersRes] = await Promise.allSettled([
-      api('/products?in_stock=&_t=' + Date.now()),
-      api('/orders?_t=' + Date.now())
+    const [productsRes, ordersRes, catsRes] = await Promise.allSettled([
+      api('/products?in_stock=&includeDisabled=true&_t=' + Date.now()),
+      api('/orders?_t=' + Date.now()),
+      api('/products/categories?includeDisabled=true&_t=' + Date.now())
     ]);
+
+    if (catsRes.status === 'fulfilled' && catsRes.value && Array.isArray(catsRes.value.disabledCategories)) {
+      window.wmsDisabledCategories = catsRes.value.disabledCategories;
+    }
 
     if (productsRes.status === 'fulfilled' && productsRes.value && _pendingPhotoSaveCount === 0) {
       allProducts = productsRes.value.products || [];

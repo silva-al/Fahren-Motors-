@@ -165,13 +165,38 @@ function getCategoryMatchValues(raw) {
   return Array.from(matches);
 }
 
+async function getDisabledCategories() {
+  try {
+    await db.query(`CREATE TABLE IF NOT EXISTS app_meta (key TEXT PRIMARY KEY, value TEXT);`);
+    const res = await db.query(`SELECT value FROM app_meta WHERE key = 'disabled_categories';`);
+    const raw = res.rows[0]?.value;
+    if (!raw) return [];
+    const arr = JSON.parse(raw);
+    if (!Array.isArray(arr)) return [];
+    return Array.from(new Set(arr.map(c => normalizeServerCategory(c)).filter(Boolean)));
+  } catch {
+    return [];
+  }
+}
+
+async function saveDisabledCategories(list) {
+  await db.query(`CREATE TABLE IF NOT EXISTS app_meta (key TEXT PRIMARY KEY, value TEXT);`);
+  const clean = Array.from(new Set((Array.isArray(list) ? list : []).map(c => normalizeServerCategory(c)).filter(Boolean)));
+  await db.query(
+    `INSERT INTO app_meta (key, value) VALUES ('disabled_categories', $1)
+     ON CONFLICT (key) DO UPDATE SET value = $1;`,
+    [JSON.stringify(clean)]
+  );
+  return clean;
+}
+
 
 router.get('/', async (req, res) => {
   try {
     // Garante sincronização inicial do catálogo se o banco estiver vazio ou desatualizado
     await syncCatalog();
 
-    const { q, category, min_price, max_price, in_stock, type } = req.query;
+    const { q, category, min_price, max_price, in_stock, type, includeDisabled } = req.query;
     const clauses = ['active = true'];
     const params = [];
 
@@ -206,7 +231,14 @@ router.get('/', async (req, res) => {
 
     const sql = `SELECT * FROM products WHERE ${clauses.join(' AND ')} ORDER BY name ASC, id ASC`;
     const result = await db.query(sql, params);
-    const allSerialized = result.rows.map(serialize);
+    let allSerialized = result.rows.map(serialize);
+    if (includeDisabled !== 'true') {
+      const disabledCats = await getDisabledCategories();
+      if (disabledCats.length > 0) {
+        const disabledSet = new Set(disabledCats.map(c => c.toLowerCase()));
+        allSerialized = allSerialized.filter(p => !disabledSet.has(normalizeServerCategory(p.category || '').toLowerCase()));
+      }
+    }
     const realItems = allSerialized.filter(isRealWmsProduct);
     const baseList = realItems.length > 0 ? realItems : allSerialized;
     const finalProducts = baseList.slice().sort((a, b) => {
@@ -233,9 +265,37 @@ router.post('/sync-catalog', requireRole('admin'), async (_req, res) => {
   }
 });
 
-router.get('/categories', async (_req, res) => {
+router.put('/categories/visibility', requireRole('admin'), async (req, res) => {
+  try {
+    const { category, active } = req.body || {};
+    const normCat = normalizeServerCategory(category || '');
+    if (!normCat) {
+      return res.status(400).json({ error: 'Categoria não informada.' });
+    }
+    const current = await getDisabledCategories();
+    const normLower = normCat.toLowerCase();
+    let next;
+    if (active === true) {
+      next = current.filter(c => c.toLowerCase() !== normLower);
+    } else {
+      next = current.some(c => c.toLowerCase() === normLower) ? current : [...current, normCat];
+    }
+    const saved = await saveDisabledCategories(next);
+    setNoCacheHeaders(res);
+    res.json({ ok: true, category: normCat, active: Boolean(active), disabledCategories: saved });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Erro ao atualizar visibilidade da categoria.' });
+  }
+});
+
+router.get('/categories', async (req, res) => {
   try {
     await syncCatalog();
+    const includeDisabled = req.query.includeDisabled === 'true';
+    const disabledCats = await getDisabledCategories();
+    const disabledSet = new Set(disabledCats.map(c => c.toLowerCase()));
+
     const result = await db.query(`
       SELECT id, name, category, photo_url, stock_qty
       FROM products
@@ -279,6 +339,7 @@ router.get('/categories', async (_req, res) => {
     }
 
     const categories = Array.from(byCat.values())
+      .filter((entry) => includeDisabled || !disabledSet.has(entry.name.toLowerCase()))
       .sort((a, b) => a.name.localeCompare(b.name, 'pt-BR'))
       .map((entry) => ({
         name: entry.name,
@@ -286,12 +347,14 @@ router.get('/categories', async (_req, res) => {
         totalCount: hasAnyRealGlobal ? entry.realTotalCount : entry.seedTotalCount,
         photo: entry.bestRealPhoto,
         hasRealPhoto: Boolean(entry.bestRealPhoto),
+        disabled: disabledSet.has(entry.name.toLowerCase()),
       }));
 
     setNoCacheHeaders(res);
     res.json({
       categories,
       names: categories.map((c) => c.name),
+      disabledCategories: disabledCats,
     });
   } catch (err) {
     console.error(err);
@@ -302,6 +365,8 @@ router.get('/categories', async (_req, res) => {
 router.get('/categories/featured', async (_req, res) => {
   try {
     await syncCatalog();
+    const disabledCats = await getDisabledCategories();
+    const disabledSet = new Set(disabledCats.map(c => c.toLowerCase()));
     const result = await db.query(`
       SELECT id, name, code, category, description, compatibility, price_cents, stock_qty, photo_url, location, active
       FROM products
@@ -309,7 +374,9 @@ router.get('/categories/featured', async (_req, res) => {
       ORDER BY updated_at DESC, id ASC
       LIMIT 80
     `);
-    const allList = result.rows.map(serialize);
+    const allList = result.rows
+      .map(serialize)
+      .filter(p => !disabledSet.has(normalizeServerCategory(p.category || '').toLowerCase()));
     const realList = allList.filter(isRealWmsProduct);
     const baseList = realList.length > 0 ? realList : allList;
     const list = baseList

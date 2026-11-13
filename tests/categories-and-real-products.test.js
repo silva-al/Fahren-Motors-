@@ -199,5 +199,45 @@ describe('Categorias, Contagem Real e Remoção Automática de Itens Fictícios'
     const input = win.document.getElementById('pCategory');
     expect(input.classList.contains('hidden')).toBe(false);
   });
+
+  it('GET /api/products/categories e GET /api/products ocultam categoria desativada (ex: Iluminação) na loja', async () => {
+    vi.spyOn(db, 'query').mockImplementation(async (sql) => {
+      if (sql.includes('CREATE TABLE IF NOT EXISTS app_meta')) return { rows: [] };
+      if (sql.includes('ALTER TABLE')) return { rows: [] };
+      if (sql.includes('SELECT count(*)::int AS count FROM products')) return { rows: [{ count: 2 }] };
+      if (sql.includes("SELECT value FROM app_meta WHERE key = 'catalog_seeded'")) return { rows: [{ value: 'true' }] };
+      if (sql.includes("SELECT value FROM app_meta WHERE key = 'disabled_categories'")) {
+        return { rows: [{ value: JSON.stringify(['Iluminação']) }] };
+      }
+      if (sql.includes('FROM products') && sql.includes('WHERE category IS NOT NULL')) {
+        return {
+          rows: [
+            { id: 1, name: 'Pastilha', category: 'Freios', photo_url: 'https://x.co/p.jpg', stock_qty: 2 },
+            { id: 2, name: 'Lâmpada H7', category: 'Iluminação', photo_url: 'https://x.co/l.jpg', stock_qty: 5 },
+          ],
+        };
+      }
+      if (sql.includes('SELECT * FROM products WHERE')) {
+        return {
+          rows: [
+            { id: 1, name: 'Pastilha', code: 'P1', category: 'Freios', price_cents: 5000, stock_qty: 2, photo_url: 'https://x.co/p.jpg', active: true },
+            { id: 2, name: 'Lâmpada H7', code: 'L1', category: 'Iluminação', price_cents: 3000, stock_qty: 5, photo_url: 'https://x.co/l.jpg', active: true },
+          ],
+        };
+      }
+      return { rows: [] };
+    });
+
+    const app = createProductsApp();
+    const catRes = await request(app).get('/api/products/categories');
+    expect(catRes.status).toBe(200);
+    expect(catRes.body.names).toContain('Freios');
+    expect(catRes.body.names).not.toContain('Iluminação');
+    expect(catRes.body.disabledCategories).toContain('Iluminação');
+
+    const prodRes = await request(app).get('/api/products');
+    expect(prodRes.status).toBe(200);
+    expect(prodRes.body.products.map((p) => p.category)).not.toContain('Iluminação');
+  });
 });
 

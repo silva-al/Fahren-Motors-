@@ -1,9 +1,17 @@
 # STATE_CHECKPOINT.md
 
-- **Data/Hora:** 2026-11-13 01:13 (BRT)
-- **Último Commit Base:** `8602d8a` (`fix(wms,loja): corrigir contagem de estoque, filtro estrito de categorias, cadastro de novas categorias e ocultacao automatica de itens ficticios`)
+- **Data/Hora:** 2026-11-13 01:26 (BRT)
+- **Último Commit Base:** `e124863` (`fix(wms,loja): corrigir contagem de estoque, filtro estrito de categorias, cadastro de novas categorias e ocultacao automatica de itens ficticios`)
 
 ## Resumo das Entregas Recentes
+- **Ativar/Desativar Categorias (ex.: Iluminação) entre WMS e Loja:**
+  - `server/routes/products.js`: Persistência de `disabled_categories` em `app_meta`, endpoint `PUT /api/products/categories/visibility` (`requireRole('admin')`), e filtro automático em `GET /api/products`, `GET /api/products/categories` e `GET /api/products/categories/featured` (suportando `?includeDisabled=true` para o WMS).
+  - `public/admin/index.html`, `public/admin/src/03-data-sync.js`, `public/admin/src/05-products-and-stock.js`: Painel de visibilidade de categorias (`#wmsCategoryVisibilityPanel` / `#wmsCategoryVisibilityBar`) na aba Estoque para desativar/reativar categorias com 1 clique.
+  - `public/loja/src/08-init-and-redesign.js`: Ocultação automática dos cards e chips das categorias desativadas na vitrine.
+  - `tests/categories-and-real-products.test.js`: Novo teste garantindo ocultação de categoria desativada na loja.
+- **Correção de Colunas Cortadas/Overflow no WMS e Modo Tela Cheia (`ESC` / `✕ Voltar`):**
+  - `public/admin/admin.css`: Ajuste do layout da sidebar (`.nav-badge`, `.sidebar-nav .nav-item`) para não cortar badges como `Notas Fiscais (NFe)` e `Pedidos`; distribuição responsiva de colunas sem overflow horizontal em `.wms-table`, `.orders-table`, `.estoque-table` e `.wms-mini-table`; estilos de `body.wms-fullscreen-mode` ocupando 100% da tela.
+  - `public/admin/index.html` e `public/admin/src/02-navigation-and-screens.js`: Botões `#btnWmsFullscreen` e `#btnWmsExitFullscreen` (`✕ Voltar`) no topo, além de atalho `ESC` para fechar modais, sair da tela cheia ou voltar ao Dashboard.
 1. **Correção da Categoria de Fluidos e Limpeza de Imagens Fictícias nos Cards da Home (`server/sync-catalog.js`, `server/catalog-data.js`, `public/loja/src/04-catalog-and-categories.js`, `public/loja/src/08-init-and-redesign.js`)**:
    - Migração única (`migrated_fluido_category_v1`) move produtos de `Fluido de Freio` que estavam em `Freios` para `Óleos e fluidos`, fazendo o card **FLUÍDOS** exibir o produto real e sua foto imediatamente.
    - `syncHomeCategoryCardPhotos(..., { clearFictitious: true })` remove automaticamente imagens fictícias (`images/categorias/...`) de qualquer card de categoria sem foto real, substituindo pelo placeholder neutro até que uma peça real com foto seja cadastrada.
