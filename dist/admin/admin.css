@@ -12912,8 +12912,12 @@ body.tema-claro .fin-bruto-text strong {
 
   .wms-table,
   .orders-table,
+  .wms-table,
+  .orders-table,
   .estoque-table,
-  .wms-mini-table {
+  .wms-mini-table,
+  #pane-pedidos table,
+  #pane-pedidos .orders-table {
     width: 100% !important;
     min-width: 0 !important;
     max-width: 100% !important;
@@ -12925,9 +12929,13 @@ body.tema-claro .fin-bruto-text strong {
   .orders-table th,
   .orders-table td,
   .estoque-table th,
-  .estoque-table td {
+  .estoque-table td,
+  #pane-pedidos table th,
+  #pane-pedidos table td,
+  #pane-pedidos .orders-table thead th,
+  #pane-pedidos .orders-table tbody td {
     min-width: 0 !important;
-    padding: 7px 6px !important;
+    padding: 7px 5px !important;
     white-space: normal !important;
     word-break: break-word !important;
     overflow-wrap: break-word !important;
@@ -12937,122 +12945,218 @@ body.tema-claro .fin-bruto-text strong {
 
   .wms-table thead th,
   .orders-table thead th,
-  .estoque-table thead th {
-    font-size: 10.5px !important;
-    letter-spacing: 0.3px !important;
+  .estoque-table thead th,
+  #pane-pedidos table th,
+  #pane-pedidos .orders-table thead th {
+    font-size: 10px !important;
+    letter-spacing: 0.2px !important;
     white-space: nowrap !important;
+    overflow: visible !important;
+    text-overflow: clip !important;
   }
 
-  /* Coluna PEDIDO super compacta (sem sobra lateral ao redor de #9) */
+  /* Coluna PEDIDO com nome menor, compacta e sem cortar */
+  #pane-pedidos table th:nth-child(1),
+  #pane-pedidos table td:nth-child(1),
+  #pane-pedidos .orders-table .col-th-id,
+  #pane-pedidos .orders-table .order-col-id,
   .orders-table .col-th-id,
   .orders-table .order-col-id {
-    width: 52px !important;
-    min-width: 48px !important;
-    max-width: 56px !important;
+    width: 56px !important;
+    min-width: 54px !important;
+    max-width: 60px !important;
     white-space: nowrap !important;
     overflow: visible !important;
+    text-overflow: clip !important;
     text-align: center !important;
-    padding: 7px 2px 7px 6px !important;
+    padding: 7px 3px !important;
   }
 
-  /* Colunas compactas da tabela de Pedidos: larguras enxutas para dar espaço a ITENS */
-  .orders-table .col-th-location,
-  .orders-table .order-col-location {
-    width: 92px !important;
-    min-width: 86px !important;
-    max-width: 100px !important;
-    white-space: nowrap !important;
-    overflow: visible !important;
-    padding: 7px 4px !important;
+  #pane-pedidos .orders-table th.col-th-id,
+  .orders-table th.col-th-id {
+    font-size: 9.5px !important;
+    letter-spacing: 0 !important;
   }
 
-  .orders-table .col-th-total,
-  .orders-table .order-col-total {
-    width: 86px !important;
-    min-width: 80px !important;
-    max-width: 94px !important;
-    white-space: nowrap !important;
-    overflow: visible !important;
-    padding: 7px 4px !important;
-  }
-
-  .orders-table .col-th-pay,
-  .orders-table .order-col-pay {
-    width: 96px !important;
-    min-width: 90px !important;
-    max-width: 104px !important;
-    white-space: nowrap !important;
-    overflow: visible !important;
-    padding: 7px 4px !important;
-  }
-
-  .orders-table .col-th-date,
-  .orders-table .order-col-date {
-    width: 86px !important;
-    min-width: 80px !important;
-    max-width: 94px !important;
-    white-space: nowrap !important;
-    overflow: visible !important;
-    padding: 7px 4px !important;
-  }
-
-  .orders-table .col-th-status,
-  .orders-table .order-col-status {
-    width: 96px !important;
-    min-width: 90px !important;
-    max-width: 104px !important;
-    white-space: nowrap !important;
-    overflow: visible !important;
-    padding: 7px 4px !important;
-  }
-
+  /* CLIENTE compacto e próximo do PEDIDO */
+  #pane-pedidos table th:nth-child(2),
+  #pane-pedidos table td:nth-child(2),
+  #pane-pedidos .orders-table .col-th-customer,
+  #pane-pedidos .orders-table .order-col-customer,
   .orders-table .col-th-customer,
   .orders-table .order-col-customer {
-    width: 118px !important;
-    min-width: 110px !important;
-    max-width: 132px !important;
-    white-space: nowrap !important;
+    width: 130px !important;
+    min-width: 118px !important;
+    max-width: 148px !important;
+    white-space: normal !important;
     overflow: visible !important;
     text-align: left !important;
-    padding: 7px 6px 7px 2px !important;
+    padding: 7px 6px 7px 3px !important;
   }
 
+  /* ITENS recebe todo o espaço horizontal excedente da tabela */
+  #pane-pedidos table th:nth-child(3),
+  #pane-pedidos table td:nth-child(3),
+  #pane-pedidos .orders-table .col-th-items,
+  #pane-pedidos .orders-table .order-col-items,
   .orders-table .col-th-items,
   .orders-table .order-col-items {
-    width: auto !important;
+    width: 42% !important;
     min-width: 220px !important;
     max-width: none !important;
     white-space: normal !important;
     overflow: visible !important;
+    text-align: left !important;
     padding: 7px 8px !important;
   }
 
+  /* LOCALIZAÇÃO, TOTAL, PAGAMENTO, DATA/HORA e STATUS enxutos e próximos */
+  #pane-pedidos table th:nth-child(4),
+  #pane-pedidos table td:nth-child(4),
+  #pane-pedidos .orders-table .col-th-location,
+  #pane-pedidos .orders-table .order-col-location,
+  .orders-table .col-th-location,
+  .orders-table .order-col-location {
+    width: 88px !important;
+    min-width: 82px !important;
+    max-width: 96px !important;
+    white-space: nowrap !important;
+    overflow: visible !important;
+    text-align: center !important;
+    padding: 7px 4px !important;
+  }
+
+  #pane-pedidos table th:nth-child(5),
+  #pane-pedidos table td:nth-child(5),
+  #pane-pedidos .orders-table .col-th-total,
+  #pane-pedidos .orders-table .order-col-total,
+  .orders-table .col-th-total,
+  .orders-table .order-col-total {
+    width: 84px !important;
+    min-width: 78px !important;
+    max-width: 92px !important;
+    white-space: nowrap !important;
+    overflow: visible !important;
+    text-align: center !important;
+    padding: 7px 4px !important;
+  }
+
+  #pane-pedidos table th:nth-child(6),
+  #pane-pedidos table td:nth-child(6),
+  #pane-pedidos .orders-table .col-th-pay,
+  #pane-pedidos .orders-table .order-col-pay,
+  .orders-table .col-th-pay,
+  .orders-table .order-col-pay {
+    width: 92px !important;
+    min-width: 86px !important;
+    max-width: 102px !important;
+    white-space: nowrap !important;
+    overflow: visible !important;
+    text-align: center !important;
+    padding: 7px 4px !important;
+  }
+
+  #pane-pedidos table th:nth-child(7),
+  #pane-pedidos table td:nth-child(7),
+  #pane-pedidos .orders-table .col-th-date,
+  #pane-pedidos .orders-table .order-col-date,
+  .orders-table .col-th-date,
+  .orders-table .order-col-date {
+    width: 76px !important;
+    min-width: 72px !important;
+    max-width: 84px !important;
+    white-space: nowrap !important;
+    overflow: visible !important;
+    text-align: center !important;
+    padding: 7px 2px 7px 4px !important;
+  }
+
+  /* Sobrescreve #ordersTableBody td:last-child (que tinha 175px e text-align:right) */
+  #pane-pedidos table th:nth-child(8),
+  #pane-pedidos table td:nth-child(8),
+  #pane-pedidos #ordersTableBody td:last-child,
+  #ordersTableBody td:last-child,
+  #pane-pedidos .orders-table .col-th-status,
+  #pane-pedidos .orders-table .order-col-status,
+  .orders-table .col-th-status,
+  .orders-table .order-col-status {
+    width: 84px !important;
+    min-width: 80px !important;
+    max-width: 92px !important;
+    white-space: nowrap !important;
+    overflow: visible !important;
+    text-align: center !important;
+    padding: 7px 4px 7px 2px !important;
+  }
+
   .order-id-badge {
-    padding: 3px 7px !important;
-    font-size: 12px !important;
+    padding: 2px 6px !important;
+    font-size: 11.5px !important;
   }
 
   .order-loc-tag {
+    padding: 2px 6px !important;
+    font-size: 10.5px !important;
+  }
+
+  /* Pill de Status compacto, sem caixa interna duplicada e sem cortar "Cancelado" */
+  .status-badge-wrap,
+  .orders-table .status-badge-wrap,
+  body:not(.tema-claro) .status-badge-wrap,
+  body.tema-claro .status-badge-wrap {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
     padding: 3px 7px !important;
-    font-size: 11px !important;
-  }
-
-  .orders-table .status-badge-wrap {
-    padding: 4px 8px !important;
-    gap: 5px !important;
-    margin: 0 !important;
-  }
-
-  .orders-table .order-status-badge-select {
+    gap: 4px !important;
+    margin: 0 auto !important;
     width: auto !important;
     min-width: 0 !important;
-    font-size: 10.5px !important;
-    text-align: left !important;
+    max-width: max-content !important;
+    border-radius: 999px !important;
   }
 
-  /* Nas demais tabelas do WMS, última coluna (Ações/Status) sem corte e sem esmagar */
-  .wms-table th:last-child,
-  .wms-table td:last-child,
+  .status-badge-wrap .status-dot {
+    width: 6px !important;
+    height: 6px !important;
+    min-width: 6px !important;
+    min-height: 6px !important;
+  }
+
+  .order-status-badge-select,
+  .orders-table .order-status-badge-select,
+  body:not(.tema-claro) .order-status-badge-select,
+  body:not(.tema-claro) .order-status-badge-select.novo,
+  body:not(.tema-claro) .order-status-badge-select.em_preparacao,
+  body:not(.tema-claro) .order-status-badge-select.pronto,
+  body:not(.tema-claro) .order-status-badge-select.entregue,
+  body:not(.tema-claro) .order-status-badge-select.cancelado,
+  body.tema-claro .order-status-badge-select,
+  body.tema-claro .order-status-badge-select.novo,
+  body.tema-claro .order-status-badge-select.em_preparacao,
+  body.tema-claro .order-status-badge-select.pronto,
+  body.tema-claro .order-status-badge-select.entregue,
+  body.tema-claro .order-status-badge-select.cancelado {
+    background: transparent !important;
+    background-color: transparent !important;
+    background-image: none !important;
+    border: none !important;
+    box-shadow: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    width: auto !important;
+    min-width: 0 !important;
+    font-size: 9.5px !important;
+    font-weight: 800 !important;
+    letter-spacing: 0.2px !important;
+    text-align: center !important;
+    line-height: 1.1 !important;
+  }
+
+  /* Nas demais tabelas do WMS (Estoque, Fiscal, Financeiro, Movimentações, Relatórios, Alertas),
+     colunas principais de produto/descrição expandem e colunas de status/ações ficam compactas */
+  .wms-table:not(.orders-table) th:last-child,
+  .wms-table:not(.orders-table) td:last-child,
   .estoque-table th:last-child,
   .estoque-table td:last-child {
     width: auto !important;
@@ -13062,11 +13166,33 @@ body.tema-claro .fin-bruto-text strong {
     padding-right: 6px !important;
   }
 
+  .estoque-table th:nth-child(2),
+  .estoque-table td:nth-child(2),
+  #pane-relatorios .wms-table th:nth-child(2),
+  #pane-relatorios .wms-table td:nth-child(2),
+  #tableRecentOperations th:nth-child(3),
+  #tableRecentOperations td:nth-child(3),
+  #tableStockMovements th:nth-child(2),
+  #tableStockMovements td:nth-child(2),
+  #tableInventoryAudit th:nth-child(1),
+  #tableInventoryAudit td:nth-child(1),
+  #tableAlerts th:nth-child(1),
+  #tableAlerts td:nth-child(1),
+  #tableLocProducts th:nth-child(1),
+  #tableLocProducts td:nth-child(1) {
+    width: 34% !important;
+    min-width: 180px !important;
+    white-space: normal !important;
+  }
+
   .status-badge,
   .location-badge,
-  .cat-pill-badge {
+  .cat-pill-badge,
+  .order-pay-badge {
     max-width: 100% !important;
     white-space: nowrap !important;
+    padding: 3px 7px !important;
+    font-size: 10px !important;
   }
 }
 

@@ -1,9 +1,14 @@
 # STATE_CHECKPOINT.md
 
-- **Data/Hora:** 2026-11-13 01:44 (BRT)
-- **Último Commit Base:** `f6324d8` (`fix(wms): corrigir esmagamento de colunas substituindo width 1% por max-content`)
+- **Data/Hora:** 2026-11-13 01:58 (BRT)
+- **Último Commit Base:** `cdaa3aa` (`fix(wms): reduzir largura da coluna PEDIDO para 52px sem sobra lateral`)
 
 ## Resumo das Entregas Recentes
+- **Correção definitiva de especificidade CSS (`#pane-pedidos`, `#ordersTableBody td:last-child`) e pill de status (`public/admin/admin.css`, `public/admin/src/07-orders-and-sales.js`):**
+  - Sobrescrito `#ordersTableBody td:last-child` (que aplicava `min-width: 175px; width: 175px; padding-right: 30px; text-align: right` e criava um grande vão entre `DATA/HORA` e `STATUS`) e `#pane-pedidos table th` (que aplicava `overflow: hidden; text-overflow: ellipsis` e cortava `PEDIDO`).
+  - Reduzida a fonte do cabeçalho `PEDIDO` (`font-size: 9.5px; letter-spacing: 0`) com `width: 56px` e `overflow: visible`, sem corte.
+  - Exibição completa de `"Cancelado"` no `<select>` de status, com pill compacto (`padding: 3px 7px; font-size: 9.5px`) e remoção da caixa interna duplicada.
+  - Coluna principal de peça/produto nas demais tabelas do WMS (`Estoque`, `Relatórios`, `Operações`, `Movimentações`, `Inventário`, `Alertas`, `Localizações`) configurada com `width: 34%` para absorver o espaço disponível.
 - **Redução da largura da coluna PEDIDO (`public/admin/admin.css`):**
   - Coluna `PEDIDO` (`.orders-table .col-th-id, .orders-table .order-col-id`) reduzida para `width: 52px; min-width: 48px; max-width: 56px; padding: 7px 2px 7px 6px`, eliminando a sobra lateral ao redor de `#9` e aproximando a coluna `CLIENTE`.
 - **Hotfix de largura das colunas da tabela de Pedidos e WMS (`public/admin/admin.css`):**

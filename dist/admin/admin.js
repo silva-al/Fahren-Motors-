@@ -2516,7 +2516,7 @@ function renderOrdersTable(orders) {
               <option value="em_preparacao" ${o.status === 'em_preparacao' ? 'selected' : ''}>Em prep.</option>
               <option value="pronto" ${o.status === 'pronto' ? 'selected' : ''}>Pronto</option>
               <option value="entregue" ${o.status === 'entregue' ? 'selected' : ''}>Entregue</option>
-              <option value="cancelado" ${o.status === 'cancelado' ? 'selected' : ''}>Canc.</option>
+              <option value="cancelado" ${o.status === 'cancelado' ? 'selected' : ''}>Cancelado</option>
             </select>
           </div>
         </td>
